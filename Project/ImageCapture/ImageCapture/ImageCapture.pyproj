@@ -2,15 +2,18 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>eb43c19a-665a-461b-b691-3f1204d91c7f</ProjectGuid>
+    <ProjectGuid>4d09c582-2dae-4f71-85c7-b1927f17b591</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>TestApp.py</StartupFile>
+    <StartupFile>ImageCapture.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
-    <Name>TestApp</Name>
-    <RootNamespace>TestApp</RootNamespace>
+    <Name>ImageCapture</Name>
+    <RootNamespace>ImageCapture</RootNamespace>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <CommandLineArguments>-v D:\Diplomski\DriverMonitoringSystem\Project\ImageCapture\ImageCapture\WIN_20200331_13_34_14_Pro.mp4 </CommandLineArguments>
+    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -21,7 +24,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="TestApp.py" />
+    <Compile Include="ImageCapture.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
