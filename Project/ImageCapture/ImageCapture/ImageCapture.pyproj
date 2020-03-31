@@ -12,7 +12,7 @@
     <Name>ImageCapture</Name>
     <RootNamespace>ImageCapture</RootNamespace>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>-v D:\Diplomski\DriverMonitoringSystem\Project\ImageCapture\ImageCapture\WIN_20200331_13_34_14_Pro.mp4 </CommandLineArguments>
+    <CommandLineArguments>-v 1</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

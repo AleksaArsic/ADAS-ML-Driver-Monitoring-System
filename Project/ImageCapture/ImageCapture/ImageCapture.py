@@ -2,6 +2,7 @@ import argparse
 import sys
 import os
 import cv2
+import datetime
 import numpy as np
 
 windowName = "Video source"
@@ -50,6 +51,8 @@ def frameCapture(vsource):
 
     dirCreated = False
 
+    outputImageName = outputImageNamebase + datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+
     while(cap.isOpened()):  
         
         if (not dirCreated):
@@ -75,7 +78,7 @@ def frameCapture(vsource):
             
             if(cv2.getTrackbarPos(startTrackbarName, windowName)):
                 if(frameId % keyframesPerSec == 0):
-                    cv2.imwrite(os.path.join(workingDirPath, outputDirName, outputImageNamebase + "{:d}.jpg").format(frameId), frame)
+                    cv2.imwrite(os.path.join(workingDirPath, outputDirName, outputImageName + "_{:d}.jpg").format(frameId), frame)
             frameId += 1
             
             if(cv2.waitKey(25) & 0xFF == ord('q')):
