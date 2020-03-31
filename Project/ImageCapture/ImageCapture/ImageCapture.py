@@ -9,6 +9,8 @@ windowName = "Video source"
 startTrackbarName = "Capture (STOP/START):"
 keyframesTrackbarName = "Capture FPS: "
 
+keyframesTrackbarMax = 30
+
 outputDirNamebase = "output_"
 outputImageNamebase = "capture_"
 
@@ -42,16 +44,15 @@ def frameCapture(vsource):
     # frame number
     frameId = 0
 
-    
-
     # create window and trackbar for starting/stopping capture process
     cv2.namedWindow(windowName)
     cv2.createTrackbar(startTrackbarName, windowName, 0, 1, startCapture)
-    cv2.createTrackbar(keyframesTrackbarName, windowName, 1, 30, keyframesTracker)
+    cv2.createTrackbar(keyframesTrackbarName, windowName, 1, keyframesTrackbarMax, keyframesTracker)
 
     dirCreated = False
 
-    outputImageName = outputImageNamebase + datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+    dateTimeNow = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+    outputImageName = outputImageNamebase + dateTimeNow
 
     while(cap.isOpened()):  
         
@@ -61,14 +62,14 @@ def frameCapture(vsource):
 
             # make new directory
             # as for not to override the previous one
-            outputDirName = createNewOutputDir()
+            outputDirName = createNewOutputDir(dateTimeNow)
 
             dirCreated = True
 
         ret, frame = cap.read();
         
         # frames of interest
-        keyframesPerSec = cv2.getTrackbarPos(keyframesTrackbarName, windowName)
+        keyframesPerSec = keyframesTrackbarMax - cv2.getTrackbarPos(keyframesTrackbarName, windowName)
 
         if(keyframesPerSec == 0):
             keyframesPerSec = 1
@@ -94,11 +95,9 @@ def countOutputDirs():
     outputDirCount = int(len(next(os.walk(workingDirPath))[1]))
     print("Output directories: " + str(outputDirCount))
 
-def createNewOutputDir():
-    global outputDirCount
+def createNewOutputDir(dateTimeNow):
 
-    outputDirCount += 1
-    outputDirName = outputDirNamebase + str(outputDirCount)
+    outputDirName = outputDirNamebase + dateTimeNow
     if not os.path.exists(outputDirName):
         os.makedirs(outputDirName)
 
