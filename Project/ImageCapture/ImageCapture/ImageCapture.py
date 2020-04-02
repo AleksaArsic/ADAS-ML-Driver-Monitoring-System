@@ -9,6 +9,7 @@ windowName = "Video source"
 startTrackbarName = "Capture (STOP/START):"
 keyframesTrackbarName = "Capture FPS: "
 
+# maximal number of frames that we want to capture in one second
 keyframesTrackbarMax = 30
 
 outputDirNamebase = "output_"
@@ -47,6 +48,7 @@ def frameCapture(vsource):
     # create window and trackbar for starting/stopping capture process
     cv2.namedWindow(windowName)
     cv2.createTrackbar(startTrackbarName, windowName, 0, 1, startCapture)
+    # create trackbar for how many frapes per second we want to capture
     cv2.createTrackbar(keyframesTrackbarName, windowName, 1, keyframesTrackbarMax, keyframesTracker)
 
     dirCreated = False
