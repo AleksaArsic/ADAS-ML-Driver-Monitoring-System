@@ -72,8 +72,7 @@ namespace CaptureLabel
         {
             
             if (!imagePanel.ClientRectangle.Contains(e.Location)) return;
-            //if (ImageScale == Constants.imageScaleMin || ImageScale == Constants.imageScaleMax)
-                //return;
+
             // The amount by which we adjust scale per wheel click.
             // 10% per 120 units of delta
             const float scale_per_delta = 0.1f / 120;
@@ -96,44 +95,6 @@ namespace CaptureLabel
             }
             else if(ImageScale <= Constants.imageScaleMin)
                 resetImagePanelSize();
-            
-            // Override OnMouseWheel event, for zooming in/out with the scroll wheel
-            /*
-            if (imagePanel.BackgroundImage != null)
-            {
-                // If the mouse wheel is moved forward (Zoom in)
-                if (e.Delta > 0)
-                {
-                    // Check if the pictureBox dimensions are in range (15 is the minimum and maximum zoom level)
-                    if ((imagePanel.Width < (Constants.imageScaleMax * this.Width)) && (imagePanel.Height < (Constants.imageScaleMax * this.Height)))
-                    {
-                        // Change the size of the picturebox, multiply it by the ZOOMFACTOR
-                        imagePanel.Width = (int)(imagePanel.Width * 1.25);
-                        imagePanel.Height = (int)(imagePanel.Height * 1.25);
-
-                        // Formula to move the picturebox, to zoom in the point selected by the mouse cursor
-                        imagePanel.Top = (int)(e.Y - 1.25 * (e.Y - imagePanel.Top));
-                        imagePanel.Left = (int)(e.X - 1.25 * (e.X - imagePanel.Left));
-
-                    }
-                }
-                else
-                {
-
-                    // Check if the pictureBox dimensions are in range (15 is the minimum and maximum zoom level)
-                    if ((imagePanel.Width > (groupBox2.Width)) && (imagePanel.Height > (groupBox2.Height)))
-                    {// Change the size of the picturebox, divide it by the ZOOMFACTOR
-                        imagePanel.Width = (int)(imagePanel.Width / 1.25);
-                        imagePanel.Height = (int)(imagePanel.Height / 1.25);
-
-                        // Formula to move the picturebox, to zoom in the point selected by the mouse cursor
-                        imagePanel.Top = (int)(e.Y - 0.80 * (e.Y - imagePanel.Top));
-                        imagePanel.Left = (int)(e.X - 0.80 * (e.X - imagePanel.Left));
-
-                    }
-                }
-            }
-            */
         }
 
         private void imagePathTB_TextChanged(object sender, EventArgs e)
