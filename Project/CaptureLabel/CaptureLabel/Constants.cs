@@ -9,5 +9,8 @@ namespace CaptureLabel
 
         public static readonly float imageScaleMin = 1.0f;
         public static readonly float imageScaleMax = 2.0f;
+
+        public static readonly string errorCaption = "Error!";
+        public static readonly string pathExceptionMsg = "Path not valid.";
     }
 }

@@ -1,4 +1,7 @@
-﻿namespace CaptureLabel
+﻿using System.Reflection;
+using System.Windows.Forms;
+
+namespace CaptureLabel
 {
     partial class CaptureLabel
     {
@@ -43,11 +46,10 @@
             this.otherToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.imageViewPB = new System.Windows.Forms.PictureBox();
+            this.imagePanel = new System.Windows.Forms.Panel();
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.groupBox2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.imageViewPB)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -175,7 +177,8 @@
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.imageViewPB);
+            this.groupBox2.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.groupBox2.Controls.Add(this.imagePanel);
             this.groupBox2.Location = new System.Drawing.Point(12, 42);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(980, 786);
@@ -183,14 +186,18 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Image View";
             // 
-            // imageViewPB
+            // imagePanel
             // 
-            this.imageViewPB.Location = new System.Drawing.Point(6, 16);
-            this.imageViewPB.Name = "imageViewPB";
-            this.imageViewPB.Size = new System.Drawing.Size(968, 764);
-            this.imageViewPB.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.imageViewPB.TabIndex = 0;
-            this.imageViewPB.TabStop = false;
+            this.imagePanel.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.imagePanel.Location = new System.Drawing.Point(7, 20);
+            this.imagePanel.Name = "imagePanel";
+            this.imagePanel.Size = new System.Drawing.Size(967, 766);
+            this.imagePanel.TabIndex = 0;
+            this.imagePanel.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.imagePanel_MouseWheel);
+            // removes flickering on background picture change
+            typeof(Panel).InvokeMember("DoubleBuffered", BindingFlags.SetProperty
+                | BindingFlags.Instance | BindingFlags.NonPublic, null,
+                imagePanel, new object[] { true });
             // 
             // CaptureLabel
             // 
@@ -206,13 +213,11 @@
             this.Name = "CaptureLabel";
             this.Text = "Capture Label";
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.CaptureLabel_KeyDown);
-            this.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.imageViewPB_MouseWheel);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.imageViewPB)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -235,7 +240,7 @@
         private System.Windows.Forms.TextBox csvPathTB;
         private System.Windows.Forms.TextBox imagePathTB;
         private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.PictureBox imageViewPB;
+        private System.Windows.Forms.Panel imagePanel;
     }
 }
 

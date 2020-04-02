@@ -46,9 +46,9 @@ namespace CaptureLabel
 
                 if(currentImageIndex < imageLocation.Count)
                 {
-                    imageViewPB.Image = Image.FromFile(imageLocation[currentImageIndex]);
+                    imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
                     //saveImageDimensions();
-                    resetPictureBoxSize();
+                    resetImagePanelSize();
                 }
                 else
                 {
@@ -62,16 +62,18 @@ namespace CaptureLabel
                 if (currentImageIndex < 0)
                     currentImageIndex = 0;
 
-                imageViewPB.Image = Image.FromFile(imageLocation[currentImageIndex]);
+                imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
                 //saveImageDimensions();
-                resetPictureBoxSize();
+                resetImagePanelSize();
             }
         }
 
-        private void imageViewPB_MouseWheel(object sender, MouseEventArgs e)
+        private void imagePanel_MouseWheel(object sender, MouseEventArgs e)
         {
-            if (!imageViewPB.ClientRectangle.Contains(e.Location)) return;
             
+            if (!imagePanel.ClientRectangle.Contains(e.Location)) return;
+            //if (ImageScale == Constants.imageScaleMin || ImageScale == Constants.imageScaleMax)
+                //return;
             // The amount by which we adjust scale per wheel click.
             // 10% per 120 units of delta
             const float scale_per_delta = 0.1f / 120;
@@ -82,10 +84,56 @@ namespace CaptureLabel
             if (ImageScale > Constants.imageScaleMax) ImageScale = Constants.imageScaleMax;
 
             // Size the image.
-            imageViewPB.Size = new Size(
+            imagePanel.Size = new Size(
                 (int)(ImageWidth * ImageScale),
                 (int)(ImageHeight * ImageScale));
 
+            // Re-center picturebox
+            if (ImageScale > Constants.imageScaleMin && ImageScale < Constants.imageScaleMax)
+            {
+                imagePanel.Top = (int)(e.Y - ImageScale * (e.Y - groupBox2.Top));
+                imagePanel.Left = (int)(e.X - ImageScale * (e.X - groupBox2.Left));
+            }
+            else if(ImageScale <= Constants.imageScaleMin)
+                resetImagePanelSize();
+            
+            // Override OnMouseWheel event, for zooming in/out with the scroll wheel
+            /*
+            if (imagePanel.BackgroundImage != null)
+            {
+                // If the mouse wheel is moved forward (Zoom in)
+                if (e.Delta > 0)
+                {
+                    // Check if the pictureBox dimensions are in range (15 is the minimum and maximum zoom level)
+                    if ((imagePanel.Width < (Constants.imageScaleMax * this.Width)) && (imagePanel.Height < (Constants.imageScaleMax * this.Height)))
+                    {
+                        // Change the size of the picturebox, multiply it by the ZOOMFACTOR
+                        imagePanel.Width = (int)(imagePanel.Width * 1.25);
+                        imagePanel.Height = (int)(imagePanel.Height * 1.25);
+
+                        // Formula to move the picturebox, to zoom in the point selected by the mouse cursor
+                        imagePanel.Top = (int)(e.Y - 1.25 * (e.Y - imagePanel.Top));
+                        imagePanel.Left = (int)(e.X - 1.25 * (e.X - imagePanel.Left));
+
+                    }
+                }
+                else
+                {
+
+                    // Check if the pictureBox dimensions are in range (15 is the minimum and maximum zoom level)
+                    if ((imagePanel.Width > (groupBox2.Width)) && (imagePanel.Height > (groupBox2.Height)))
+                    {// Change the size of the picturebox, divide it by the ZOOMFACTOR
+                        imagePanel.Width = (int)(imagePanel.Width / 1.25);
+                        imagePanel.Height = (int)(imagePanel.Height / 1.25);
+
+                        // Formula to move the picturebox, to zoom in the point selected by the mouse cursor
+                        imagePanel.Top = (int)(e.Y - 0.80 * (e.Y - imagePanel.Top));
+                        imagePanel.Left = (int)(e.X - 0.80 * (e.X - imagePanel.Left));
+
+                    }
+                }
+            }
+            */
         }
 
         private void imagePathTB_TextChanged(object sender, EventArgs e)
@@ -95,31 +143,52 @@ namespace CaptureLabel
 
         private void button1_Click(object sender, EventArgs e)
         {
-            // get list of everything in folder passed to imageFolder
-            imageLocation = new List<string>(Directory.GetFiles(imageFolder));
-            // Parse list of image locations to contain only image locations
-            imageLocation = Utilities.parseImagesToList(imageLocation);
-
-            if (imageLocation.Count > 0)
+            try
             {
-                imageViewPB.Image = Image.FromFile(imageLocation[0]);
-                currentImageIndex = 0;
+                try
+                {
+                    // get list of everything in folder passed to imageFolder
+                    imageLocation = new List<string>(Directory.GetFiles(imageFolder));
+                }
+                catch(ArgumentException)
+                {
+                    MessageBox.Show(Constants.pathExceptionMsg, Constants.errorCaption);
+                    return;
+                }
+                // Parse list of image locations to contain only image locations
+                imageLocation = Utilities.parseImagesToList(imageLocation);
 
-                saveImageDimensions();
+                if (imageLocation.Count > 0)
+                {
+                    imagePanel.BackgroundImage = Image.FromFile(imageLocation[0]);
+                    currentImageIndex = 0;
+
+                    saveImageDimensions();
+                }
             }
+            catch (IOException)
+            {
+                MessageBox.Show(Constants.pathExceptionMsg, Constants.errorCaption);
+                return;
+            }       
         }
 
         private void saveImageDimensions()
         {
-            ImageWidth = imageViewPB.Width;
-            ImageHeight = imageViewPB.Height;
+            ImageWidth = imagePanel.Width;
+            ImageHeight = imagePanel.Height;
         }
 
-        private void resetPictureBoxSize()
+
+        private void resetImagePanelSize()
         {
-            imageViewPB.Size = new Size(
+            imagePanel.Size = new Size(
                 (int)(Constants.pictureBoxSize[0]),
                 (int)(Constants.pictureBoxSize[1]));
+
+            imagePanel.Location = new Point(
+                    this.groupBox2.Width / 2 - imagePanel.Size.Width / 2,
+                    this.groupBox2.Height / 2 - imagePanel.Size.Height / 2);
         }
 
     }
