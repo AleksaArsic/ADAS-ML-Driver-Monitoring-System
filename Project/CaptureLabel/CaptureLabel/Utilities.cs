@@ -6,19 +6,19 @@ using System.Threading.Tasks;
 
 namespace CaptureLabel
 {
-    class Utilities
+    static class Utilities
     {
-        public static readonly String[] supportedFormats = { ".jpeg", ".jpg", ".png" };
 
-        public List<string> parseImagesToList(List<string> inList)
+
+        public static List<string> parseImagesToList(List<string> inList)
         {
             List<string> outList = new List<string>();
 
             foreach (string item in inList)
             {
-                for (int i = 0; i < supportedFormats.Length; i++)
+                for (int i = 0; i < Constants.supportedFormats.Length; i++)
                 {
-                    if (item.Contains(supportedFormats[i]))
+                    if (item.Contains(Constants.supportedFormats[i]))
                     {
                         outList.Add(item);
                         break;
