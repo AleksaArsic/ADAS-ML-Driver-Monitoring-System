@@ -144,7 +144,6 @@ namespace CaptureLabel
 
         public void resetFocusList()
         {
-            //rectFocusList.All(c => { c = false; return true; });
             for(int i = 0; i < rectFocusList.Count; i++)
             {
                 rectFocusList[i] = false;
@@ -164,6 +163,12 @@ namespace CaptureLabel
 
                 rectContainer[j] = rect;
             }
+        }
+
+        public void resetState()
+        {
+            resetFocusList();
+            resetCoordinates();
         }
     }
 }

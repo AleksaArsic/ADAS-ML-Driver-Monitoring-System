@@ -27,13 +27,19 @@ namespace CaptureLabel
         private Tuple<bool, int> currentlyInFocus;
         private bool someoneIsInFocus = false;
 
+        private int mouseX = 0;
+        private int mouseY = 0;
+        private float mouseWheelDelta = 0;
+
         public CaptureLabel()
         {
             InitializeComponent();
             typeof(Panel).InvokeMember("DoubleBuffered", BindingFlags.SetProperty
                | BindingFlags.Instance | BindingFlags.NonPublic, null,
                imagePanel, new object[] { true });
-
+            typeof(Panel).InvokeMember("DoubleBuffered", BindingFlags.SetProperty
+               | BindingFlags.Instance | BindingFlags.NonPublic, null,
+               ZoomViewP, new object[] { true });
         }
 
         private void CaptureLabel_Load(object sender, EventArgs e)
@@ -47,43 +53,51 @@ namespace CaptureLabel
         }
 
         private void CaptureLabel_KeyDown(object sender, KeyEventArgs e)
-        {
-            if(e.KeyCode == Keys.PageDown)
-            {
-                currentImageIndex++;
-
-                if(currentImageIndex < imageLocation.Count)
-                {
-                    imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
-                    resetImagePanelSize();
-                }
-                else
-                {
-                    currentImageIndex = imageLocation.Count - 1;
-                }
-            }
-            if(e.KeyCode == Keys.PageUp)
-            {
-                currentImageIndex--;
-
-                if (currentImageIndex < 0)
-                    currentImageIndex = 0;
-
-                imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
-                resetImagePanelSize();
-            }
-
+        { 
+            // reset state of rectangles
             if(e.KeyCode == Keys.PageUp || e.KeyCode == Keys.PageDown)
             {
-                rectangles.resetFocusList();
-                rectangles.resetCoordinates();
+                if (e.KeyCode == Keys.PageDown)
+                    scrollDown();
+                if (e.KeyCode == Keys.PageUp)
+                    scrollUp();
+
+                rectangles.resetState();
                 someoneIsInFocus = false;
                 imagePanel.Refresh();
             }
+
+            // move rectangles with keyboard
+            if (someoneIsInFocus)
+            {
+                if (e.KeyCode == Keys.Left)
+                {
+                    rectangles.addToFocused(-1, 0);
+                    imagePanel.Refresh();
+                    setZoomView(mouseX, mouseY);
+                }
+                if (e.KeyCode == Keys.Right)
+                {
+                    rectangles.addToFocused(1, 0);
+                    imagePanel.Refresh();
+                    setZoomView(mouseX, mouseY);
+                }
+                if (e.KeyCode == Keys.Down)
+                {
+                    rectangles.addToFocused(0, 1);
+                    imagePanel.Refresh();
+                    setZoomView(mouseX, mouseY);
+                }
+                if (e.KeyCode == Keys.Up)
+                {
+                    rectangles.addToFocused(0, -1);
+                    imagePanel.Refresh();
+                    setZoomView(mouseX, mouseY);
+                }
+
+            }
         }
 
-        //Point firstPoint = new Point { X = Constants.rectStartPos[0], Y = Constants.rectStartPos[1] };
-        //private bool selected = false;
 
         private void imagePanel_MouseDown(object sender, MouseEventArgs e)
         {
@@ -91,25 +105,17 @@ namespace CaptureLabel
             
             if(e.Button == MouseButtons.Left)
             {
-                // Zoom View copy
-                Bitmap screenshot = Utilities.CaptureScreenShot();
+                mouseX = Cursor.Position.X;
+                mouseY = Cursor.Position.Y;
 
-                this.Cursor = new Cursor(Cursor.Current.Handle);
-
-                int xCoordinate = Cursor.Position.X;
-                int yCoordinate = Cursor.Position.Y;
-
-                Bitmap portionOf = screenshot.Clone(new Rectangle(xCoordinate - 25, yCoordinate - 25, 50, 50), PixelFormat.Format32bppRgb);
-                Bitmap zoomedPortion = new Bitmap(portionOf, new Size(400, 400));
-
-                ZoomViewP.BackgroundImage = zoomedPortion;
+                setZoomView(mouseX, mouseY);
 
                 // set rect in focus
-                rectangles.resetFocusList();
-                someoneIsInFocus = false;
                 currentlyInFocus = rectangles.contains(e.Location);
                 if (currentlyInFocus.Item1)
                 {
+                    rectangles.resetFocusList();
+                    someoneIsInFocus = false;
                     rectangles.setFocus(currentlyInFocus.Item2);
                     imagePanel.Refresh();
                     someoneIsInFocus = !someoneIsInFocus;
@@ -154,31 +160,47 @@ namespace CaptureLabel
             
             if (!imagePanel.ClientRectangle.Contains(e.Location)) return;
 
-           
-            // The amount by which we adjust scale per wheel click.
-            // 10% per 120 units of delta
-            const float scale_per_delta = 0.1f / 120;
-
-            // Update the drawing based upon the mouse wheel scrolling.
-            ImageScale += (e.Delta * scale_per_delta);
-            if (ImageScale < Constants.imageScaleMin) ImageScale = Constants.imageScaleMin;
-            if (ImageScale > Constants.imageScaleMax) ImageScale = Constants.imageScaleMax;
-
-            // Size the image.
-            imagePanel.Size = new Size(
-                (int)(ImageWidth * ImageScale),
-                (int)(ImageHeight * ImageScale));
-
-            // Re-center picturebox
-            if (ImageScale > Constants.imageScaleMin && ImageScale < Constants.imageScaleMax)
+            if(e.Delta > 0)
             {
-                imagePanel.Top = (int)(e.Y - ImageScale * (e.Y - groupBox2.Top));
-                imagePanel.Left = (int)(e.X - ImageScale * (e.X - groupBox2.Left));
+                // user scrolled up
+                scrollUp();
             }
-            else if(ImageScale <= Constants.imageScaleMin)
-                resetImagePanelSize();
-           
+            else
+            {
+                // user scrolled down
+                scrollDown();
+            }
 
+            rectangles.resetState();
+            someoneIsInFocus = false;
+            imagePanel.Refresh();
+
+
+            /*
+             // The amount by which we adjust scale per wheel click.
+             // 10% per 120 units of delta
+             const float scale_per_delta = 0.1f / 120;
+
+             // Update the drawing based upon the mouse wheel scrolling.
+             ImageScale += (e.Delta * scale_per_delta);
+             if (ImageScale < Constants.imageScaleMin) ImageScale = Constants.imageScaleMin;
+             if (ImageScale > Constants.imageScaleMax) ImageScale = Constants.imageScaleMax;
+
+             // Size the image.
+             imagePanel.Size = new Size(
+                 (int)(ImageWidth * ImageScale),
+                 (int)(ImageHeight * ImageScale));
+
+             // Re-center picturebox
+             if (ImageScale > Constants.imageScaleMin && ImageScale < Constants.imageScaleMax)
+             {
+                 imagePanel.Top = (int)(e.Y - ImageScale * (e.Y - groupBox2.Top));
+                 imagePanel.Left = (int)(e.X - ImageScale * (e.X - groupBox2.Left));
+             }
+             else if(ImageScale <= Constants.imageScaleMin)
+                 resetImagePanelSize();
+
+         */
         }
         
         private void imagePanel_Paint(object sender, PaintEventArgs e)
@@ -250,5 +272,44 @@ namespace CaptureLabel
                     this.groupBox2.Height / 2 - imagePanel.Size.Height / 2);
         }
 
+        private void setZoomView(int xCoordinate, int yCoordinate)
+        {
+            // Zoom View copy
+            Bitmap screenshot = Utilities.CaptureScreenShot();
+
+            this.Cursor = new Cursor(Cursor.Current.Handle);
+
+
+            Bitmap portionOf = screenshot.Clone(new Rectangle(xCoordinate - 25, yCoordinate - 25, 50, 50), PixelFormat.Format32bppRgb);
+            Bitmap zoomedPortion = new Bitmap(portionOf, new Size(400, 400));
+
+            ZoomViewP.BackgroundImage = zoomedPortion;
+        }
+
+        public void scrollDown()
+        {
+            currentImageIndex++;
+
+            if (currentImageIndex < imageLocation.Count)
+            {
+                imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
+                resetImagePanelSize();
+            }
+            else
+            {
+                currentImageIndex = imageLocation.Count - 1;
+            }
+        }
+
+        public void scrollUp()
+        {
+            currentImageIndex--;
+
+            if (currentImageIndex < 0)
+                currentImageIndex = 0;
+
+            imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
+            resetImagePanelSize();
+        }
     }
 }

@@ -52,11 +52,13 @@ namespace CaptureLabel
             this.ZoomGB = new System.Windows.Forms.GroupBox();
             this.ZoomViewP = new System.Windows.Forms.Panel();
             this.bindingSource1 = new System.Windows.Forms.BindingSource(this.components);
+            this.bindingSource2 = new System.Windows.Forms.BindingSource(this.components);
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.ZoomGB.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.bindingSource2)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -91,7 +93,6 @@ namespace CaptureLabel
             // 
             // button1
             // 
-            this.button1.CausesValidation = false;
             this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button1.Location = new System.Drawing.Point(189, 143);
             this.button1.Name = "button1";
@@ -205,7 +206,6 @@ namespace CaptureLabel
             this.imagePanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.imagePanel_MouseMove);
             this.imagePanel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.imagePanel_MouseUp);
             this.imagePanel.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.imagePanel_MouseWheel);
-
             // 
             // ZoomGB
             // 
@@ -246,6 +246,7 @@ namespace CaptureLabel
             this.groupBox2.ResumeLayout(false);
             this.ZoomGB.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.bindingSource2)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -272,6 +273,7 @@ namespace CaptureLabel
         private GroupBox ZoomGB;
         private Panel ZoomViewP;
         private BindingSource bindingSource1;
+        private BindingSource bindingSource2;
     }
 }
 
