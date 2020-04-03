@@ -12,5 +12,8 @@ namespace CaptureLabel
 
         public static readonly string errorCaption = "Error!";
         public static readonly string pathExceptionMsg = "Path not valid.";
+
+        public static readonly int[] rectStartPos = { 200, 200 };
+
     }
 }

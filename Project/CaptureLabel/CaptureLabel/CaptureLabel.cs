@@ -3,34 +3,42 @@ using System.Windows.Forms;
 using System.IO;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
+using System.Reflection;
 
 namespace CaptureLabel
 {
 
     public partial class CaptureLabel : Form
     {
-
-        //private Utilities utilities = new Utilities();
-
         private string imageFolder = "";
         private List<string> imageLocation;
-
         private int currentImageIndex = 0;
 
         // The image's original size.
-        private int ImageWidth, ImageHeight;
+        private int ImageWidth;
+        private int ImageHeight;
 
         // The current scale.
-        private float ImageScale = 1.0f;
+        private float ImageScale = Constants.imageScaleMin;
+
+        private RectangleContainer rectangles = new RectangleContainer();
+        private Tuple<bool, int> currentlyInFocus;
+        private bool someoneIsInFocus = false;
 
         public CaptureLabel()
         {
             InitializeComponent();
+            typeof(Panel).InvokeMember("DoubleBuffered", BindingFlags.SetProperty
+               | BindingFlags.Instance | BindingFlags.NonPublic, null,
+               imagePanel, new object[] { true });
+
         }
 
         private void CaptureLabel_Load(object sender, EventArgs e)
         {
-            //this.MouseWheel += new MouseEventHandler(picImage_MouseWheel);
+            //leftUp.MouseLeftButtonDown += rectangle_MouseLeftButtonDown;
         }
 
         private void importToolStripMenuItem_Click(object sender, EventArgs e)
@@ -47,7 +55,6 @@ namespace CaptureLabel
                 if(currentImageIndex < imageLocation.Count)
                 {
                     imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
-                    //saveImageDimensions();
                     resetImagePanelSize();
                 }
                 else
@@ -63,16 +70,91 @@ namespace CaptureLabel
                     currentImageIndex = 0;
 
                 imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
-                //saveImageDimensions();
                 resetImagePanelSize();
             }
+
+            if(e.KeyCode == Keys.PageUp || e.KeyCode == Keys.PageDown)
+            {
+                rectangles.resetFocusList();
+                rectangles.resetCoordinates();
+                someoneIsInFocus = false;
+                imagePanel.Refresh();
+            }
         }
+
+        //Point firstPoint = new Point { X = Constants.rectStartPos[0], Y = Constants.rectStartPos[1] };
+        //private bool selected = false;
+
+        private void imagePanel_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (!imagePanel.ClientRectangle.Contains(e.Location)) return;
+            
+            if(e.Button == MouseButtons.Left)
+            {
+                // Zoom View copy
+                Bitmap screenshot = Utilities.CaptureScreenShot();
+
+                this.Cursor = new Cursor(Cursor.Current.Handle);
+
+                int xCoordinate = Cursor.Position.X;
+                int yCoordinate = Cursor.Position.Y;
+
+                Bitmap portionOf = screenshot.Clone(new Rectangle(xCoordinate - 25, yCoordinate - 25, 50, 50), PixelFormat.Format32bppRgb);
+                Bitmap zoomedPortion = new Bitmap(portionOf, new Size(400, 400));
+
+                ZoomViewP.BackgroundImage = zoomedPortion;
+
+                // set rect in focus
+                rectangles.resetFocusList();
+                someoneIsInFocus = false;
+                currentlyInFocus = rectangles.contains(e.Location);
+                if (currentlyInFocus.Item1)
+                {
+                    rectangles.setFocus(currentlyInFocus.Item2);
+                    imagePanel.Refresh();
+                    someoneIsInFocus = !someoneIsInFocus;
+                }
+            }
+
+        }
+
+        private void imagePanel_MouseUp(object sender, MouseEventArgs e)
+        {
+            // reset focus
+            /*
+            if (someoneIsInFocus)
+            {
+                rectangles.setFocus(currentlyInFocus.Item2);
+                imagePanel.Refresh();
+                someoneIsInFocus = false;
+            }
+            */
+        }
+
+        private void imagePanel_MouseMove(object sender, MouseEventArgs e)
+        {
+            Rectangle rectInFocus = rectangles.findInFocus();
+
+            if (e.Button == MouseButtons.Left && someoneIsInFocus)
+            {
+                // Increment rectangle-location by mouse-location delta.
+                int x = e.X - rectInFocus.X;
+                int y = e.Y - rectInFocus.Y;
+
+                rectangles.addToFocused(x, y);
+
+                imagePanel.Refresh();
+            }
+            
+        }
+
 
         private void imagePanel_MouseWheel(object sender, MouseEventArgs e)
         {
             
             if (!imagePanel.ClientRectangle.Contains(e.Location)) return;
 
+           
             // The amount by which we adjust scale per wheel click.
             // 10% per 120 units of delta
             const float scale_per_delta = 0.1f / 120;
@@ -95,6 +177,22 @@ namespace CaptureLabel
             }
             else if(ImageScale <= Constants.imageScaleMin)
                 resetImagePanelSize();
+           
+
+        }
+        
+        private void imagePanel_Paint(object sender, PaintEventArgs e)
+        {
+            Rectangle[] rects = rectangles.getRectangles();
+            int inFocus = rectangles.inFocusIndex();
+
+            for(int i = 0; i < rects.Length; i++)
+            {
+                if(inFocus == i)
+                    e.Graphics.FillRectangle(new SolidBrush(Color.Red), rects[i]);
+                else
+                    e.Graphics.DrawRectangle(new Pen(Color.Red), rects[i]);
+            }
         }
 
         private void imagePathTB_TextChanged(object sender, EventArgs e)
