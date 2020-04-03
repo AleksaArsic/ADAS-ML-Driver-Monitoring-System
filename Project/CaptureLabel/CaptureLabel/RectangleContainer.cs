@@ -68,6 +68,33 @@ namespace CaptureLabel
             return rectContainer;
         }
 
+        public List<int> getAllRectCoordinates()
+        {
+            List<int> coordinates = new List<int>();
+
+            foreach(Rectangle r in rectContainer)
+            {
+                coordinates.Add(r.X);
+                coordinates.Add(r.Y);
+            }
+
+            return coordinates;
+        }
+
+        public void setAllRectCoordinates(List<int> coordinates)
+        {
+            int j = 0;
+            for(int i = 0; i < coordinates.Count; i += 2, j++)
+            {
+                Rectangle rect = rectContainer[j];
+
+                rect.X = coordinates[i];
+                rect.Y = coordinates[i + 1];
+
+                rectContainer[j] = rect;
+            }
+        }
+
         public bool isInFocus(Rectangle r)
         {
             if (rectContainer.Contains(r))

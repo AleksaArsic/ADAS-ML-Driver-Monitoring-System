@@ -13,7 +13,7 @@ namespace CaptureLabel
     public partial class CaptureLabel : Form
     {
         private string imageFolder = "";
-        private List<string> imageLocation;
+        private List<string> imageLocation = new List<string>();
         private int currentImageIndex = 0;
 
         // The image's original size.
@@ -21,15 +21,20 @@ namespace CaptureLabel
         private int ImageHeight;
 
         // The current scale.
-        private float ImageScale = Constants.imageScaleMin;
+        //private float ImageScale = Constants.imageScaleMin;
 
+        // Rectangle labelers variables
         private RectangleContainer rectangles = new RectangleContainer();
         private Tuple<bool, int> currentlyInFocus;
         private bool someoneIsInFocus = false;
 
+        // Coordinates of all rectangles in one *** picture set ***
+        private CoordinatesContainer coordinatesList = new CoordinatesContainer();
+        private bool isLoaded = false;
+
+        // mouse position
         private int mouseX = 0;
         private int mouseY = 0;
-        private float mouseWheelDelta = 0;
 
         public CaptureLabel()
         {
@@ -57,13 +62,28 @@ namespace CaptureLabel
             // reset state of rectangles
             if(e.KeyCode == Keys.PageUp || e.KeyCode == Keys.PageDown)
             {
+                // save all rectangles coordinates
+                saveCoordinates();
+
                 if (e.KeyCode == Keys.PageDown)
                     scrollDown();
                 if (e.KeyCode == Keys.PageUp)
                     scrollUp();
 
-                rectangles.resetState();
+                if (!isLoaded)
+                    rectangles.resetCoordinates();
+                rectangles.resetFocusList();
                 someoneIsInFocus = false;
+                imagePanel.Refresh();
+
+            }
+
+            // paste previous picture rectangles to current picture
+            if(e.KeyCode == Keys.X && currentImageIndex >= 1)
+            {
+                //List<int> previosCoordinates = coordinatesList.getRow(currentImageIndex - 1);
+                //rectangles.setAllRectCoordinates(previosCoordinates);
+                loadCoordinates(currentImageIndex - 1);
                 imagePanel.Refresh();
             }
 
@@ -135,6 +155,8 @@ namespace CaptureLabel
                 someoneIsInFocus = false;
             }
             */
+            this.Focus();
+
         }
 
         private void imagePanel_MouseMove(object sender, MouseEventArgs e)
@@ -160,6 +182,8 @@ namespace CaptureLabel
             
             if (!imagePanel.ClientRectangle.Contains(e.Location)) return;
 
+            saveCoordinates();
+
             if(e.Delta > 0)
             {
                 // user scrolled up
@@ -171,7 +195,9 @@ namespace CaptureLabel
                 scrollDown();
             }
 
-            rectangles.resetState();
+            if (!isLoaded)
+                rectangles.resetCoordinates();
+            rectangles.resetFocusList();
             someoneIsInFocus = false;
             imagePanel.Refresh();
 
@@ -251,7 +277,8 @@ namespace CaptureLabel
             {
                 MessageBox.Show(Constants.pathExceptionMsg, Constants.errorCaption);
                 return;
-            }       
+            }
+
         }
 
         private void saveImageDimensions()
@@ -292,8 +319,10 @@ namespace CaptureLabel
 
             if (currentImageIndex < imageLocation.Count)
             {
+                imagePanel.BackgroundImage.Dispose();
                 imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
                 resetImagePanelSize();
+                isLoaded = loadCoordinates(currentImageIndex);
             }
             else
             {
@@ -308,8 +337,39 @@ namespace CaptureLabel
             if (currentImageIndex < 0)
                 currentImageIndex = 0;
 
-            imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
-            resetImagePanelSize();
+            if (imageLocation.Count > 0)
+            {
+                imagePanel.BackgroundImage.Dispose();
+                imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
+                resetImagePanelSize();
+                isLoaded = loadCoordinates(currentImageIndex);
+            }
+        }
+
+        public void saveCoordinates()
+        {
+            // save all rectangles coordinates
+            List<int> coordinates = rectangles.getAllRectCoordinates();
+
+            if (coordinatesList.getRow(currentImageIndex) == null)
+                coordinatesList.addRow(coordinates);
+            else
+                coordinatesList.replaceRow(coordinates, currentImageIndex);
+        }
+
+        public bool loadCoordinates(int index)
+        {
+            if (index >= coordinatesList.getSize())
+                return false;
+
+            List<int> coordinates = coordinatesList.getRow(index);
+            if (coordinates != null)
+            {
+                rectangles.setAllRectCoordinates(coordinates);
+                return true;
+            }
+
+            return false;
         }
     }
 }

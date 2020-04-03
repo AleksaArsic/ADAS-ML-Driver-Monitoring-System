@@ -10,8 +10,6 @@ namespace CaptureLabel
 {
     static class Utilities
     {
-
-
         public static List<string> parseImagesToList(List<string> inList)
         {
             List<string> outList = new List<string>();
