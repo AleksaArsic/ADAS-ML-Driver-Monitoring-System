@@ -14,14 +14,10 @@ namespace CaptureLabel
     {
         private string imageFolder = "";
         private List<string> imageLocation = new List<string>();
+        private List<double> imageResizeFactor = new List<double>();
+        private List<double> imagePadX = new List<double>();
+        private List<double> imagePadY = new List<double>();
         private int currentImageIndex = 0;
-
-        // The image's original size.
-        private int ImageWidth;
-        private int ImageHeight;
-
-        // The current scale.
-        //private float ImageScale = Constants.imageScaleMin;
 
         // Rectangle labelers variables
         private RectangleContainer rectangles = new RectangleContainer();
@@ -30,6 +26,7 @@ namespace CaptureLabel
 
         // Coordinates of all rectangles in one *** picture set ***
         private CoordinatesContainer coordinatesList = new CoordinatesContainer();
+        private CoordinatesContainer realCoordinatesList = new CoordinatesContainer();
         private bool isLoaded = false;
 
         // mouse position
@@ -72,14 +69,15 @@ namespace CaptureLabel
 
                 if (!isLoaded)
                     rectangles.resetCoordinates();
+
                 rectangles.resetFocusList();
                 someoneIsInFocus = false;
                 imagePanel.Refresh();
-
+               
             }
 
             // paste previous picture rectangles to current picture
-            if(e.KeyCode == Keys.X && currentImageIndex >= 1)
+            if (e.KeyCode == Keys.X && currentImageIndex >= 1)
             {
                 //List<int> previosCoordinates = coordinatesList.getRow(currentImageIndex - 1);
                 //rectangles.setAllRectCoordinates(previosCoordinates);
@@ -241,6 +239,7 @@ namespace CaptureLabel
                 else
                     e.Graphics.DrawRectangle(new Pen(Color.Red), rects[i]);
             }
+
         }
 
         private void imagePathTB_TextChanged(object sender, EventArgs e)
@@ -269,8 +268,6 @@ namespace CaptureLabel
                 {
                     imagePanel.BackgroundImage = Image.FromFile(imageLocation[0]);
                     currentImageIndex = 0;
-
-                    saveImageDimensions();
                 }
             }
             catch (IOException)
@@ -279,12 +276,6 @@ namespace CaptureLabel
                 return;
             }
 
-        }
-
-        private void saveImageDimensions()
-        {
-            ImageWidth = imagePanel.Width;
-            ImageHeight = imagePanel.Height;
         }
 
 
@@ -304,12 +295,17 @@ namespace CaptureLabel
             // Zoom View copy
             Bitmap screenshot = Utilities.CaptureScreenShot();
 
-            this.Cursor = new Cursor(Cursor.Current.Handle);
-
+            Cursor = new Cursor(Cursor.Current.Handle);
 
             Bitmap portionOf = screenshot.Clone(new Rectangle(xCoordinate - 25, yCoordinate - 25, 50, 50), PixelFormat.Format32bppRgb);
             Bitmap zoomedPortion = new Bitmap(portionOf, new Size(400, 400));
 
+            if (ZoomViewP.BackgroundImage != null)
+            {
+                ZoomViewP.BackgroundImage.Dispose();
+                screenshot.Dispose();
+                portionOf.Dispose();
+            }
             ZoomViewP.BackgroundImage = zoomedPortion;
         }
 
@@ -321,6 +317,7 @@ namespace CaptureLabel
             {
                 imagePanel.BackgroundImage.Dispose();
                 imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
+                //imagePanel.ClientRectangle.Inflate(new Size(imagePanel.Width, imagePanel.Height));
                 resetImagePanelSize();
                 isLoaded = loadCoordinates(currentImageIndex);
             }
@@ -351,10 +348,29 @@ namespace CaptureLabel
             // save all rectangles coordinates
             List<int> coordinates = rectangles.getAllRectCoordinates();
 
+            double resizeFactor = 0;
+
+            try
+            {
+                resizeFactor = imageResizeFactor[currentImageIndex];
+            }
+            catch(ArgumentOutOfRangeException)
+            {
+                calculateResizeFactor(currentImageIndex);
+                resizeFactor = imageResizeFactor[currentImageIndex];
+            }
+
+            // calculate real coordinates
             if (coordinatesList.getRow(currentImageIndex) == null)
+            {
                 coordinatesList.addRow(coordinates);
+                realCoordinatesList.addRow(calculateRealCoordinates(coordinates));
+            }
             else
+            {
                 coordinatesList.replaceRow(coordinates, currentImageIndex);
+                realCoordinatesList.replaceRow(calculateRealCoordinates(coordinates), currentImageIndex);
+            }
         }
 
         public bool loadCoordinates(int index)
@@ -370,6 +386,61 @@ namespace CaptureLabel
             }
 
             return false;
+        }
+
+        public void calculateResizeFactor(int index)
+        {
+            if (imagePanel.BackgroundImage == null)
+                return;
+
+
+            int realW = imagePanel.BackgroundImage.Width;
+            int realH = imagePanel.BackgroundImage.Height;
+            int currentW = imagePanel.ClientRectangle.Width;
+            int currentH = imagePanel.ClientRectangle.Height;
+            double wFactor = (double)currentW / realW;
+            double hFactor = (double)currentH / realH;
+
+            double resizeFactor = Math.Min(wFactor, hFactor);
+
+            double padX = resizeFactor == wFactor ? 0 : (currentW - (resizeFactor * realW)) / 2;
+            double padY = resizeFactor == hFactor ? 0 : (currentH - (resizeFactor * realH)) / 2;
+
+            if (index < imageResizeFactor.Count)
+            {
+                imageResizeFactor[index] = resizeFactor;
+                imagePadX[index] = padX;
+                imagePadY[index] = padY;
+            }
+            else
+            {
+                imageResizeFactor.Add(resizeFactor);
+                imagePadX.Add(padX);
+                imagePadY.Add(padY);
+            }
+        }
+
+        public List<int> calculateRealCoordinates(List<int> l)
+        {
+
+            List<int> realCoordinates = new List<int>();
+
+            int tempX = 0;
+            int tempY = 0;
+            for (int i = 0; i < l.Count; i += 2)
+            {
+                tempX = (int)((l[i] - imagePadX[currentImageIndex]) / imageResizeFactor[currentImageIndex]);
+                tempY = (int)((l[i + 1] - imagePadY[currentImageIndex]) / imageResizeFactor[currentImageIndex]);
+                realCoordinates.Add(tempX);
+                realCoordinates.Add(tempY);
+            }
+
+            return realCoordinates;
+        }
+
+        private void writeToCSV()
+        {
+
         }
     }
 }
