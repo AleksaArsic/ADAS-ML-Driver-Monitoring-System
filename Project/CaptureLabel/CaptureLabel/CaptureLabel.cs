@@ -6,6 +6,8 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Reflection;
+using CsvHelper;
+using System.Text;
 
 namespace CaptureLabel
 {
@@ -13,7 +15,10 @@ namespace CaptureLabel
     public partial class CaptureLabel : Form
     {
         private string imageFolder = "";
+        private string csvPath = "";
+        private string csvFileName = "newCsv.csv";
         private List<string> imageLocation = new List<string>();
+        private List<string> imageNames = new List<string>();
         private List<double> imageResizeFactor = new List<double>();
         private List<double> imagePadX = new List<double>();
         private List<double> imagePadY = new List<double>();
@@ -112,8 +117,10 @@ namespace CaptureLabel
                     imagePanel.Refresh();
                     setZoomView(mouseX, mouseY);
                 }
-
             }
+
+            if (e.KeyCode == Keys.Z)
+                writeToCSV();
         }
 
 
@@ -153,7 +160,7 @@ namespace CaptureLabel
                 someoneIsInFocus = false;
             }
             */
-            this.Focus();
+            Focus();
 
         }
 
@@ -247,6 +254,11 @@ namespace CaptureLabel
             imageFolder = imagePathTB.Text;
         }
 
+        private void csvPathTB_TextChanged(object sender, EventArgs e)
+        {
+            csvPath = csvPathTB.Text;
+        }
+
         private void button1_Click(object sender, EventArgs e)
         {
             try
@@ -255,6 +267,8 @@ namespace CaptureLabel
                 {
                     // get list of everything in folder passed to imageFolder
                     imageLocation = new List<string>(Directory.GetFiles(imageFolder));
+                    //csvFileName = Path.GetFileName(Path.GetDirectoryName(imageFolder));
+                    csvFileName = new DirectoryInfo(imageFolder).Name;
                 }
                 catch(ArgumentException)
                 {
@@ -268,6 +282,38 @@ namespace CaptureLabel
                 {
                     imagePanel.BackgroundImage = Image.FromFile(imageLocation[0]);
                     currentImageIndex = 0;
+
+                    foreach(string name in imageLocation)
+                        imageNames.Add(Path.GetFileNameWithoutExtension(name));
+
+                    // check for existing .csv file
+                    if(!String.IsNullOrEmpty(csvPath))
+                    {
+                        // read and load coordinates from .csv
+                        realCoordinatesList = readFromCSV(csvPath);
+
+                        for (int i = 0; i < imageNames.Count; i++)
+                        {
+                            imagePanel.BackgroundImage = Image.FromFile(imageLocation[i]);
+                            calculateResizeFactor(i);
+                            imagePanel.BackgroundImage.Dispose();
+                        }
+
+                        List<int> singleRow;
+                        // set rectangle coordinates based on real one read from .csv file
+                        for (int i = 0; i < realCoordinatesList.getSize(); i++)
+                        {
+                            singleRow = realCoordinatesList.getRow(i);
+                            List<int> tempCord = new List<int>(calculateRectangleCoordinates(singleRow, i));
+                            coordinatesList.addRow(tempCord);
+                            singleRow.Clear();
+                        }
+
+                        imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
+                        loadCoordinates(currentImageIndex);
+
+                        imagePanel.Refresh();
+                    }
                 }
             }
             catch (IOException)
@@ -375,16 +421,43 @@ namespace CaptureLabel
 
         public bool loadCoordinates(int index)
         {
-            if (index >= coordinatesList.getSize())
+            if (index >= realCoordinatesList.getSize())
                 return false;
-
-            List<int> coordinates = coordinatesList.getRow(index);
-            if (coordinates != null)
+            /*
+            List<int> singleRow;
+            // set rectangle coordinates based on real one read from .csv file
+            for (int i = 0; i < realCoordinatesList.getSize(); i++)
             {
-                rectangles.setAllRectCoordinates(coordinates);
+                singleRow = realCoordinatesList.getRow(i);
+                List<int> tempCord = new List<int>(calculateRectangleCoordinates(singleRow));
+                coordinatesList.addRow(tempCord);
+                singleRow.Clear();
+            }
+            */
+            /*
+            //if (index > coordinatesList.getSize())
+            //{
+                calculateResizeFactor(index);
+
+                List<int> singleRow = calculateRectangleCoordinates(realCoordinatesList.getRow(index));
+
+                if (singleRow != null)
+                {
+                    coordinatesList.replaceRow(singleRow, index);
+                    rectangles.setAllRectCoordinates(singleRow);
+                    return true;
+                }
+            //}
+            */
+            
+            List<int> singleRow = coordinatesList.getRow(index);
+            if (singleRow != null)
+            {
+                rectangles.setAllRectCoordinates(singleRow);
                 return true;
             }
-
+            
+            
             return false;
         }
 
@@ -392,7 +465,6 @@ namespace CaptureLabel
         {
             if (imagePanel.BackgroundImage == null)
                 return;
-
 
             int realW = imagePanel.BackgroundImage.Width;
             int realH = imagePanel.BackgroundImage.Height;
@@ -438,9 +510,105 @@ namespace CaptureLabel
             return realCoordinates;
         }
 
+        public List<int> calculateRectangleCoordinates(List<int> l, int index)
+        {
+            List<int> rectCoordinates = new List<int>();
+
+            int tempX = 0;
+            int tempY = 0;
+            for (int i = 0; i < l.Count; i += 2)
+            {
+                tempX = (int)((l[i] * imageResizeFactor[index]) + imagePadX[index]);
+                tempY = (int)((l[i + 1] * imageResizeFactor[index]) + imagePadY[index]);
+                rectCoordinates.Add(tempX);
+                rectCoordinates.Add(tempY);
+            }
+
+            return rectCoordinates;
+        }
+
         private void writeToCSV()
         {
+            string csvPath = Path.Combine(new string[] { imageFolder, csvFileName }) + ".csv";
+            TextWriter writer = new StreamWriter(@csvPath, false, Encoding.UTF8);
+            CsvSerializer serializer = new CsvSerializer(writer, System.Globalization.CultureInfo.CurrentCulture);
+            CsvWriter csv = new CsvWriter(serializer);
 
+            csv.WriteField("");
+
+            foreach (string s in RectangleContainer.names)
+            {
+                csv.WriteField(s);
+                csv.WriteField("");
+            }
+
+            csv.NextRecord();
+
+            csv.WriteField("Picture:");
+
+            for (int i = 0; i < rectangles.getSize(); i++)
+            {
+                csv.WriteField("(x,");
+                csv.WriteField("y)");
+            }
+
+            csv.NextRecord();
+
+            for(int i = 0; i < realCoordinatesList.getSize(); i++)
+            {
+                csv.WriteField(imageNames[i]);
+
+                foreach(int value in realCoordinatesList.getRow(i))
+                {
+                    csv.WriteField(value);
+                }
+
+                csv.NextRecord();
+            }
+            
+            writer.Close();
         }
+
+        public CoordinatesContainer readFromCSV(string path)
+        {
+            
+            CoordinatesContainer result = new CoordinatesContainer();
+            List<int> singleRow = new List<int>();
+            int value;
+            using (TextReader fileReader = File.OpenText(path))
+            {
+                var csv = new CsvReader(fileReader, System.Globalization.CultureInfo.CurrentCulture);
+                csv.Configuration.HasHeaderRecord = false;
+
+                csv.Read();
+                csv.Read();
+
+                while (csv.Read())
+                {
+                    for (int i = 1; csv.TryGetField<int>(i, out value); i++)
+                    {
+                        singleRow.Add(value);
+                    }
+                    List<int> temp = new List<int>(singleRow);
+                    result.addRow(temp);
+                    singleRow.Clear();
+                }
+                
+            }
+            return result;
+            
+            /*
+            var parser = new CsvParser(textReader);
+            while (true)
+            {
+                string[] row = parser.Read();
+                if (row == null)
+                {
+                    break;
+                }
+            }
+            */
+        }
+
     }
 }

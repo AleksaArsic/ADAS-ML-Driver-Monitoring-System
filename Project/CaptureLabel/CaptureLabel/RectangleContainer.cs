@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CaptureLabel
 {
@@ -11,7 +8,6 @@ namespace CaptureLabel
     {
         private List<Rectangle> rectContainer = new List<Rectangle>();
         private List<bool> rectFocusList = new List<bool>();
-        private List<Point> rectLocations;
 
         private Size rectSize = new Size(10, 10);
 
@@ -49,6 +45,10 @@ namespace CaptureLabel
                 500, 600
             };
 
+        public static readonly string[] names =
+            {"LE Up", "LE Down", "LE Left", "LE Right", "RE Up", "RE Down", "RE Left", "RE Right",
+               "Nose", "Mouth Up", "Mouth Down"};
+
         public RectangleContainer()
         {
             for (int i = 0; i < rectStartLoc.Length; i += 2)
@@ -66,6 +66,11 @@ namespace CaptureLabel
         public List<Rectangle> getRectangles(int a)
         {
             return rectContainer;
+        }
+
+        public int getSize()
+        {
+            return rectContainer.Count;
         }
 
         public List<int> getAllRectCoordinates()

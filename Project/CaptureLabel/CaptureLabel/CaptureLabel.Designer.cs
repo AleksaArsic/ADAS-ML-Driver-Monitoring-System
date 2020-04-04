@@ -82,6 +82,7 @@ namespace CaptureLabel
             this.csvPathTB.Name = "csvPathTB";
             this.csvPathTB.Size = new System.Drawing.Size(455, 22);
             this.csvPathTB.TabIndex = 6;
+            this.csvPathTB.TextChanged += new System.EventHandler(this.csvPathTB_TextChanged);
             // 
             // imagePathTB
             // 
