@@ -120,9 +120,10 @@ namespace CaptureLabel
                 }
             }
 
-            if(Array.Exists(Constants.focusShortcuts, element => element == e.KeyCode))
+            // Set focus based on keyboard shortcut
+            if(Array.Exists(Constants.focusShortcuts, element => element == e.KeyCode) &&
+                !imagePathTB.Focused && !csvPathTB.Focused)
             {
-                //Console.WriteLine(e.KeyCode.ToString());
                 rectangles.resetFocusList();
                 rectangles.setFocus(Array.IndexOf(Constants.focusShortcuts, e.KeyCode));
                 someoneIsInFocus = true;
@@ -151,20 +152,18 @@ namespace CaptureLabel
                 if (currentlyInFocus.Item1)
                 {
                     rectangles.resetFocusList();
-                    //someoneIsInFocus = false;
+                    someoneIsInFocus = false;
                     rectangles.setFocus(currentlyInFocus.Item2);
-                    imagePanel.Refresh();
                     someoneIsInFocus = !someoneIsInFocus;
+                    imagePanel.Refresh();
                 }
+
                 else
                 {
-                    //if (someoneIsInFocus)
-                    //{
-                        int inFocus = rectangles.inFocusIndex();
+                    int inFocus = rectangles.inFocusIndex();
                         
-                        if(inFocus != -1)
-                            rectangles.setRectCoordinates(inFocus, e.X, e.Y);
-                    //}
+                    if(inFocus != -1)
+                        rectangles.setRectCoordinates(inFocus, e.X, e.Y);
                 }
             }
 
@@ -172,17 +171,9 @@ namespace CaptureLabel
 
         private void imagePanel_MouseUp(object sender, MouseEventArgs e)
         {
-            // reset focus
-            /*
-            if (someoneIsInFocus)
-            {
-                rectangles.setFocus(currentlyInFocus.Item2);
-                imagePanel.Refresh();
-                someoneIsInFocus = false;
-            }
-            */
-            //Focus();
-
+            // set focus to image panel 
+            if (imagePanel.ClientRectangle.Contains(e.Location))
+                imagePanel.Focus();
             
         }
 
@@ -207,7 +198,7 @@ namespace CaptureLabel
         private void imagePanel_MouseWheel(object sender, MouseEventArgs e)
         {
             
-            if (!imagePanel.ClientRectangle.Contains(e.Location)) return;
+            if (!imagePanel.ClientRectangle.Contains(e.Location) || imagePanel.BackgroundImage == null) return;
 
             saveCoordinates();
 
@@ -271,7 +262,8 @@ namespace CaptureLabel
 
             if (someoneIsInFocus)
                 inFocusLabel.Text = Constants.inFocusString + " " + Constants.rectangleName[rectangles.inFocusIndex()];
-            
+
+            imagePanel.Focus();
         }
 
         private void imagePathTB_TextChanged(object sender, EventArgs e)
@@ -286,6 +278,7 @@ namespace CaptureLabel
 
         private void button1_Click(object sender, EventArgs e)
         {
+            cleanUp();
             try
             {
                 try
@@ -317,13 +310,14 @@ namespace CaptureLabel
                         // read and load coordinates from .csv
                         realCoordinatesList = readFromCSV(csvPath);
 
+                        
                         for (int i = 0; i < imageNames.Count; i++)
                         {
                             imagePanel.BackgroundImage = Image.FromFile(imageLocation[i]);
                             calculateResizeFactor(i);
                             imagePanel.BackgroundImage.Dispose();
                         }
-
+                        
                         List<int> singleRow;
                         // set rectangle coordinates based on real one read from .csv file
                         for (int i = 0; i < realCoordinatesList.getSize(); i++)
@@ -333,12 +327,15 @@ namespace CaptureLabel
                             coordinatesList.addRow(tempCord);
                             singleRow.Clear();
                         }
-
+                        
                         imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
                         loadCoordinates(currentImageIndex);
 
+                        csvPathTB.ReadOnly = true;
+
                         imagePanel.Refresh();
                     }
+                    imagePathTB.ReadOnly = true;
                 }
             }
             catch (IOException)
@@ -349,7 +346,7 @@ namespace CaptureLabel
 
         }
 
-
+        /*
         private void resetImagePanelSize()
         {
             imagePanel.Size = new Size(
@@ -360,7 +357,7 @@ namespace CaptureLabel
                     this.groupBox2.Width / 2 - imagePanel.Size.Width / 2,
                     this.groupBox2.Height / 2 - imagePanel.Size.Height / 2);
         }
-
+        */
         private void setZoomView(int xCoordinate, int yCoordinate)
         {
             // Zoom View copy
@@ -388,8 +385,7 @@ namespace CaptureLabel
             {
                 imagePanel.BackgroundImage.Dispose();
                 imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
-                //imagePanel.ClientRectangle.Inflate(new Size(imagePanel.Width, imagePanel.Height));
-                resetImagePanelSize();
+                //resetImagePanelSize();
                 isLoaded = loadCoordinates(currentImageIndex);
             }
             else
@@ -409,7 +405,7 @@ namespace CaptureLabel
             {
                 imagePanel.BackgroundImage.Dispose();
                 imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
-                resetImagePanelSize();
+                //resetImagePanelSize();
                 isLoaded = loadCoordinates(currentImageIndex);
             }
         }
@@ -474,8 +470,12 @@ namespace CaptureLabel
                 }
             //}
             */
-            
+
+           
+
             List<int> singleRow = coordinatesList.getRow(index);
+            //List<int> singleRow = calculateRectangleCoordinates(realCoordinatesList.getRow(index), index);
+
             if (singleRow != null)
             {
                 rectangles.setAllRectCoordinates(singleRow);
@@ -538,6 +538,8 @@ namespace CaptureLabel
         public List<int> calculateRectangleCoordinates(List<int> l, int index)
         {
             List<int> rectCoordinates = new List<int>();
+
+            //calculateResizeFactor(index);
 
             int tempX = 0;
             int tempY = 0;
@@ -633,6 +635,33 @@ namespace CaptureLabel
                 }
             }
             */
+        }
+
+        private void cleanUp()
+        {
+            csvFileName = "newCsv.csv";
+            
+            imageLocation = null;
+            imageNames = null;
+            imageResizeFactor = null;
+            imagePadX = null;
+            imagePadY = null;
+            rectangles = null;
+            coordinatesList = null;
+            realCoordinatesList = null;
+            
+            currentImageIndex = 0;
+            isLoaded = false;
+            someoneIsInFocus = false;
+
+            imageLocation = new List<string>();
+            imageNames = new List<string>();
+            imageResizeFactor = new List<double>();
+            imagePadX = new List<double>();
+            imagePadY = new List<double>();
+            rectangles = new RectangleContainer();
+            coordinatesList = new CoordinatesContainer();
+            realCoordinatesList = new CoordinatesContainer();
         }
 
     }

@@ -201,6 +201,7 @@ namespace CaptureLabel
             // 
             this.imagePanel.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.imagePanel.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.imagePanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.imagePanel.Location = new System.Drawing.Point(6, 19);
             this.imagePanel.Name = "imagePanel";
             this.imagePanel.Size = new System.Drawing.Size(1000, 800);
@@ -240,7 +241,8 @@ namespace CaptureLabel
             // inFocusLabel
             // 
             this.inFocusLabel.Name = "inFocusLabel";
-            this.inFocusLabel.Size = new System.Drawing.Size(0, 17);
+            this.inFocusLabel.Size = new System.Drawing.Size(107, 17);
+            this.inFocusLabel.Text = "Currently in focus: ";
             // 
             // CaptureLabel
             // 
