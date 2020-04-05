@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Reflection;
 using CsvHelper;
 using System.Text;
+using System.Linq;
 
 namespace CaptureLabel
 {
@@ -119,6 +120,16 @@ namespace CaptureLabel
                 }
             }
 
+            if(Array.Exists(Constants.focusShortcuts, element => element == e.KeyCode))
+            {
+                //Console.WriteLine(e.KeyCode.ToString());
+                rectangles.resetFocusList();
+                rectangles.setFocus(Array.IndexOf(Constants.focusShortcuts, e.KeyCode));
+                someoneIsInFocus = true;
+                imagePanel.Refresh();
+            }
+
+
             if (e.KeyCode == Keys.Z)
                 writeToCSV();
         }
@@ -160,7 +171,7 @@ namespace CaptureLabel
                 someoneIsInFocus = false;
             }
             */
-            Focus();
+            //Focus();
 
         }
 
@@ -168,7 +179,7 @@ namespace CaptureLabel
         {
             Rectangle rectInFocus = rectangles.findInFocus();
 
-            if (e.Button == MouseButtons.Left && someoneIsInFocus)
+            if (e.Button == MouseButtons.Left && someoneIsInFocus && rectInFocus.Contains(e.Location))
             {
                 // Increment rectangle-location by mouse-location delta.
                 int x = e.X - rectInFocus.X;

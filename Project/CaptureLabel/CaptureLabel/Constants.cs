@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows.Forms;
 
 namespace CaptureLabel
 {
@@ -14,6 +15,21 @@ namespace CaptureLabel
         public static readonly string pathExceptionMsg = "Path not valid.";
 
         public static readonly int[] rectStartPos = { 200, 200 };
+
+        public static readonly Keys[] focusShortcuts = 
+            { 
+                Keys.D1,
+                Keys.D2,
+                Keys.D3,
+                Keys.D4,
+                Keys.Q,
+                Keys.W,
+                Keys.E,
+                Keys.R,
+                Keys.A,
+                Keys.S,
+                Keys.D
+            };
 
     }
 }
