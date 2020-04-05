@@ -86,6 +86,16 @@ namespace CaptureLabel
             return coordinates;
         }
 
+        public void setRectCoordinates(int index, int x, int y)
+        {
+            Rectangle rect = rectContainer[index];
+
+            rect.X = x;
+            rect.Y = y;
+
+            rectContainer[index] = rect;
+        }
+
         public void setAllRectCoordinates(List<int> coordinates)
         {
             int j = 0;

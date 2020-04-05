@@ -53,12 +53,15 @@ namespace CaptureLabel
             this.ZoomViewP = new System.Windows.Forms.Panel();
             this.bindingSource1 = new System.Windows.Forms.BindingSource(this.components);
             this.bindingSource2 = new System.Windows.Forms.BindingSource(this.components);
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.inFocusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.ZoomGB.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource2)).BeginInit();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -225,11 +228,26 @@ namespace CaptureLabel
             this.ZoomViewP.Size = new System.Drawing.Size(200, 200);
             this.ZoomViewP.TabIndex = 0;
             // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.inFocusLabel});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 944);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(1576, 22);
+            this.statusStrip1.TabIndex = 9;
+            // 
+            // inFocusLabel
+            // 
+            this.inFocusLabel.Name = "inFocusLabel";
+            this.inFocusLabel.Size = new System.Drawing.Size(0, 17);
+            // 
             // CaptureLabel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1576, 966);
+            this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.ZoomGB);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
@@ -248,6 +266,8 @@ namespace CaptureLabel
             this.ZoomGB.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource2)).EndInit();
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -275,6 +295,8 @@ namespace CaptureLabel
         private Panel ZoomViewP;
         private BindingSource bindingSource1;
         private BindingSource bindingSource2;
+        private StatusStrip statusStrip1;
+        private ToolStripStatusLabel inFocusLabel;
     }
 }
 

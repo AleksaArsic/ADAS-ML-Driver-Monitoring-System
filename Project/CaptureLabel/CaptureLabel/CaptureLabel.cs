@@ -151,10 +151,20 @@ namespace CaptureLabel
                 if (currentlyInFocus.Item1)
                 {
                     rectangles.resetFocusList();
-                    someoneIsInFocus = false;
+                    //someoneIsInFocus = false;
                     rectangles.setFocus(currentlyInFocus.Item2);
                     imagePanel.Refresh();
                     someoneIsInFocus = !someoneIsInFocus;
+                }
+                else
+                {
+                    //if (someoneIsInFocus)
+                    //{
+                        int inFocus = rectangles.inFocusIndex();
+                        
+                        if(inFocus != -1)
+                            rectangles.setRectCoordinates(inFocus, e.X, e.Y);
+                    //}
                 }
             }
 
@@ -173,13 +183,14 @@ namespace CaptureLabel
             */
             //Focus();
 
+            
         }
 
         private void imagePanel_MouseMove(object sender, MouseEventArgs e)
         {
             Rectangle rectInFocus = rectangles.findInFocus();
 
-            if (e.Button == MouseButtons.Left && someoneIsInFocus && rectInFocus.Contains(e.Location))
+            if (e.Button == MouseButtons.Left && someoneIsInFocus)// && rectInFocus.Contains(e.Location))
             {
                 // Increment rectangle-location by mouse-location delta.
                 int x = e.X - rectInFocus.X;
@@ -258,6 +269,9 @@ namespace CaptureLabel
                     e.Graphics.DrawRectangle(new Pen(Color.Red), rects[i]);
             }
 
+            if (someoneIsInFocus)
+                inFocusLabel.Text = Constants.inFocusString + " " + Constants.rectangleName[rectangles.inFocusIndex()];
+            
         }
 
         private void imagePathTB_TextChanged(object sender, EventArgs e)

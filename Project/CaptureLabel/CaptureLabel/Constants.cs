@@ -31,5 +31,21 @@ namespace CaptureLabel
                 Keys.D
             };
 
+        public static readonly string inFocusString = "Currently in focus: ";
+
+        public static readonly string[] rectangleName =
+        {
+            "Left eye Up",
+            "Left eye Down",
+            "Left eye Left",
+            "Left eye Right",
+            "Right eye Up",
+            "Right eye Down",
+            "Right eye Left",
+            "Right eye Right",
+            "Nose",
+            "Mouth Up",
+            "Mouth Down"
+        };
     }
 }
