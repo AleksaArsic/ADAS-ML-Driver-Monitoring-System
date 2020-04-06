@@ -217,7 +217,7 @@ namespace CaptureLabel
             this.ZoomGB.Controls.Add(this.ZoomViewP);
             this.ZoomGB.Location = new System.Drawing.Point(1055, 274);
             this.ZoomGB.Name = "ZoomGB";
-            this.ZoomGB.Size = new System.Drawing.Size(215, 229);
+            this.ZoomGB.Size = new System.Drawing.Size(415, 430);
             this.ZoomGB.TabIndex = 8;
             this.ZoomGB.TabStop = false;
             this.ZoomGB.Text = "Zoom View";
@@ -226,7 +226,7 @@ namespace CaptureLabel
             // 
             this.ZoomViewP.Location = new System.Drawing.Point(7, 20);
             this.ZoomViewP.Name = "ZoomViewP";
-            this.ZoomViewP.Size = new System.Drawing.Size(200, 200);
+            this.ZoomViewP.Size = new System.Drawing.Size(400, 400);
             this.ZoomViewP.TabIndex = 0;
             // 
             // statusStrip1

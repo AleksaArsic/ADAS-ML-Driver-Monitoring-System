@@ -12,6 +12,7 @@ namespace CaptureLabel
 
         public static readonly string errorCaption = "Error!";
         public static readonly string pathExceptionMsg = "Path not valid.";
+        public static readonly string csvFileNameExceptionMsg = "Input file is not .csv file format";
 
         public static readonly int[] rectStartPos = { 200, 200 };
 

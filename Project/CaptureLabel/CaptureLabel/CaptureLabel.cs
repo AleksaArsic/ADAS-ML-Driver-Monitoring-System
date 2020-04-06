@@ -152,9 +152,10 @@ namespace CaptureLabel
                 if (currentlyInFocus.Item1)
                 {
                     rectangles.resetFocusList();
-                    someoneIsInFocus = false;
-                    rectangles.setFocus(currentlyInFocus.Item2);
+                    //someoneIsInFocus = false;
                     someoneIsInFocus = !someoneIsInFocus;
+                    if(someoneIsInFocus)
+                        rectangles.setFocus(currentlyInFocus.Item2);
                     imagePanel.Refresh();
                 }
 
@@ -164,6 +165,9 @@ namespace CaptureLabel
                         
                     if(inFocus != -1)
                         rectangles.setRectCoordinates(inFocus, e.X, e.Y);
+
+                    imagePanel.Refresh();
+
                 }
             }
 
@@ -281,18 +285,12 @@ namespace CaptureLabel
             cleanUp();
             try
             {
-                try
-                {
-                    // get list of everything in folder passed to imageFolder
-                    imageLocation = new List<string>(Directory.GetFiles(imageFolder));
-                    //csvFileName = Path.GetFileName(Path.GetDirectoryName(imageFolder));
-                    csvFileName = new DirectoryInfo(imageFolder).Name;
-                }
-                catch(ArgumentException)
-                {
-                    MessageBox.Show(Constants.pathExceptionMsg, Constants.errorCaption);
-                    return;
-                }
+                
+                // get list of everything in folder passed to imageFolder
+                imageLocation = new List<string>(Directory.GetFiles(imageFolder));
+                //csvFileName = Path.GetFileName(Path.GetDirectoryName(imageFolder));
+                csvFileName = new DirectoryInfo(imageFolder).Name;
+                
                 // Parse list of image locations to contain only image locations
                 imageLocation = Utilities.parseImagesToList(imageLocation);
 
@@ -305,12 +303,11 @@ namespace CaptureLabel
                         imageNames.Add(Path.GetFileNameWithoutExtension(name));
 
                     // check for existing .csv file
-                    if(!String.IsNullOrEmpty(csvPath))
+                    if(!String.IsNullOrEmpty(csvPath) && csvPath.Contains(".csv"))
                     {
                         // read and load coordinates from .csv
                         realCoordinatesList = readFromCSV(csvPath);
 
-                        
                         for (int i = 0; i < imageNames.Count; i++)
                         {
                             imagePanel.BackgroundImage = Image.FromFile(imageLocation[i]);
@@ -338,9 +335,10 @@ namespace CaptureLabel
                     imagePathTB.ReadOnly = true;
                 }
             }
-            catch (IOException)
+            catch (Exception msg)
             {
-                MessageBox.Show(Constants.pathExceptionMsg, Constants.errorCaption);
+                imagePathTB.ReadOnly = false;
+                MessageBox.Show(msg.Message, Constants.errorCaption);
                 return;
             }
 
@@ -365,7 +363,7 @@ namespace CaptureLabel
 
             Cursor = new Cursor(Cursor.Current.Handle);
 
-            Bitmap portionOf = screenshot.Clone(new Rectangle(xCoordinate - 25, yCoordinate - 25, 50, 50), PixelFormat.Format32bppRgb);
+            Bitmap portionOf = screenshot.Clone(new Rectangle(xCoordinate - 50, yCoordinate - 50, 100, 100), PixelFormat.Format32bppRgb);
             Bitmap zoomedPortion = new Bitmap(portionOf, new Size(400, 400));
 
             if (ZoomViewP.BackgroundImage != null)
@@ -377,7 +375,7 @@ namespace CaptureLabel
             ZoomViewP.BackgroundImage = zoomedPortion;
         }
 
-        public void scrollDown()
+        private void scrollDown()
         {
             currentImageIndex++;
 
@@ -394,7 +392,7 @@ namespace CaptureLabel
             }
         }
 
-        public void scrollUp()
+        private void scrollUp()
         {
             currentImageIndex--;
 
@@ -410,7 +408,7 @@ namespace CaptureLabel
             }
         }
 
-        public void saveCoordinates()
+        private void saveCoordinates()
         {
             // save all rectangles coordinates
             List<int> coordinates = rectangles.getAllRectCoordinates();
@@ -440,7 +438,7 @@ namespace CaptureLabel
             }
         }
 
-        public bool loadCoordinates(int index)
+        private bool loadCoordinates(int index)
         {
             if (index >= realCoordinatesList.getSize())
                 return false;
@@ -486,7 +484,7 @@ namespace CaptureLabel
             return false;
         }
 
-        public void calculateResizeFactor(int index)
+        private void calculateResizeFactor(int index)
         {
             if (imagePanel.BackgroundImage == null)
                 return;
@@ -517,7 +515,7 @@ namespace CaptureLabel
             }
         }
 
-        public List<int> calculateRealCoordinates(List<int> l)
+        private List<int> calculateRealCoordinates(List<int> l)
         {
 
             List<int> realCoordinates = new List<int>();
@@ -535,7 +533,7 @@ namespace CaptureLabel
             return realCoordinates;
         }
 
-        public List<int> calculateRectangleCoordinates(List<int> l, int index)
+        private List<int> calculateRectangleCoordinates(List<int> l, int index)
         {
             List<int> rectCoordinates = new List<int>();
 
@@ -596,7 +594,7 @@ namespace CaptureLabel
             writer.Close();
         }
 
-        public CoordinatesContainer readFromCSV(string path)
+        private CoordinatesContainer readFromCSV(string path)
         {
             
             CoordinatesContainer result = new CoordinatesContainer();
@@ -623,22 +621,13 @@ namespace CaptureLabel
                 
             }
             return result;
-            
-            /*
-            var parser = new CsvParser(textReader);
-            while (true)
-            {
-                string[] row = parser.Read();
-                if (row == null)
-                {
-                    break;
-                }
-            }
-            */
         }
 
         private void cleanUp()
         {
+            imagePathTB.ReadOnly = false;
+            csvPathTB.ReadOnly = false;
+
             csvFileName = "newCsv.csv";
             
             imageLocation = null;
