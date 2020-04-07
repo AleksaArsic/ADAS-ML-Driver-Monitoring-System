@@ -15,9 +15,9 @@ namespace CaptureLabel
 
     public partial class CaptureLabel : Form
     {
-        private string imageFolder = "";
-        private string csvPath = "";
-        private string csvFileName = "newCsv.csv";
+        public static string imageFolder = "";
+        public static string csvPath = "";
+        public static string csvFileName = "newCsv.csv";
         private List<string> imageLocation = new List<string>();
         private List<string> imageNames = new List<string>();
         private List<double> imageResizeFactor = new List<double>();
@@ -46,6 +46,7 @@ namespace CaptureLabel
         private int mouseY = 0;
 
         private char mode = 'f';
+        private bool modeSet = false;
 
         public CaptureLabel()
         {
@@ -131,18 +132,25 @@ namespace CaptureLabel
             }
 
             // Set focus based on keyboard shortcut
-            if(Array.Exists(Constants.focusShortcuts, element => element == e.KeyCode) &&
-                !imagePathTB.Focused && !csvPathTB.Focused)
+            // for face mode this will cause error. 
+            // index out of range when setting focus on elements past index 2 
+            // in focusShortcuts array
+
+            Keys[] focusShortcuts = (mode == 'e' ? Constants.focusShortcutsE : Constants.focusShortcutsF);
+
+            if (Array.Exists(focusShortcuts, 
+                            element => element == e.KeyCode) &&
+                            !imagePathTB.Focused && !csvPathTB.Focused)
             {
                 rectangles.resetFocusList();
-                rectangles.setFocus(Array.IndexOf(Constants.focusShortcuts, e.KeyCode));
+                rectangles.setFocus(Array.IndexOf(focusShortcuts, e.KeyCode));
                 someoneIsInFocus = true;
                 imagePanel.Refresh();
             }
 
 
             if (e.KeyCode == Keys.Z)
-                writeToCSV();
+                Utilities.writeToCSV(mode, rectangles, realCoordinatesList, imageNames, lookAngleContainer);
         }
 
 
@@ -345,10 +353,10 @@ namespace CaptureLabel
                     if(!String.IsNullOrEmpty(csvPath) && csvPath.Contains(".csv"))
                     {
                         // read and load coordinates from .csv
-                        realCoordinatesList = readFromCSV(csvPath);
+                        realCoordinatesList = Utilities.readFromCSV(csvPath, mode);
 
-                        if (mode == 'f')
-                            lookAngleContainer = readLookAngleFromCSV(csvPath);
+                        //if (mode == 'f')
+                            lookAngleContainer = Utilities.readLookAngleFromCSV(csvPath);
 
                         for (int i = 0; i < imageNames.Count; i++)
                         {
@@ -368,7 +376,6 @@ namespace CaptureLabel
                         }
                         
                         imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
-
 
                         loadCoordinates(currentImageIndex);
 
@@ -609,117 +616,9 @@ namespace CaptureLabel
             return rectCoordinates;
         }
 
-        private void writeToCSV()
-        {
-            bool boolMode = (mode == 'f' ? true : false);
-            string csvPath = Path.Combine(new string[] { imageFolder, (boolMode ? "FaceMode" : "FaceElement") + csvFileName }) + ".csv";
-            TextWriter writer = new StreamWriter(@csvPath, false, Encoding.UTF8);
-            CsvSerializer serializer = new CsvSerializer(writer, System.Globalization.CultureInfo.CurrentCulture);
-            CsvWriter csv = new CsvWriter(serializer);
+        
 
-            csv.WriteField("");
-
-            string[] rectNames = (boolMode) ? Constants.namesF : Constants.namesE;
-
-            foreach (string s in rectNames)
-            {
-                csv.WriteField(s);
-                csv.WriteField("");
-            }
-
-            if(boolMode)
-            {
-                foreach (string s in Constants.lookingAngleString)
-                    csv.WriteField(s);
-            }
-
-            csv.NextRecord();
-
-            csv.WriteField("Picture:");
-
-            for (int i = 0; i < rectangles.getSize(); i++)
-            {
-                csv.WriteField("(x,");
-                csv.WriteField("y)");
-            }
-
-            csv.NextRecord();
-
-            for(int i = 0; i < realCoordinatesList.getSize(); i++)
-            {
-                csv.WriteField(imageNames[i]);
-
-                foreach(int value in realCoordinatesList.getRow(i))
-                    csv.WriteField(value);
-
-                foreach (int value in lookAngleContainer.getRow(i))
-                    csv.WriteField(value);
-
-                csv.NextRecord();
-            }
-            
-            writer.Close();
-        }
-
-        private CoordinatesContainer readFromCSV(string path)
-        {
-            
-            CoordinatesContainer result = new CoordinatesContainer();
-            List<int> singleRow = new List<int>();
-            int value;
-            using (TextReader fileReader = File.OpenText(path))
-            {
-                var csv = new CsvReader(fileReader, System.Globalization.CultureInfo.CurrentCulture);
-                csv.Configuration.HasHeaderRecord = false;
-
-                csv.Read();
-                csv.Read();
-
-                while (csv.Read())
-                {
-                    for (int i = 1; csv.TryGetField<int>(i, out value); i++)
-                    {
-                        if (mode == 'f' && i == 7) break;
-
-                        singleRow.Add(value);
-                    }
-                    List<int> temp = new List<int>(singleRow);
-                    result.addRow(temp);
-                    singleRow.Clear();
-                }
-                
-            }
-            return result;
-        }
-
-        private CoordinatesContainer readLookAngleFromCSV(string path)
-        {
-
-            CoordinatesContainer result = new CoordinatesContainer();
-            List<int> singleRow = new List<int>();
-            int value;
-            using (TextReader fileReader = File.OpenText(path))
-            {
-                var csv = new CsvReader(fileReader, System.Globalization.CultureInfo.CurrentCulture);
-                csv.Configuration.HasHeaderRecord = false;
-
-                csv.Read();
-                csv.Read();
-
-                while (csv.Read())
-                {
-                    for (int i = 7; csv.TryGetField<int>(i, out value); i++)
-                    {
-                        singleRow.Add(value);
-                    }
-                    List<int> temp = new List<int>(singleRow);
-                    result.addRow(temp);
-                    singleRow.Clear();
-                }
-
-            }
-            return result;
-        }
+        
 
         private void cleanUp()
         {
@@ -747,7 +646,6 @@ namespace CaptureLabel
             imagePadX = new List<double>();
             imagePadY = new List<double>();
             //rectangles = new RectangleContainer();
-
             coordinatesList = new CoordinatesContainer();
             realCoordinatesList = new CoordinatesContainer();
         }
@@ -755,22 +653,19 @@ namespace CaptureLabel
         private void FaceDetectionCB_CheckedChanged(object sender, EventArgs e)
         {
             FaceElementsCB.Checked = !FaceDetectionCB.Checked;
-            switchMode();
+            //switchMode();
+            if (!modeSet)
+                mode = Utilities.switchMode(FaceDetectionCB, FaceElementsCB);        
         }
 
         private void FaceElementsCB_CheckedChanged(object sender, EventArgs e)
         {
             FaceDetectionCB.Checked = !FaceElementsCB.Checked;
-            switchMode();
+            //switchMode();
+            if(!modeSet)
+                mode = Utilities.switchMode(FaceDetectionCB, FaceElementsCB);
         }
 
-        private void switchMode()
-        {
-            if (FaceDetectionCB.Checked)
-                mode = 'f';
-            if (FaceElementsCB.Checked)
-                mode = 'e';
-        }
 
         private void initMode(char currentMode)
         {
@@ -782,7 +677,7 @@ namespace CaptureLabel
             if (currentMode == 'e')
             {
                 rectangles = new RectangleContainer();
-                lookAngleGB.Visible = false;
+                //lookAngleGB.Visible = false;
             }
         }
 
@@ -821,12 +716,6 @@ namespace CaptureLabel
             {
                 lookAngleCBs[i].Checked = (lookAngle[i] == 1 ? true : false);
             }
-        }
-
-        private void resetCheckBoxes(CheckBox[] lookAngleCBs)
-        {
-            foreach (CheckBox cb in lookAngleCBs)
-                cb.Checked = false;
         }
     }
 }

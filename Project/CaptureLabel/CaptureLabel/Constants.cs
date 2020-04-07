@@ -17,7 +17,7 @@ namespace CaptureLabel
 
         public static readonly int[] rectStartPos = { 200, 200 };
 
-        public static readonly Keys[] focusShortcuts = 
+        public static readonly Keys[] focusShortcutsE = 
             { 
                 Keys.D1,
                 Keys.D2,
@@ -30,6 +30,13 @@ namespace CaptureLabel
                 Keys.A,
                 Keys.S,
                 Keys.D
+            };
+
+        public static readonly Keys[] focusShortcutsF =
+            {
+                Keys.D1,
+                Keys.D2,
+                Keys.D3
             };
 
         public static readonly string inFocusString = "Currently in focus: ";
