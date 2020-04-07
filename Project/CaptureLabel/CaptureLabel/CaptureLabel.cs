@@ -26,7 +26,7 @@ namespace CaptureLabel
         private int currentImageIndex = 0;
 
         // Rectangle labelers variables
-        private RectangleContainer rectangles = new RectangleContainer();
+        private RectangleContainer rectangles;
         private Tuple<bool, int> currentlyInFocus;
         private bool someoneIsInFocus = false;
 
@@ -39,6 +39,8 @@ namespace CaptureLabel
         private int mouseX = 0;
         private int mouseY = 0;
 
+        private char mode = 'f';
+
         public CaptureLabel()
         {
             InitializeComponent();
@@ -48,6 +50,8 @@ namespace CaptureLabel
             typeof(Panel).InvokeMember("DoubleBuffered", BindingFlags.SetProperty
                | BindingFlags.Instance | BindingFlags.NonPublic, null,
                ZoomViewP, new object[] { true });
+
+            initMode(mode);
         }
 
         private void CaptureLabel_Load(object sender, EventArgs e)
@@ -153,7 +157,7 @@ namespace CaptureLabel
                 {
                     rectangles.resetFocusList();
                     //someoneIsInFocus = false;
-                    someoneIsInFocus = !someoneIsInFocus;
+                    someoneIsInFocus = true;
                     if(someoneIsInFocus)
                         rectangles.setFocus(currentlyInFocus.Item2);
                     imagePanel.Refresh();
@@ -162,9 +166,10 @@ namespace CaptureLabel
                 else
                 {
                     int inFocus = rectangles.inFocusIndex();
-                        
+                    Rectangle rectInFocus = rectangles.findInFocus();
+
                     if(inFocus != -1)
-                        rectangles.setRectCoordinates(inFocus, e.X, e.Y);
+                        rectangles.setRectCoordinates(inFocus, e.X - rectInFocus.Width / 2, e.Y - rectInFocus.Height / 2);
 
                     imagePanel.Refresh();
 
@@ -178,18 +183,28 @@ namespace CaptureLabel
             // set focus to image panel 
             if (imagePanel.ClientRectangle.Contains(e.Location))
                 imagePanel.Focus();
+
+            if(someoneIsInFocus)
+            {
+                someoneIsInFocus = false;
+                rectangles.resetFocusList();
+                imagePanel.Refresh();
+            }
             
         }
 
         private void imagePanel_MouseMove(object sender, MouseEventArgs e)
         {
-            Rectangle rectInFocus = rectangles.findInFocus();
 
             if (e.Button == MouseButtons.Left && someoneIsInFocus)// && rectInFocus.Contains(e.Location))
             {
+                Rectangle rectInFocus = rectangles.findInFocus();
+
                 // Increment rectangle-location by mouse-location delta.
-                int x = e.X - rectInFocus.X;
-                int y = e.Y - rectInFocus.Y;
+                int x = e.X - rectInFocus.X - rectInFocus.Width / 2;
+                int y = e.Y - rectInFocus.Y - rectInFocus.Height / 2;
+                //rect.X = rect.X + e.X - MouseDownLocation.X;
+               // rect.Y = rect.Y + e.Y - MouseDownLocation.Y;
 
                 rectangles.addToFocused(x, y);
 
@@ -203,6 +218,19 @@ namespace CaptureLabel
         {
             
             if (!imagePanel.ClientRectangle.Contains(e.Location) || imagePanel.BackgroundImage == null) return;
+
+            if(mode == 'f' && Control.ModifierKeys == Keys.Control)
+            {
+                if (e.Delta > 0)
+                    rectangles.addToRectSize(0, Constants.modeFRectDeltaSize, Constants.modeFRectDeltaSize);
+                else
+                    rectangles.addToRectSize(0, -Constants.modeFRectDeltaSize, -Constants.modeFRectDeltaSize);
+
+                imagePanel.Refresh();
+
+                return;
+            }
+
 
             saveCoordinates();
 
@@ -258,14 +286,16 @@ namespace CaptureLabel
 
             for(int i = 0; i < rects.Length; i++)
             {
-                if(inFocus == i)
+                if((mode == 'e' && inFocus == i) || (mode == 'f' && i != 0 && inFocus == i))
                     e.Graphics.FillRectangle(new SolidBrush(Color.Red), rects[i]);
                 else
                     e.Graphics.DrawRectangle(new Pen(Color.Red), rects[i]);
             }
 
-            if (someoneIsInFocus)
-                inFocusLabel.Text = Constants.inFocusString + " " + Constants.rectangleName[rectangles.inFocusIndex()];
+            if (someoneIsInFocus && mode == 'e')
+                inFocusLabel.Text = Constants.inFocusString + " " + Constants.rectangleNameE[rectangles.inFocusIndex()];
+            if(someoneIsInFocus && mode == 'f')
+                inFocusLabel.Text = Constants.inFocusString + " " + Constants.rectangleNameF[rectangles.inFocusIndex()];
 
             imagePanel.Focus();
         }
@@ -283,6 +313,9 @@ namespace CaptureLabel
         private void button1_Click(object sender, EventArgs e)
         {
             cleanUp();
+
+            initMode(mode);
+
             try
             {
                 
@@ -648,9 +681,37 @@ namespace CaptureLabel
             imageResizeFactor = new List<double>();
             imagePadX = new List<double>();
             imagePadY = new List<double>();
-            rectangles = new RectangleContainer();
+            //rectangles = new RectangleContainer();
             coordinatesList = new CoordinatesContainer();
             realCoordinatesList = new CoordinatesContainer();
+        }
+
+        private void FaceDetectionCB_CheckedChanged(object sender, EventArgs e)
+        {
+            FaceElementsCB.Checked = !FaceDetectionCB.Checked;
+            switchMode();
+        }
+
+        private void FaceElementsCB_CheckedChanged(object sender, EventArgs e)
+        {
+            FaceDetectionCB.Checked = !FaceElementsCB.Checked;
+            switchMode();
+        }
+
+        private void switchMode()
+        {
+            if (FaceDetectionCB.Checked)
+                mode = 'f';
+            if (FaceElementsCB.Checked)
+                mode = 'e';
+        }
+
+        private void initMode(char currentMode)
+        {
+            if(currentMode == 'f')
+                rectangles = new RectangleContainer(3, Constants.faceModeStartPos, Constants.faceModeStartSize);
+            if(currentMode == 'e')
+                rectangles = new RectangleContainer();
         }
 
     }

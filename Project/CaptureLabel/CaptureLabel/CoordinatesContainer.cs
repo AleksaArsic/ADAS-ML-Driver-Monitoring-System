@@ -35,5 +35,7 @@ namespace CaptureLabel
         {
             return rowCoordinates.Count;
         }
+
+        
     }
 }

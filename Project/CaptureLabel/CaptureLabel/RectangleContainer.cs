@@ -58,6 +58,19 @@ namespace CaptureLabel
             }
         }
 
+        public RectangleContainer(int rectNo, int[] startPos, Size[] rectSize)
+        {
+            if (rectNo > startPos.Length)
+                return;
+
+            int j = 0;
+            for(int i = 0; i < rectNo * 2; i += 2, j++)
+            {
+                rectContainer.Add(new Rectangle(new Point(startPos[i], startPos[i + 1]), rectSize[j]));
+                rectFocusList.Add(false);
+            }
+        }
+
         public Rectangle[] getRectangles()
         {
             return rectContainer.ToArray();
@@ -196,7 +209,7 @@ namespace CaptureLabel
         {
             int j = 0;
 
-            for (int i = 0; i < rectStartLoc.Length; i += 2, j++)
+            for (int i = 0; i < rectContainer.Count * 2; i += 2, j++)
             {
                 Rectangle rect = rectContainer[j];
 
@@ -205,6 +218,20 @@ namespace CaptureLabel
 
                 rectContainer[j] = rect;
             }
+        }
+
+        public void addToRectSize(int index, int width, int height)
+        {
+            Rectangle rect = rectContainer[index];
+
+            // minimal size is 5px
+            if (rect.Width > 5 && rect.Height > 5)
+            {
+                rect.Width += width;
+                rect.Height += height;
+            }
+
+            rectContainer[index] = rect;
         }
 
         public void resetState()

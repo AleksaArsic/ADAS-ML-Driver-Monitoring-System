@@ -55,6 +55,10 @@ namespace CaptureLabel
             this.bindingSource2 = new System.Windows.Forms.BindingSource(this.components);
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.inFocusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            this.FaceDetectionCB = new System.Windows.Forms.CheckBox();
+            this.ModeGB = new System.Windows.Forms.GroupBox();
+            this.FaceElementsCB = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -62,6 +66,7 @@ namespace CaptureLabel
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource2)).BeginInit();
             this.statusStrip1.SuspendLayout();
+            this.ModeGB.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -72,7 +77,7 @@ namespace CaptureLabel
             this.groupBox1.Controls.Add(this.label2);
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBox1.Location = new System.Drawing.Point(1055, 42);
+            this.groupBox1.Location = new System.Drawing.Point(1055, 103);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(473, 192);
             this.groupBox1.TabIndex = 0;
@@ -215,7 +220,7 @@ namespace CaptureLabel
             // ZoomGB
             // 
             this.ZoomGB.Controls.Add(this.ZoomViewP);
-            this.ZoomGB.Location = new System.Drawing.Point(1055, 274);
+            this.ZoomGB.Location = new System.Drawing.Point(1055, 301);
             this.ZoomGB.Name = "ZoomGB";
             this.ZoomGB.Size = new System.Drawing.Size(415, 430);
             this.ZoomGB.TabIndex = 8;
@@ -244,11 +249,47 @@ namespace CaptureLabel
             this.inFocusLabel.Size = new System.Drawing.Size(107, 17);
             this.inFocusLabel.Text = "Currently in focus: ";
             // 
+            // FaceDetectionCB
+            // 
+            this.FaceDetectionCB.AutoSize = true;
+            this.FaceDetectionCB.Checked = true;
+            this.FaceDetectionCB.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.FaceDetectionCB.Location = new System.Drawing.Point(7, 19);
+            this.FaceDetectionCB.Name = "FaceDetectionCB";
+            this.FaceDetectionCB.Size = new System.Drawing.Size(97, 17);
+            this.FaceDetectionCB.TabIndex = 10;
+            this.FaceDetectionCB.Text = "Face detection";
+            this.FaceDetectionCB.UseVisualStyleBackColor = true;
+            this.FaceDetectionCB.CheckedChanged += new System.EventHandler(this.FaceDetectionCB_CheckedChanged);
+            // 
+            // ModeGB
+            // 
+            this.ModeGB.Controls.Add(this.FaceElementsCB);
+            this.ModeGB.Controls.Add(this.FaceDetectionCB);
+            this.ModeGB.Location = new System.Drawing.Point(1055, 42);
+            this.ModeGB.Name = "ModeGB";
+            this.ModeGB.Size = new System.Drawing.Size(221, 55);
+            this.ModeGB.TabIndex = 7;
+            this.ModeGB.TabStop = false;
+            this.ModeGB.Text = "Mode";
+            // 
+            // FaceElementsCB
+            // 
+            this.FaceElementsCB.AutoSize = true;
+            this.FaceElementsCB.Location = new System.Drawing.Point(121, 19);
+            this.FaceElementsCB.Name = "FaceElementsCB";
+            this.FaceElementsCB.Size = new System.Drawing.Size(95, 17);
+            this.FaceElementsCB.TabIndex = 11;
+            this.FaceElementsCB.Text = "Face elements";
+            this.FaceElementsCB.UseVisualStyleBackColor = true;
+            this.FaceElementsCB.CheckedChanged += new System.EventHandler(this.FaceElementsCB_CheckedChanged);
+            // 
             // CaptureLabel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1576, 966);
+            this.Controls.Add(this.ModeGB);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.ZoomGB);
             this.Controls.Add(this.groupBox2);
@@ -270,6 +311,8 @@ namespace CaptureLabel
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource2)).EndInit();
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
+            this.ModeGB.ResumeLayout(false);
+            this.ModeGB.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -299,6 +342,10 @@ namespace CaptureLabel
         private BindingSource bindingSource2;
         private StatusStrip statusStrip1;
         private ToolStripStatusLabel inFocusLabel;
+        private System.ComponentModel.BackgroundWorker backgroundWorker1;
+        private CheckBox FaceDetectionCB;
+        private GroupBox ModeGB;
+        private CheckBox FaceElementsCB;
     }
 }
 

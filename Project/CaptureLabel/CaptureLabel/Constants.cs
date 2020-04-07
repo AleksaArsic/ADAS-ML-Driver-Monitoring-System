@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace CaptureLabel
@@ -33,7 +34,7 @@ namespace CaptureLabel
 
         public static readonly string inFocusString = "Currently in focus: ";
 
-        public static readonly string[] rectangleName =
+        public static readonly string[] rectangleNameE =
         {
             "Left eye Up",
             "Left eye Down",
@@ -47,5 +48,29 @@ namespace CaptureLabel
             "Mouth Up",
             "Mouth Down"
         };
+
+        public static readonly string[] rectangleNameF =
+        {
+            "Face",
+            "Left eye",
+            "Right eye "
+        };
+
+        public static readonly int[] faceModeStartPos =
+        {
+            200, 200,
+
+            250, 250,
+            300, 250
+        };
+
+        public static readonly Size[] faceModeStartSize =
+        {
+            new Size(300, 300),
+            new Size(10, 10),
+            new Size(10, 10)
+        };
+
+        public static readonly int modeFRectDeltaSize = 3; // in px
     }
 }
