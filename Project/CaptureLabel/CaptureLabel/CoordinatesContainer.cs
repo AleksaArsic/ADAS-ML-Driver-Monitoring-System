@@ -36,6 +36,15 @@ namespace CaptureLabel
             return rowCoordinates.Count;
         }
 
-        
-    }
+        public void setRowZero(int index)
+        {
+            List<int> row = rowCoordinates[index];
+
+            for (int i = 0; i < row.Count; i++)
+                row[i] = 0;
+
+            replaceRow(row, index);
+
+        }
+}
 }

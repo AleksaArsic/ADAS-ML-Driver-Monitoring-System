@@ -59,6 +59,11 @@ namespace CaptureLabel
             this.FaceDetectionCB = new System.Windows.Forms.CheckBox();
             this.ModeGB = new System.Windows.Forms.GroupBox();
             this.FaceElementsCB = new System.Windows.Forms.CheckBox();
+            this.lookAngleGB = new System.Windows.Forms.GroupBox();
+            this.upCB = new System.Windows.Forms.CheckBox();
+            this.rightCB = new System.Windows.Forms.CheckBox();
+            this.leftCB = new System.Windows.Forms.CheckBox();
+            this.downCB = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -67,6 +72,7 @@ namespace CaptureLabel
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource2)).BeginInit();
             this.statusStrip1.SuspendLayout();
             this.ModeGB.SuspendLayout();
+            this.lookAngleGB.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -222,7 +228,7 @@ namespace CaptureLabel
             this.ZoomGB.Controls.Add(this.ZoomViewP);
             this.ZoomGB.Location = new System.Drawing.Point(1055, 301);
             this.ZoomGB.Name = "ZoomGB";
-            this.ZoomGB.Size = new System.Drawing.Size(415, 430);
+            this.ZoomGB.Size = new System.Drawing.Size(73, 159);
             this.ZoomGB.TabIndex = 8;
             this.ZoomGB.TabStop = false;
             this.ZoomGB.Text = "Zoom View";
@@ -284,11 +290,69 @@ namespace CaptureLabel
             this.FaceElementsCB.UseVisualStyleBackColor = true;
             this.FaceElementsCB.CheckedChanged += new System.EventHandler(this.FaceElementsCB_CheckedChanged);
             // 
+            // lookAngleGB
+            // 
+            this.lookAngleGB.Controls.Add(this.downCB);
+            this.lookAngleGB.Controls.Add(this.upCB);
+            this.lookAngleGB.Controls.Add(this.rightCB);
+            this.lookAngleGB.Controls.Add(this.leftCB);
+            this.lookAngleGB.Location = new System.Drawing.Point(1176, 321);
+            this.lookAngleGB.Name = "lookAngleGB";
+            this.lookAngleGB.Size = new System.Drawing.Size(126, 79);
+            this.lookAngleGB.TabIndex = 1;
+            this.lookAngleGB.TabStop = false;
+            this.lookAngleGB.Text = "Look angle";
+            // 
+            // upCB
+            // 
+            this.upCB.AutoSize = true;
+            this.upCB.Location = new System.Drawing.Point(6, 43);
+            this.upCB.Name = "upCB";
+            this.upCB.Size = new System.Drawing.Size(40, 17);
+            this.upCB.TabIndex = 2;
+            this.upCB.Text = "Up";
+            this.upCB.UseVisualStyleBackColor = true;
+            this.upCB.CheckedChanged += new System.EventHandler(this.upCB_CheckedChanged);
+            // 
+            // rightCB
+            // 
+            this.rightCB.AutoSize = true;
+            this.rightCB.Location = new System.Drawing.Point(56, 19);
+            this.rightCB.Name = "rightCB";
+            this.rightCB.Size = new System.Drawing.Size(51, 17);
+            this.rightCB.TabIndex = 1;
+            this.rightCB.Text = "Right";
+            this.rightCB.UseVisualStyleBackColor = true;
+            this.rightCB.CheckedChanged += new System.EventHandler(this.rightCB_CheckedChanged);
+            // 
+            // leftCB
+            // 
+            this.leftCB.AutoSize = true;
+            this.leftCB.Location = new System.Drawing.Point(6, 19);
+            this.leftCB.Name = "leftCB";
+            this.leftCB.Size = new System.Drawing.Size(44, 17);
+            this.leftCB.TabIndex = 0;
+            this.leftCB.Text = "Left";
+            this.leftCB.UseVisualStyleBackColor = true;
+            this.leftCB.CheckedChanged += new System.EventHandler(this.leftCB_CheckedChanged);
+            // 
+            // downCB
+            // 
+            this.downCB.AutoSize = true;
+            this.downCB.Location = new System.Drawing.Point(56, 42);
+            this.downCB.Name = "downCB";
+            this.downCB.Size = new System.Drawing.Size(54, 17);
+            this.downCB.TabIndex = 3;
+            this.downCB.Text = "Down";
+            this.downCB.UseVisualStyleBackColor = true;
+            this.downCB.CheckedChanged += new System.EventHandler(this.downCB_CheckedChanged);
+            // 
             // CaptureLabel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1576, 966);
+            this.Controls.Add(this.lookAngleGB);
             this.Controls.Add(this.ModeGB);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.ZoomGB);
@@ -313,6 +377,8 @@ namespace CaptureLabel
             this.statusStrip1.PerformLayout();
             this.ModeGB.ResumeLayout(false);
             this.ModeGB.PerformLayout();
+            this.lookAngleGB.ResumeLayout(false);
+            this.lookAngleGB.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -346,6 +412,11 @@ namespace CaptureLabel
         private CheckBox FaceDetectionCB;
         private GroupBox ModeGB;
         private CheckBox FaceElementsCB;
+        private GroupBox lookAngleGB;
+        private CheckBox upCB;
+        private CheckBox rightCB;
+        private CheckBox leftCB;
+        private CheckBox downCB;
     }
 }
 

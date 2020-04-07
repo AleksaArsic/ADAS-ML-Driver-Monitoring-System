@@ -49,6 +49,16 @@ namespace CaptureLabel
             "Mouth Down"
         };
 
+        public static readonly string[] namesE =
+            {"LE Up", "LE Down", "LE Left", "LE Right", "RE Up", "RE Down", "RE Left", "RE Right",
+               "Nose", "Mouth Up", "Mouth Down"};
+
+        public static readonly string[] namesF =
+            {"Face", "Left eye", "Right eye"};
+
+        public static readonly string[] lookingAngleString =
+            {"Left", "Right", "Up", "Down"};
+
         public static readonly string[] rectangleNameF =
         {
             "Face",

@@ -35,6 +35,12 @@ namespace CaptureLabel
         private CoordinatesContainer realCoordinatesList = new CoordinatesContainer();
         private bool isLoaded = false;
 
+        // face mode look angle checkbox values
+        // left, right, up, down
+        // all zeroes represent center
+        private int[] lookAngle = { 0, 0, 0, 0 };
+        private CoordinatesContainer lookAngleContainer = new CoordinatesContainer();
+
         // mouse position
         private int mouseX = 0;
         private int mouseY = 0;
@@ -341,6 +347,9 @@ namespace CaptureLabel
                         // read and load coordinates from .csv
                         realCoordinatesList = readFromCSV(csvPath);
 
+                        if (mode == 'f')
+                            lookAngleContainer = readLookAngleFromCSV(csvPath);
+
                         for (int i = 0; i < imageNames.Count; i++)
                         {
                             imagePanel.BackgroundImage = Image.FromFile(imageLocation[i]);
@@ -359,6 +368,8 @@ namespace CaptureLabel
                         }
                         
                         imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
+
+
                         loadCoordinates(currentImageIndex);
 
                         csvPathTB.ReadOnly = true;
@@ -418,6 +429,7 @@ namespace CaptureLabel
                 imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
                 //resetImagePanelSize();
                 isLoaded = loadCoordinates(currentImageIndex);
+                //resetCheckBoxes(new CheckBox[] { leftCB, rightCB, upCB, downCB });
             }
             else
             {
@@ -461,14 +473,19 @@ namespace CaptureLabel
             // calculate real coordinates
             if (coordinatesList.getRow(currentImageIndex) == null)
             {
+                lookAngleContainer.addRow(lookAngle.ToList());
                 coordinatesList.addRow(coordinates);
                 realCoordinatesList.addRow(calculateRealCoordinates(coordinates));
             }
             else
             {
+                lookAngleContainer.replaceRow(lookAngle.ToList(), currentImageIndex);
                 coordinatesList.replaceRow(coordinates, currentImageIndex);
                 realCoordinatesList.replaceRow(calculateRealCoordinates(coordinates), currentImageIndex);
             }
+
+            lookAngle = new int[] { 0, 0, 0, 0 };
+            setCheckBoxes(new CheckBox[] { leftCB, rightCB, upCB, downCB });
         }
 
         private bool loadCoordinates(int index)
@@ -506,10 +523,17 @@ namespace CaptureLabel
 
             List<int> singleRow = coordinatesList.getRow(index);
             //List<int> singleRow = calculateRectangleCoordinates(realCoordinatesList.getRow(index), index);
+            lookAngle = new int[] { 0, 0, 0, 0 };
 
             if (singleRow != null)
             {
                 rectangles.setAllRectCoordinates(singleRow);
+                lookAngle = lookAngleContainer.getRow(index).ToArray();
+
+                // set checkboxes
+                //resetCheckBoxes(new CheckBox[] { leftCB, rightCB, upCB, downCB });
+                setCheckBoxes(new CheckBox[] { leftCB, rightCB, upCB, downCB });
+
                 return true;
             }
             
@@ -587,17 +611,26 @@ namespace CaptureLabel
 
         private void writeToCSV()
         {
-            string csvPath = Path.Combine(new string[] { imageFolder, csvFileName }) + ".csv";
+            bool boolMode = (mode == 'f' ? true : false);
+            string csvPath = Path.Combine(new string[] { imageFolder, (boolMode ? "FaceMode" : "FaceElement") + csvFileName }) + ".csv";
             TextWriter writer = new StreamWriter(@csvPath, false, Encoding.UTF8);
             CsvSerializer serializer = new CsvSerializer(writer, System.Globalization.CultureInfo.CurrentCulture);
             CsvWriter csv = new CsvWriter(serializer);
 
             csv.WriteField("");
 
-            foreach (string s in RectangleContainer.names)
+            string[] rectNames = (boolMode) ? Constants.namesF : Constants.namesE;
+
+            foreach (string s in rectNames)
             {
                 csv.WriteField(s);
                 csv.WriteField("");
+            }
+
+            if(boolMode)
+            {
+                foreach (string s in Constants.lookingAngleString)
+                    csv.WriteField(s);
             }
 
             csv.NextRecord();
@@ -617,9 +650,10 @@ namespace CaptureLabel
                 csv.WriteField(imageNames[i]);
 
                 foreach(int value in realCoordinatesList.getRow(i))
-                {
                     csv.WriteField(value);
-                }
+
+                foreach (int value in lookAngleContainer.getRow(i))
+                    csv.WriteField(value);
 
                 csv.NextRecord();
             }
@@ -645,6 +679,8 @@ namespace CaptureLabel
                 {
                     for (int i = 1; csv.TryGetField<int>(i, out value); i++)
                     {
+                        if (mode == 'f' && i == 7) break;
+
                         singleRow.Add(value);
                     }
                     List<int> temp = new List<int>(singleRow);
@@ -652,6 +688,35 @@ namespace CaptureLabel
                     singleRow.Clear();
                 }
                 
+            }
+            return result;
+        }
+
+        private CoordinatesContainer readLookAngleFromCSV(string path)
+        {
+
+            CoordinatesContainer result = new CoordinatesContainer();
+            List<int> singleRow = new List<int>();
+            int value;
+            using (TextReader fileReader = File.OpenText(path))
+            {
+                var csv = new CsvReader(fileReader, System.Globalization.CultureInfo.CurrentCulture);
+                csv.Configuration.HasHeaderRecord = false;
+
+                csv.Read();
+                csv.Read();
+
+                while (csv.Read())
+                {
+                    for (int i = 7; csv.TryGetField<int>(i, out value); i++)
+                    {
+                        singleRow.Add(value);
+                    }
+                    List<int> temp = new List<int>(singleRow);
+                    result.addRow(temp);
+                    singleRow.Clear();
+                }
+
             }
             return result;
         }
@@ -682,6 +747,7 @@ namespace CaptureLabel
             imagePadX = new List<double>();
             imagePadY = new List<double>();
             //rectangles = new RectangleContainer();
+
             coordinatesList = new CoordinatesContainer();
             realCoordinatesList = new CoordinatesContainer();
         }
@@ -708,11 +774,59 @@ namespace CaptureLabel
 
         private void initMode(char currentMode)
         {
-            if(currentMode == 'f')
+            if (currentMode == 'f')
+            {
                 rectangles = new RectangleContainer(3, Constants.faceModeStartPos, Constants.faceModeStartSize);
-            if(currentMode == 'e')
+                lookAngleGB.Visible = true;
+            }
+            if (currentMode == 'e')
+            {
                 rectangles = new RectangleContainer();
+                lookAngleGB.Visible = false;
+            }
         }
 
+        private void leftCB_CheckedChanged(object sender, EventArgs e)
+        {
+            setLookAngle(leftCB, 0);
+            rightCB.Checked = false;
+        }
+
+        private void rightCB_CheckedChanged(object sender, EventArgs e)
+        {
+            setLookAngle(rightCB, 1);
+            leftCB.Checked = false;
+        }
+
+        private void upCB_CheckedChanged(object sender, EventArgs e)
+        {
+            setLookAngle(upCB, 2);
+            downCB.Checked = false;
+        }
+
+        private void downCB_CheckedChanged(object sender, EventArgs e)
+        {
+            setLookAngle(downCB, 3);
+            upCB.Checked = false;
+        }
+
+        private void setLookAngle(CheckBox cb, int index)
+        {
+            lookAngle[index] = cb.Checked ? 1 : 0;
+        }
+
+        private void setCheckBoxes(CheckBox[] lookAngleCBs)
+        {
+            for(int i = 0; i < lookAngleCBs.Length; i++)
+            {
+                lookAngleCBs[i].Checked = (lookAngle[i] == 1 ? true : false);
+            }
+        }
+
+        private void resetCheckBoxes(CheckBox[] lookAngleCBs)
+        {
+            foreach (CheckBox cb in lookAngleCBs)
+                cb.Checked = false;
+        }
     }
 }

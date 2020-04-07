@@ -45,10 +45,6 @@ namespace CaptureLabel
                 500, 600
             };
 
-        public static readonly string[] names =
-            {"LE Up", "LE Down", "LE Left", "LE Right", "RE Up", "RE Down", "RE Left", "RE Right",
-               "Nose", "Mouth Up", "Mouth Down"};
-
         public RectangleContainer()
         {
             for (int i = 0; i < rectStartLoc.Length; i += 2)
