@@ -33,6 +33,7 @@ namespace CaptureLabel
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CaptureLabel));
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.csvPathTB = new System.Windows.Forms.TextBox();
             this.imagePathTB = new System.Windows.Forms.TextBox();
@@ -42,7 +43,7 @@ namespace CaptureLabel
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.otherToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -60,10 +61,10 @@ namespace CaptureLabel
             this.ModeGB = new System.Windows.Forms.GroupBox();
             this.FaceElementsCB = new System.Windows.Forms.CheckBox();
             this.lookAngleGB = new System.Windows.Forms.GroupBox();
+            this.downCB = new System.Windows.Forms.CheckBox();
             this.upCB = new System.Windows.Forms.CheckBox();
             this.rightCB = new System.Windows.Forms.CheckBox();
             this.leftCB = new System.Windows.Forms.CheckBox();
-            this.downCB = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -152,7 +153,7 @@ namespace CaptureLabel
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.newToolStripMenuItem,
-            this.importToolStripMenuItem,
+            this.saveToolStripMenuItem,
             this.saveAsToolStripMenuItem,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
@@ -161,28 +162,34 @@ namespace CaptureLabel
             // 
             // newToolStripMenuItem
             // 
+            this.newToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("newToolStripMenuItem.Image")));
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(121, 22);
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.newToolStripMenuItem.Text = "New";
+            this.newToolStripMenuItem.Click += new System.EventHandler(this.newToolStripMenuItem_Click);
             // 
-            // importToolStripMenuItem
+            // saveToolStripMenuItem
             // 
-            this.importToolStripMenuItem.Name = "importToolStripMenuItem";
-            this.importToolStripMenuItem.Size = new System.Drawing.Size(121, 22);
-            this.importToolStripMenuItem.Text = "Save";
-            this.importToolStripMenuItem.Click += new System.EventHandler(this.importToolStripMenuItem_Click);
+            this.saveToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("saveToolStripMenuItem.Image")));
+            this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.saveToolStripMenuItem.Text = "Save";
+            this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
             // 
             // saveAsToolStripMenuItem
             // 
+            this.saveAsToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("saveAsToolStripMenuItem.Image")));
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(121, 22);
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.saveAsToolStripMenuItem.Text = "Save as...";
+            this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(121, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.exitToolStripMenuItem.Text = "Exit";
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
             // otherToolStripMenuItem
             // 
@@ -194,9 +201,11 @@ namespace CaptureLabel
             // 
             // aboutToolStripMenuItem
             // 
+            this.aboutToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("aboutToolStripMenuItem.Image")));
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.aboutToolStripMenuItem.Text = "About";
+            this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
             // groupBox2
             // 
@@ -303,6 +312,17 @@ namespace CaptureLabel
             this.lookAngleGB.TabStop = false;
             this.lookAngleGB.Text = "Look angle";
             // 
+            // downCB
+            // 
+            this.downCB.AutoSize = true;
+            this.downCB.Location = new System.Drawing.Point(56, 42);
+            this.downCB.Name = "downCB";
+            this.downCB.Size = new System.Drawing.Size(54, 17);
+            this.downCB.TabIndex = 3;
+            this.downCB.Text = "Down";
+            this.downCB.UseVisualStyleBackColor = true;
+            this.downCB.CheckedChanged += new System.EventHandler(this.downCB_CheckedChanged);
+            // 
             // upCB
             // 
             this.upCB.AutoSize = true;
@@ -335,17 +355,6 @@ namespace CaptureLabel
             this.leftCB.Text = "Left";
             this.leftCB.UseVisualStyleBackColor = true;
             this.leftCB.CheckedChanged += new System.EventHandler(this.leftCB_CheckedChanged);
-            // 
-            // downCB
-            // 
-            this.downCB.AutoSize = true;
-            this.downCB.Location = new System.Drawing.Point(56, 42);
-            this.downCB.Name = "downCB";
-            this.downCB.Size = new System.Drawing.Size(54, 17);
-            this.downCB.TabIndex = 3;
-            this.downCB.Text = "Down";
-            this.downCB.UseVisualStyleBackColor = true;
-            this.downCB.CheckedChanged += new System.EventHandler(this.downCB_CheckedChanged);
             // 
             // CaptureLabel
             // 
@@ -393,7 +402,7 @@ namespace CaptureLabel
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem newToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem importToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem otherToolStripMenuItem;

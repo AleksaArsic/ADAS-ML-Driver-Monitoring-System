@@ -6,6 +6,9 @@ namespace CaptureLabel
 {
     static class Constants
     {
+        public static readonly string Version = "CaptureLabel v0.1";
+        public static readonly string AboutMe = "Author: Aleksa Arsic \nEmail: arsicaleksa96@gmail.com";
+
         public static readonly String[] supportedFormats = { ".jpeg", ".jpg", ".png" };
 
         public static readonly float imageScaleMin = 1.0f;
@@ -14,6 +17,8 @@ namespace CaptureLabel
         public static readonly string errorCaption = "Error!";
         public static readonly string pathExceptionMsg = "Path not valid.";
         public static readonly string csvFileNameExceptionMsg = "Input file is not .csv file format";
+
+        public static readonly string saveProgressString = "All changes will be deleted. Do you want to save them?";
 
         public static readonly int[] rectStartPos = { 200, 200 };
 

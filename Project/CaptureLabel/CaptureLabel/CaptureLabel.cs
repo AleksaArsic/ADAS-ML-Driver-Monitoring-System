@@ -41,8 +41,8 @@ namespace CaptureLabel
         private int[] lookAngle = { 0, 0, 0, 0 };
         private CoordinatesContainer lookAngleContainer = new CoordinatesContainer();
         private CoordinatesContainer faceModeSize = new CoordinatesContainer();
-        private List<int> rectSizeFmode = new List<int>();
 
+        bool loaded = false;
 
         // mouse position
         private int mouseX = 0;
@@ -67,11 +67,6 @@ namespace CaptureLabel
         private void CaptureLabel_Load(object sender, EventArgs e)
         {
             //leftUp.MouseLeftButtonDown += rectangle_MouseLeftButtonDown;
-        }
-
-        private void importToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
         }
 
         private void CaptureLabel_KeyDown(object sender, KeyEventArgs e)
@@ -301,6 +296,9 @@ namespace CaptureLabel
         
         private void imagePanel_Paint(object sender, PaintEventArgs e)
         {
+            if (!loaded)
+                return;
+
             Rectangle[] rects = rectangles.getRectangles();
             int inFocus = rectangles.inFocusIndex();
 
@@ -387,20 +385,20 @@ namespace CaptureLabel
 
                         loadCoordinates(currentImageIndex);
 
-                        csvPathTB.ReadOnly = true;
+                        //csvPathTB.ReadOnly = true;
 
-                        imagePanel.Refresh();
                     }
                     imagePathTB.ReadOnly = true;
+                    loaded = true;
                 }
             }
             catch (Exception msg)
             {
                 imagePathTB.ReadOnly = false;
-                MessageBox.Show(msg.Message, Constants.errorCaption);
+                MessageBox.Show(msg.Message, Constants.errorCaption, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-
+            imagePanel.Refresh();
         }
 
         /*
@@ -651,7 +649,10 @@ namespace CaptureLabel
             rectangles = null;
             coordinatesList = null;
             realCoordinatesList = null;
-            
+
+            faceModeSize = null;
+            lookAngleContainer = null;
+
             currentImageIndex = 0;
             isLoaded = false;
             someoneIsInFocus = false;
@@ -664,9 +665,13 @@ namespace CaptureLabel
             //rectangles = new RectangleContainer();
             coordinatesList = new CoordinatesContainer();
             realCoordinatesList = new CoordinatesContainer();
-        }
 
-        private void FaceDetectionCB_CheckedChanged(object sender, EventArgs e)
+            faceModeSize = new CoordinatesContainer();
+            lookAngleContainer = new CoordinatesContainer();
+
+    }
+
+    private void FaceDetectionCB_CheckedChanged(object sender, EventArgs e)
         {
             FaceElementsCB.Checked = !FaceDetectionCB.Checked;
             //switchMode();
@@ -732,6 +737,51 @@ namespace CaptureLabel
             {
                 lookAngleCBs[i].Checked = (lookAngle[i] == 1 ? true : false);
             }
+        }
+
+        private void newToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if(MessageBox.Show(Constants.saveProgressString, "Caution!", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                // save logic
+                Console.WriteLine("Save");
+            }
+            
+            loaded = false;
+            imagePanel.BackgroundImage = null;
+            imagePathTB.Text = "";
+            csvPathTB.Text = "";
+            cleanUp();
+            imagePanel.Refresh();
+            
+        }
+
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            saveCoordinates();
+            Utilities.writeToCSV(mode, rectangles, realCoordinatesList, imageNames, lookAngleContainer, faceModeSize);
+        }
+
+        private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // save as logic
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show(Constants.saveProgressString, "Caution!", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                // save logic
+                Console.WriteLine("Save");
+            }
+            
+            Application.Exit();
+            
+        }
+
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show(Constants.AboutMe, Constants.Version);
         }
     }
 }
