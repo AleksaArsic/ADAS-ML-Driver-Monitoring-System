@@ -40,6 +40,9 @@ namespace CaptureLabel
         // all zeroes represent center
         private int[] lookAngle = { 0, 0, 0, 0 };
         private CoordinatesContainer lookAngleContainer = new CoordinatesContainer();
+        private CoordinatesContainer faceModeSize = new CoordinatesContainer();
+        private List<int> rectSizeFmode = new List<int>();
+
 
         // mouse position
         private int mouseX = 0;
@@ -150,7 +153,10 @@ namespace CaptureLabel
 
 
             if (e.KeyCode == Keys.Z)
-                Utilities.writeToCSV(mode, rectangles, realCoordinatesList, imageNames, lookAngleContainer);
+            {
+                saveCoordinates();
+                Utilities.writeToCSV(mode, rectangles, realCoordinatesList, imageNames, lookAngleContainer, faceModeSize);
+            }
         }
 
 
@@ -358,6 +364,8 @@ namespace CaptureLabel
                         //if (mode == 'f')
                             lookAngleContainer = Utilities.readLookAngleFromCSV(csvPath);
 
+                        faceModeSize = Utilities.readFaceSizeFromCSV(csvPath);
+
                         for (int i = 0; i < imageNames.Count; i++)
                         {
                             imagePanel.BackgroundImage = Image.FromFile(imageLocation[i]);
@@ -481,6 +489,8 @@ namespace CaptureLabel
             if (coordinatesList.getRow(currentImageIndex) == null)
             {
                 lookAngleContainer.addRow(lookAngle.ToList());
+                //rectSizeFmode.Add(rectangles.getRectangles()[0].Width);
+                faceModeSize.addRow(new List<int> { rectangles.getRectangles()[0].Width });
                 coordinatesList.addRow(coordinates);
                 realCoordinatesList.addRow(calculateRealCoordinates(coordinates));
             }
@@ -489,6 +499,8 @@ namespace CaptureLabel
                 lookAngleContainer.replaceRow(lookAngle.ToList(), currentImageIndex);
                 coordinatesList.replaceRow(coordinates, currentImageIndex);
                 realCoordinatesList.replaceRow(calculateRealCoordinates(coordinates), currentImageIndex);
+                faceModeSize.replaceRow(new List<int> { rectangles.getRectangles()[0].Width }, currentImageIndex);
+                //rectSizeFmode[currentImageIndex] = rectangles.getRectangles()[0].Width;
             }
 
             lookAngle = new int[] { 0, 0, 0, 0 };
@@ -529,16 +541,20 @@ namespace CaptureLabel
            
 
             List<int> singleRow = coordinatesList.getRow(index);
+            List<int> faceSize = faceModeSize.getRow(index);
             //List<int> singleRow = calculateRectangleCoordinates(realCoordinatesList.getRow(index), index);
             lookAngle = new int[] { 0, 0, 0, 0 };
 
             if (singleRow != null)
             {
                 rectangles.setAllRectCoordinates(singleRow);
+                //rectangles.setRectSize(0, new Size(new Point(rectSizeFmode[currentImageIndex], rectSizeFmode[currentImageIndex])));
                 lookAngle = lookAngleContainer.getRow(index).ToArray();
 
+                if (mode == 'f')
+                    rectangles.setRectSize(0, new Size(faceSize[0], faceSize[0]));
+
                 // set checkboxes
-                //resetCheckBoxes(new CheckBox[] { leftCB, rightCB, upCB, downCB });
                 setCheckBoxes(new CheckBox[] { leftCB, rightCB, upCB, downCB });
 
                 return true;

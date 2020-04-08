@@ -59,7 +59,7 @@ namespace CaptureLabel
             return '0';
         }
 
-        public static void writeToCSV(char mode, RectangleContainer rectangles, CoordinatesContainer realCoordinatesList, List<string> imageNames, CoordinatesContainer lookAngleContainer)
+        public static void writeToCSV(char mode, RectangleContainer rectangles, CoordinatesContainer realCoordinatesList, List<string> imageNames, CoordinatesContainer lookAngleContainer, CoordinatesContainer faceModeSize)
         {
             bool boolMode = (mode == 'f' ? true : false);
             string csvPath = Path.Combine(new string[] { CaptureLabel.imageFolder, (boolMode ? "FaceMode" : "FaceElement") + CaptureLabel.csvFileName }) + ".csv";
@@ -81,6 +81,8 @@ namespace CaptureLabel
             {
                 foreach (string s in Constants.lookingAngleString)
                     csv.WriteField(s);
+
+                csv.WriteField("Face size:");
             }
 
             csv.NextRecord();
@@ -106,6 +108,8 @@ namespace CaptureLabel
                 {
                     foreach (int value in lookAngleContainer.getRow(i))
                         csv.WriteField(value);
+
+                    csv.WriteField(faceModeSize.getRow(i)[0]);
                 }
 
                 csv.NextRecord();
@@ -162,6 +166,35 @@ namespace CaptureLabel
                 while (csv.Read())
                 {
                     for (int i = 7; csv.TryGetField<int>(i, out value); i++)
+                    {
+                        singleRow.Add(value);
+                    }
+                    List<int> temp = new List<int>(singleRow);
+                    result.addRow(temp);
+                    singleRow.Clear();
+                }
+
+            }
+            return result;
+        }
+
+        public static CoordinatesContainer readFaceSizeFromCSV(string path)
+        {
+
+            CoordinatesContainer result = new CoordinatesContainer();
+            List<int> singleRow = new List<int>();
+            int value;
+            using (TextReader fileReader = File.OpenText(path))
+            {
+                var csv = new CsvReader(fileReader, System.Globalization.CultureInfo.CurrentCulture);
+                csv.Configuration.HasHeaderRecord = false;
+
+                csv.Read();
+                csv.Read();
+
+                while (csv.Read())
+                {
+                    for (int i = 11; csv.TryGetField<int>(i, out value); i++)
                     {
                         singleRow.Add(value);
                     }

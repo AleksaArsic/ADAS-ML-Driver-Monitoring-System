@@ -82,6 +82,17 @@ namespace CaptureLabel
             return rectContainer.Count;
         }
 
+        public void setRectSize(int index, Size size)
+        {
+            if (index >= rectContainer.Count)
+                return;
+
+            Rectangle rect = rectContainer[index];
+            rect.Size = size;
+
+            rectContainer[index] = rect;
+        }
+
         public List<int> getAllRectCoordinates()
         {
             List<int> coordinates = new List<int>();
