@@ -49,20 +49,23 @@ namespace CaptureLabel
             return bitmap;
         }
 
-        public static char switchMode(CheckBox cbFace, CheckBox cbElements)
+        public static char switchMode(ToolStripMenuItem tsmiFace, ToolStripMenuItem tsmiElements)
         {
-            if (cbFace.Checked)
+            if (tsmiFace.Checked)
                 return 'f';
-            if (cbElements.Checked)
+            if (tsmiElements.Checked)
                 return 'e';
 
             return '0';
         }
 
-        public static void writeToCSV(char mode, RectangleContainer rectangles, CoordinatesContainer realCoordinatesList, List<string> imageNames, CoordinatesContainer lookAngleContainer, CoordinatesContainer faceModeSize)
+        public static void writeToCSV(char mode, CoordinatesContainer realCoordinatesList, List<string> imageNames, CoordinatesContainer lookAngleContainer, CoordinatesContainer faceModeSize, bool normalized = false)
         {
             bool boolMode = (mode == 'f' ? true : false);
-            string csvPath = Path.Combine(new string[] { CaptureLabel.imageFolder, (boolMode ? "FaceMode" : "FaceElement") + CaptureLabel.csvFileName }) + ".csv";
+            string csvPath = Path.Combine(new string[] { CaptureLabel.imageFolder, 
+                                                        (boolMode ? "FaceMode" : "FaceElement") + 
+                                                        (normalized ? "_normalized" : "") +
+                                                        CaptureLabel.csvFileName }) + ".csv";
             TextWriter writer = new StreamWriter(@csvPath, false, Encoding.UTF8);
             CsvSerializer serializer = new CsvSerializer(writer, System.Globalization.CultureInfo.CurrentCulture);
             CsvWriter csv = new CsvWriter(serializer);
@@ -89,7 +92,7 @@ namespace CaptureLabel
 
             csv.WriteField("Picture:");
 
-            for (int i = 0; i < rectangles.getSize(); i++)
+            for (int i = 0; i < rectNames.Length; i++)
             {
                 csv.WriteField("(x,");
                 csv.WriteField("y)");
@@ -104,7 +107,7 @@ namespace CaptureLabel
                 foreach (int value in realCoordinatesList.getRow(i))
                     csv.WriteField(value);
 
-                if (mode == 'f')
+                if (mode == 'f' && !normalized)
                 {
                     foreach (int value in lookAngleContainer.getRow(i))
                         csv.WriteField(value);
@@ -205,6 +208,50 @@ namespace CaptureLabel
 
             }
             return result;
+        }
+
+        public static Tuple<List<List<double>>, List<List<int>>>  normalizeOutput(char mode, CoordinatesContainer realCoordinatesList)
+        {
+            CoordinatesContainer retCoordinates = realCoordinatesList;
+
+            List<List<int>> coordinates = new List<List<int>>(realCoordinatesList.getCoordinates());
+            List<List<int>> minMaxValues = new List<List<int>>();
+            List<List<double>> result = new List<List<double>>();
+
+
+            // transpose elements
+            coordinates = Enumerable.Range(0, coordinates[0].Count)
+                        .Select(i => coordinates.Select(lst => lst[i]).ToList()).ToList();
+
+            // find minimal and maximal value 
+            foreach(List<int> l in coordinates)
+            {
+                int min = l.Min();
+                int max = l.Max();
+
+                minMaxValues.Add(new List<int>() { min, max });
+
+                List<double> temp = new List<double>();
+
+                for(int i = 0; i < l.Count; i++)
+                {
+                    double val = (double)(l[i] - min) / (max - min);
+
+                    if (Double.IsNaN(val))
+                        val = 0;
+
+                    temp.Add(val);
+                }
+
+                result.Add(temp);
+            }
+
+            // transpose elements
+            result = Enumerable.Range(0, result[0].Count)
+                        .Select(i => result.Select(lst => lst[i]).ToList()).ToList();
+            
+
+            return Tuple.Create(result, minMaxValues);
         }
     }
 }

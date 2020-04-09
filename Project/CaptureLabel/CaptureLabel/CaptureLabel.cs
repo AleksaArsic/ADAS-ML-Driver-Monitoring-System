@@ -4,11 +4,8 @@ using System.IO;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Runtime.InteropServices;
-using System.Reflection;
-using CsvHelper;
-using System.Text;
 using System.Linq;
+using System.Reflection;
 
 namespace CaptureLabel
 {
@@ -150,7 +147,7 @@ namespace CaptureLabel
             if (e.KeyCode == Keys.Z)
             {
                 saveCoordinates();
-                Utilities.writeToCSV(mode, rectangles, realCoordinatesList, imageNames, lookAngleContainer, faceModeSize);
+                Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer, faceModeSize);
             }
         }
 
@@ -630,10 +627,6 @@ namespace CaptureLabel
             return rectCoordinates;
         }
 
-        
-
-        
-
         private void cleanUp()
         {
             imagePathTB.ReadOnly = false;
@@ -669,24 +662,7 @@ namespace CaptureLabel
             faceModeSize = new CoordinatesContainer();
             lookAngleContainer = new CoordinatesContainer();
 
-    }
-
-    private void FaceDetectionCB_CheckedChanged(object sender, EventArgs e)
-        {
-            FaceElementsCB.Checked = !FaceDetectionCB.Checked;
-            //switchMode();
-            if (!modeSet)
-                mode = Utilities.switchMode(FaceDetectionCB, FaceElementsCB);        
         }
-
-        private void FaceElementsCB_CheckedChanged(object sender, EventArgs e)
-        {
-            FaceDetectionCB.Checked = !FaceElementsCB.Checked;
-            //switchMode();
-            if(!modeSet)
-                mode = Utilities.switchMode(FaceDetectionCB, FaceElementsCB);
-        }
-
 
         private void initMode(char currentMode)
         {
@@ -759,7 +735,7 @@ namespace CaptureLabel
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
             saveCoordinates();
-            Utilities.writeToCSV(mode, rectangles, realCoordinatesList, imageNames, lookAngleContainer, faceModeSize);
+            Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer, faceModeSize);
         }
 
         private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -782,6 +758,35 @@ namespace CaptureLabel
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             MessageBox.Show(Constants.AboutMe, Constants.Version);
+        }
+
+        private void faceDetectionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            faceElementsDetectionToolStripMenuItem.Checked = false;
+            faceDetectionToolStripMenuItem.Checked = true;//!faceDetectionToolStripMenuItem.Checked;
+            //switchMode();
+            if (!modeSet)
+                mode = Utilities.switchMode(faceDetectionToolStripMenuItem, faceElementsDetectionToolStripMenuItem);
+        }
+
+        private void faceElementsDetectionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            faceDetectionToolStripMenuItem.Checked = false;
+            faceElementsDetectionToolStripMenuItem.Checked = true;// !faceElementsDetectionToolStripMenuItem.Checked;
+
+            //switchMode();
+            if (!modeSet)
+                mode = Utilities.switchMode(faceDetectionToolStripMenuItem, faceElementsDetectionToolStripMenuItem);
+        }
+
+        private void exportNormalizedCsvToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Tuple<List<List<double>>, List<List<int>>> normalized;
+
+            saveCoordinates();
+            normalized = Utilities.normalizeOutput(mode, realCoordinatesList);
+
+            Utilities.writeToCSV(mode, normalized.Item1, imageNames, lookAngleContainer, faceModeSize, true);
         }
     }
 }

@@ -57,14 +57,17 @@ namespace CaptureLabel
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.inFocusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
-            this.FaceDetectionCB = new System.Windows.Forms.CheckBox();
-            this.ModeGB = new System.Windows.Forms.GroupBox();
-            this.FaceElementsCB = new System.Windows.Forms.CheckBox();
             this.lookAngleGB = new System.Windows.Forms.GroupBox();
             this.downCB = new System.Windows.Forms.CheckBox();
             this.upCB = new System.Windows.Forms.CheckBox();
             this.rightCB = new System.Windows.Forms.CheckBox();
             this.leftCB = new System.Windows.Forms.CheckBox();
+            this.modeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.faceDetectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.faceElementsDetectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exportNormalizedCsvToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -72,7 +75,6 @@ namespace CaptureLabel
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource2)).BeginInit();
             this.statusStrip1.SuspendLayout();
-            this.ModeGB.SuspendLayout();
             this.lookAngleGB.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -84,7 +86,7 @@ namespace CaptureLabel
             this.groupBox1.Controls.Add(this.label2);
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBox1.Location = new System.Drawing.Point(1055, 103);
+            this.groupBox1.Location = new System.Drawing.Point(1055, 42);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(473, 192);
             this.groupBox1.TabIndex = 0;
@@ -142,6 +144,7 @@ namespace CaptureLabel
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
+            this.modeToolStripMenuItem,
             this.otherToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
@@ -155,6 +158,9 @@ namespace CaptureLabel
             this.newToolStripMenuItem,
             this.saveToolStripMenuItem,
             this.saveAsToolStripMenuItem,
+            this.toolStripSeparator1,
+            this.exportNormalizedCsvToolStripMenuItem,
+            this.toolStripSeparator2,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
@@ -164,7 +170,7 @@ namespace CaptureLabel
             // 
             this.newToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("newToolStripMenuItem.Image")));
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
             this.newToolStripMenuItem.Text = "New";
             this.newToolStripMenuItem.Click += new System.EventHandler(this.newToolStripMenuItem_Click);
             // 
@@ -235,7 +241,7 @@ namespace CaptureLabel
             // ZoomGB
             // 
             this.ZoomGB.Controls.Add(this.ZoomViewP);
-            this.ZoomGB.Location = new System.Drawing.Point(1055, 301);
+            this.ZoomGB.Location = new System.Drawing.Point(1055, 441);
             this.ZoomGB.Name = "ZoomGB";
             this.ZoomGB.Size = new System.Drawing.Size(73, 159);
             this.ZoomGB.TabIndex = 8;
@@ -264,48 +270,13 @@ namespace CaptureLabel
             this.inFocusLabel.Size = new System.Drawing.Size(107, 17);
             this.inFocusLabel.Text = "Currently in focus: ";
             // 
-            // FaceDetectionCB
-            // 
-            this.FaceDetectionCB.AutoSize = true;
-            this.FaceDetectionCB.Checked = true;
-            this.FaceDetectionCB.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.FaceDetectionCB.Location = new System.Drawing.Point(7, 19);
-            this.FaceDetectionCB.Name = "FaceDetectionCB";
-            this.FaceDetectionCB.Size = new System.Drawing.Size(97, 17);
-            this.FaceDetectionCB.TabIndex = 10;
-            this.FaceDetectionCB.Text = "Face detection";
-            this.FaceDetectionCB.UseVisualStyleBackColor = true;
-            this.FaceDetectionCB.CheckedChanged += new System.EventHandler(this.FaceDetectionCB_CheckedChanged);
-            // 
-            // ModeGB
-            // 
-            this.ModeGB.Controls.Add(this.FaceElementsCB);
-            this.ModeGB.Controls.Add(this.FaceDetectionCB);
-            this.ModeGB.Location = new System.Drawing.Point(1055, 42);
-            this.ModeGB.Name = "ModeGB";
-            this.ModeGB.Size = new System.Drawing.Size(221, 55);
-            this.ModeGB.TabIndex = 7;
-            this.ModeGB.TabStop = false;
-            this.ModeGB.Text = "Mode";
-            // 
-            // FaceElementsCB
-            // 
-            this.FaceElementsCB.AutoSize = true;
-            this.FaceElementsCB.Location = new System.Drawing.Point(121, 19);
-            this.FaceElementsCB.Name = "FaceElementsCB";
-            this.FaceElementsCB.Size = new System.Drawing.Size(95, 17);
-            this.FaceElementsCB.TabIndex = 11;
-            this.FaceElementsCB.Text = "Face elements";
-            this.FaceElementsCB.UseVisualStyleBackColor = true;
-            this.FaceElementsCB.CheckedChanged += new System.EventHandler(this.FaceElementsCB_CheckedChanged);
-            // 
             // lookAngleGB
             // 
             this.lookAngleGB.Controls.Add(this.downCB);
             this.lookAngleGB.Controls.Add(this.upCB);
             this.lookAngleGB.Controls.Add(this.rightCB);
             this.lookAngleGB.Controls.Add(this.leftCB);
-            this.lookAngleGB.Location = new System.Drawing.Point(1176, 321);
+            this.lookAngleGB.Location = new System.Drawing.Point(1055, 252);
             this.lookAngleGB.Name = "lookAngleGB";
             this.lookAngleGB.Size = new System.Drawing.Size(126, 79);
             this.lookAngleGB.TabIndex = 1;
@@ -356,13 +327,55 @@ namespace CaptureLabel
             this.leftCB.UseVisualStyleBackColor = true;
             this.leftCB.CheckedChanged += new System.EventHandler(this.leftCB_CheckedChanged);
             // 
+            // modeToolStripMenuItem
+            // 
+            this.modeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.faceDetectionToolStripMenuItem,
+            this.faceElementsDetectionToolStripMenuItem});
+            this.modeToolStripMenuItem.Name = "modeToolStripMenuItem";
+            this.modeToolStripMenuItem.Size = new System.Drawing.Size(50, 20);
+            this.modeToolStripMenuItem.Text = "Mode";
+            // 
+            // faceDetectionToolStripMenuItem
+            // 
+            this.faceDetectionToolStripMenuItem.Checked = true;
+            this.faceDetectionToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.faceDetectionToolStripMenuItem.Name = "faceDetectionToolStripMenuItem";
+            this.faceDetectionToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
+            this.faceDetectionToolStripMenuItem.Text = "Face detection";
+            this.faceDetectionToolStripMenuItem.Click += new System.EventHandler(this.faceDetectionToolStripMenuItem_Click);
+            // 
+            // faceElementsDetectionToolStripMenuItem
+            // 
+            this.faceElementsDetectionToolStripMenuItem.Name = "faceElementsDetectionToolStripMenuItem";
+            this.faceElementsDetectionToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
+            this.faceElementsDetectionToolStripMenuItem.Text = "Face elements detection";
+            this.faceElementsDetectionToolStripMenuItem.Click += new System.EventHandler(this.faceElementsDetectionToolStripMenuItem_Click);
+            // 
+            // exportNormalizedCsvToolStripMenuItem
+            // 
+            this.exportNormalizedCsvToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("exportNormalizedCsvToolStripMenuItem.Image")));
+            this.exportNormalizedCsvToolStripMenuItem.Name = "exportNormalizedCsvToolStripMenuItem";
+            this.exportNormalizedCsvToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
+            this.exportNormalizedCsvToolStripMenuItem.Text = "Export normalized .csv";
+            this.exportNormalizedCsvToolStripMenuItem.Click += new System.EventHandler(this.exportNormalizedCsvToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(187, 6);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(187, 6);
+            // 
             // CaptureLabel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1576, 966);
             this.Controls.Add(this.lookAngleGB);
-            this.Controls.Add(this.ModeGB);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.ZoomGB);
             this.Controls.Add(this.groupBox2);
@@ -384,8 +397,6 @@ namespace CaptureLabel
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource2)).EndInit();
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
-            this.ModeGB.ResumeLayout(false);
-            this.ModeGB.PerformLayout();
             this.lookAngleGB.ResumeLayout(false);
             this.lookAngleGB.PerformLayout();
             this.ResumeLayout(false);
@@ -418,14 +429,17 @@ namespace CaptureLabel
         private StatusStrip statusStrip1;
         private ToolStripStatusLabel inFocusLabel;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
-        private CheckBox FaceDetectionCB;
-        private GroupBox ModeGB;
-        private CheckBox FaceElementsCB;
         private GroupBox lookAngleGB;
         private CheckBox upCB;
         private CheckBox rightCB;
         private CheckBox leftCB;
         private CheckBox downCB;
+        private ToolStripMenuItem modeToolStripMenuItem;
+        private ToolStripMenuItem faceDetectionToolStripMenuItem;
+        private ToolStripMenuItem faceElementsDetectionToolStripMenuItem;
+        private ToolStripSeparator toolStripSeparator1;
+        private ToolStripMenuItem exportNormalizedCsvToolStripMenuItem;
+        private ToolStripSeparator toolStripSeparator2;
     }
 }
 

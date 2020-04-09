@@ -46,5 +46,10 @@ namespace CaptureLabel
             replaceRow(row, index);
 
         }
-}
+
+        public List<List<int>> getCoordinates()
+        {
+            return rowCoordinates;
+        }
+    }
 }
