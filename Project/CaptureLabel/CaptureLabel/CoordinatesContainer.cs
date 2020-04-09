@@ -2,28 +2,33 @@
 
 namespace CaptureLabel
 {
-    public class CoordinatesContainer
+    public class CoordinatesContainer<T>
     {
         // containes all coordinates of rectangles in one picture
-        private List<List<int>> rowCoordinates;
+        private List<List<T>> rowCoordinates;
 
         public CoordinatesContainer()
         {
-            rowCoordinates = new List<List<int>>();
+            rowCoordinates = new List<List<T>>();
         }
 
-        public void addRow(List<int> row)
+        public CoordinatesContainer(List<List<T>> l)
+        {
+            rowCoordinates = new List<List<T>>(l);
+        }
+
+        public void addRow(List<T> row)
         {
             rowCoordinates.Add(row);
         }
 
-        public void replaceRow(List<int> row, int index)
+        public void replaceRow(List<T> row, int index)
         {
             if (index < rowCoordinates.Count)
                 rowCoordinates[index] = row;
         }
 
-        public List<int> getRow(int index)
+        public List<T> getRow(int index)
         {
             if(index < rowCoordinates.Count)
                 return rowCoordinates[index];
@@ -38,16 +43,16 @@ namespace CaptureLabel
 
         public void setRowZero(int index)
         {
-            List<int> row = rowCoordinates[index];
+            List<T> row = rowCoordinates[index];
 
             for (int i = 0; i < row.Count; i++)
-                row[i] = 0;
+                row[i] = (T)(object)0;
 
             replaceRow(row, index);
 
         }
 
-        public List<List<int>> getCoordinates()
+        public List<List<T>> getCoordinates()
         {
             return rowCoordinates;
         }

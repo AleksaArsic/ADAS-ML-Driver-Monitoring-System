@@ -28,16 +28,16 @@ namespace CaptureLabel
         private bool someoneIsInFocus = false;
 
         // Coordinates of all rectangles in one *** picture set ***
-        private CoordinatesContainer coordinatesList = new CoordinatesContainer();
-        private CoordinatesContainer realCoordinatesList = new CoordinatesContainer();
+        private CoordinatesContainer<int> coordinatesList = new CoordinatesContainer<int>();
+        private CoordinatesContainer<int> realCoordinatesList = new CoordinatesContainer<int>();
         private bool isLoaded = false;
 
         // face mode look angle checkbox values
         // left, right, up, down
         // all zeroes represent center
         private int[] lookAngle = { 0, 0, 0, 0 };
-        private CoordinatesContainer lookAngleContainer = new CoordinatesContainer();
-        private CoordinatesContainer faceModeSize = new CoordinatesContainer();
+        private CoordinatesContainer<int> lookAngleContainer = new CoordinatesContainer<int>();
+        private CoordinatesContainer<int> faceModeSize = new CoordinatesContainer<int>();
 
         bool loaded = false;
 
@@ -354,12 +354,12 @@ namespace CaptureLabel
                     if(!String.IsNullOrEmpty(csvPath) && csvPath.Contains(".csv"))
                     {
                         // read and load coordinates from .csv
-                        realCoordinatesList = Utilities.readFromCSV(csvPath, mode);
+                        realCoordinatesList = Utilities.readFromCSV<int>(csvPath, mode);
 
                         //if (mode == 'f')
-                            lookAngleContainer = Utilities.readLookAngleFromCSV(csvPath);
+                            lookAngleContainer = Utilities.readLookAngleFromCSV<int>(csvPath);
 
-                        faceModeSize = Utilities.readFaceSizeFromCSV(csvPath);
+                        faceModeSize = Utilities.readFaceSizeFromCSV<int>(csvPath);
 
                         for (int i = 0; i < imageNames.Count; i++)
                         {
@@ -656,11 +656,11 @@ namespace CaptureLabel
             imagePadX = new List<double>();
             imagePadY = new List<double>();
             //rectangles = new RectangleContainer();
-            coordinatesList = new CoordinatesContainer();
-            realCoordinatesList = new CoordinatesContainer();
+            coordinatesList = new CoordinatesContainer<int>();
+            realCoordinatesList = new CoordinatesContainer<int>();
 
-            faceModeSize = new CoordinatesContainer();
-            lookAngleContainer = new CoordinatesContainer();
+            faceModeSize = new CoordinatesContainer<int>();
+            lookAngleContainer = new CoordinatesContainer<int>();
 
         }
 
@@ -782,11 +782,14 @@ namespace CaptureLabel
         private void exportNormalizedCsvToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Tuple<List<List<double>>, List<List<int>>> normalized;
+            CoordinatesContainer<double> normalizedCoordinates;
 
             saveCoordinates();
-            normalized = Utilities.normalizeOutput(mode, realCoordinatesList);
+            normalized = Utilities.normalizeOutput<double, int>(mode, realCoordinatesList);
 
-            Utilities.writeToCSV(mode, normalized.Item1, imageNames, lookAngleContainer, faceModeSize, true);
+            normalizedCoordinates = new CoordinatesContainer<double>(normalized.Item1);
+
+            Utilities.writeToCSV(mode, normalizedCoordinates, imageNames, lookAngleContainer, faceModeSize, true);
         }
     }
 }
