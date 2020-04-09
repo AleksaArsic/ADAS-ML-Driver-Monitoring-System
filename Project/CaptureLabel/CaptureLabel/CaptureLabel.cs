@@ -373,9 +373,7 @@ namespace CaptureLabel
                         for (int i = 0; i < realCoordinatesList.getSize(); i++)
                         {
                             singleRow = realCoordinatesList.getRow(i);
-                            List<int> tempCord = new List<int>(calculateRectangleCoordinates(singleRow, i));
-                            coordinatesList.addRow(tempCord);
-                            singleRow.Clear();
+                            coordinatesList.addRow(new List<int>(calculateRectangleCoordinates(singleRow, i)));
                         }
                         
                         imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
@@ -763,8 +761,8 @@ namespace CaptureLabel
         private void faceDetectionToolStripMenuItem_Click(object sender, EventArgs e)
         {
             faceElementsDetectionToolStripMenuItem.Checked = false;
-            faceDetectionToolStripMenuItem.Checked = true;//!faceDetectionToolStripMenuItem.Checked;
-            //switchMode();
+            faceDetectionToolStripMenuItem.Checked = true;
+
             if (!modeSet)
                 mode = Utilities.switchMode(faceDetectionToolStripMenuItem, faceElementsDetectionToolStripMenuItem);
         }
@@ -772,9 +770,8 @@ namespace CaptureLabel
         private void faceElementsDetectionToolStripMenuItem_Click(object sender, EventArgs e)
         {
             faceDetectionToolStripMenuItem.Checked = false;
-            faceElementsDetectionToolStripMenuItem.Checked = true;// !faceElementsDetectionToolStripMenuItem.Checked;
+            faceElementsDetectionToolStripMenuItem.Checked = true;
 
-            //switchMode();
             if (!modeSet)
                 mode = Utilities.switchMode(faceDetectionToolStripMenuItem, faceElementsDetectionToolStripMenuItem);
         }
@@ -782,14 +779,18 @@ namespace CaptureLabel
         private void exportNormalizedCsvToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Tuple<List<List<double>>, List<List<int>>> normalized;
+            Tuple<List<List<double>>, List<List<int>>> normalizedFS;
             CoordinatesContainer<double> normalizedCoordinates;
+            CoordinatesContainer<double> normalizedFaceSize;
 
             saveCoordinates();
-            normalized = Utilities.normalizeOutput<double, int>(mode, realCoordinatesList);
+            normalized = Utilities.normalizeOutput<double, int>(realCoordinatesList);
+            normalizedFS = Utilities.normalizeOutput<double, int>(faceModeSize);
 
             normalizedCoordinates = new CoordinatesContainer<double>(normalized.Item1);
+            normalizedFaceSize = new CoordinatesContainer<double>(normalizedFS.Item1);
 
-            Utilities.writeToCSV(mode, normalizedCoordinates, imageNames, lookAngleContainer, faceModeSize, true);
+            Utilities.writeToCSV(mode, normalizedCoordinates, imageNames, lookAngleContainer, normalizedFaceSize, true);
         }
     }
 }

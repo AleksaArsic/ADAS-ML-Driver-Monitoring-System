@@ -19,4 +19,4 @@ ImageCapture.py -v <--vsource> [-h]
 -v <--vsource>  
  - 0 - internal camera
  - 1 - external camera
- - < path > \ *.mp4 - video 
+ - < path > \ *.<video_format> - video 

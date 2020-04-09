@@ -59,13 +59,13 @@ namespace CaptureLabel
             return '0';
         }
 
-        public static void writeToCSV<T, U>(char mode, CoordinatesContainer<T> realCoordinatesList, List<string> imageNames, CoordinatesContainer<U> lookAngleContainer, CoordinatesContainer<U> faceModeSize, bool normalized = false)
+        public static void writeToCSV<T, U>(char mode, CoordinatesContainer<T> realCoordinatesList, List<string> imageNames, CoordinatesContainer<U> lookAngleContainer, CoordinatesContainer<T> faceModeSize, bool normalized = false)
         {
             bool boolMode = (mode == 'f' ? true : false);
             string csvPath = Path.Combine(new string[] { CaptureLabel.imageFolder, 
                                                         (boolMode ? "FaceMode" : "FaceElement") + 
-                                                        (normalized ? "_normalized" : "") +
-                                                        CaptureLabel.csvFileName }) + ".csv";
+                                                        CaptureLabel.csvFileName  +
+                                                        (normalized ? "_normalized" : "") }) + ".csv";
             TextWriter writer = new StreamWriter(@csvPath, false, Encoding.UTF8);
             CsvSerializer serializer = new CsvSerializer(writer, System.Globalization.CultureInfo.CurrentCulture);
             CsvWriter csv = new CsvWriter(serializer);
@@ -107,7 +107,7 @@ namespace CaptureLabel
                 foreach (T value in realCoordinatesList.getRow(i))
                     csv.WriteField(value);
 
-                if (mode == 'f' && !normalized)
+                if (mode == 'f')
                 {
                     foreach (U value in lookAngleContainer.getRow(i))
                         csv.WriteField(value);
@@ -210,7 +210,7 @@ namespace CaptureLabel
             return result;
         }
 
-        public static Tuple<List<List<T>>, List<List<int>>>  normalizeOutput<T, U>(char mode, CoordinatesContainer<U> realCoordinatesList)
+        public static Tuple<List<List<T>>, List<List<int>>>  normalizeOutput<T, U>(CoordinatesContainer<U> realCoordinatesList)
         {
             CoordinatesContainer<U> retCoordinates = realCoordinatesList;
 
