@@ -85,7 +85,7 @@ namespace CaptureLabel
                 foreach (string s in Constants.lookingAngleString)
                     csv.WriteField(s);
 
-                csv.WriteField("Face size:");
+                csv.WriteField("Face width:");
             }
 
             csv.NextRecord();
@@ -147,7 +147,7 @@ namespace CaptureLabel
             }
 
             if (boolMode)
-                csv.WriteField("Face size:");
+                csv.WriteField("Face width:");
 
             csv.NextRecord();
             csv.WriteField("");
@@ -308,6 +308,18 @@ namespace CaptureLabel
             
 
             return Tuple.Create(result, minMaxValues);
+        }
+        public static void correctFaceCoordinates(CoordinatesContainer<int> realCoordinatesList, CoordinatesContainer<int> faceModeSize, int scale, bool reverse = false)
+        {
+            int i = 0;
+            // correction factor for the first if face mode
+            foreach (List<int> l in realCoordinatesList.getCoordinates())
+            {
+                int halfWidth = (reverse == false ? faceModeSize.getRow(i)[0] / 2 : -faceModeSize.getRow(i)[0] / 2);
+                l[0] = l[0] + halfWidth;
+                l[1] = l[1] + halfWidth * scale;
+                i++;
+            }
         }
     }
 }

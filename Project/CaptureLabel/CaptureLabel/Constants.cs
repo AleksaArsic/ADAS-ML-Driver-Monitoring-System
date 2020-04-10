@@ -88,11 +88,12 @@ namespace CaptureLabel
 
         public static readonly Size[] faceModeStartSize =
         {
-            new Size(300, 300),
+            new Size(200, 400),
             new Size(10, 10),
             new Size(10, 10)
         };
 
         public static readonly int modeFRectDeltaSize = 3; // in px
+        public static readonly int modeFRectScale = 2; // 1 : 2
     }
 }

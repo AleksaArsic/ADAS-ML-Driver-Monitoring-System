@@ -147,7 +147,9 @@ namespace CaptureLabel
             if (e.KeyCode == Keys.Z)
             {
                 saveCoordinates();
+                Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, Constants.modeFRectScale);
                 Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer, faceModeSize);
+                Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, Constants.modeFRectScale, true);
             }
         }
 
@@ -234,9 +236,9 @@ namespace CaptureLabel
             if(mode == 'f' && Control.ModifierKeys == Keys.Control)
             {
                 if (e.Delta > 0)
-                    rectangles.addToRectSize(0, Constants.modeFRectDeltaSize, Constants.modeFRectDeltaSize);
+                    rectangles.addToRectSize(0, Constants.modeFRectDeltaSize, Constants.modeFRectDeltaSize * Constants.modeFRectScale);
                 else
-                    rectangles.addToRectSize(0, -Constants.modeFRectDeltaSize, -Constants.modeFRectDeltaSize);
+                    rectangles.addToRectSize(0, -Constants.modeFRectDeltaSize, -Constants.modeFRectDeltaSize * Constants.modeFRectScale);
 
                 imagePanel.Refresh();
 
@@ -357,9 +359,12 @@ namespace CaptureLabel
                         realCoordinatesList = Utilities.readFromCSV<int>(csvPath, mode);
 
                         //if (mode == 'f')
-                            lookAngleContainer = Utilities.readLookAngleFromCSV<int>(csvPath);
+                        lookAngleContainer = Utilities.readLookAngleFromCSV<int>(csvPath);
 
                         faceModeSize = Utilities.readFaceSizeFromCSV<int>(csvPath);
+
+                        if (mode == 'f')
+                            Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, Constants.modeFRectScale, true);
 
                         for (int i = 0; i < imageNames.Count; i++)
                         {
@@ -375,7 +380,7 @@ namespace CaptureLabel
                             singleRow = realCoordinatesList.getRow(i);
                             coordinatesList.addRow(new List<int>(calculateRectangleCoordinates(singleRow, i)));
                         }
-                        
+
                         imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
 
                         loadCoordinates(currentImageIndex);
@@ -545,7 +550,7 @@ namespace CaptureLabel
                 lookAngle = lookAngleContainer.getRow(index).ToArray();
 
                 if (mode == 'f')
-                    rectangles.setRectSize(0, new Size(faceSize[0], faceSize[0]));
+                    rectangles.setRectSize(0, new Size(faceSize[0], faceSize[0] * Constants.modeFRectScale));
 
                 // set checkboxes
                 setCheckBoxes(new CheckBox[] { leftCB, rightCB, upCB, downCB });
@@ -784,8 +789,11 @@ namespace CaptureLabel
             CoordinatesContainer<double> normalizedFaceSize;
             CoordinatesContainer<int> minMaxCoord;
             CoordinatesContainer<int> minMaxFS;
-
+            
             saveCoordinates();
+
+            Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, Constants.modeFRectScale);
+            
             normalized = Utilities.normalizeOutput<double, int>(realCoordinatesList);
             normalizedFS = Utilities.normalizeOutput<double, int>(faceModeSize);
 
@@ -798,6 +806,9 @@ namespace CaptureLabel
             Utilities.writeToCSV(mode, normalizedCoordinates, imageNames, lookAngleContainer, normalizedFaceSize, true);
             Utilities.writeMinMax(mode, minMaxCoord, minMaxFS, "MinMaxValues");
 
+            Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, Constants.modeFRectScale, true);
         }
+
+        
     }
 }
