@@ -149,12 +149,12 @@
   </data>
   <data name="exportNormalizedCsvToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAADXSURBVDhPY/j//z8Yf/v27T8MP3/zAYyRxaA4AaYehrEa
-        YFu96b9u4dr/y9ds/O/k5ATGycnJ/1+/fo1hCEzzBGQDTlx/+p8vdiHYkKcv34EN2L17D1ZDwJpXHr4F
-        1sAQPAcDx0zY97+1tfX/h/cfsRoCdjpIMwiDbIa5QC59OYoLQAYgGwJSBzcAZNPMnVfAgiCMrBmkCRYO
-        yBjFAHQXXHv4Cq4ZG0Y3ACUMQBLYNCFjFANABMgQkMD9+/fJMwBqCFgCmwZ0PGoAAQOIxVgNIBX///+f
-        AQDqkDWthC1hSwAAAABJRU5ErkJggg==
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
+        xAAADsQBlSsOGwAAANdJREFUOE9j+P//Pxh/+/btPww/f/MBjJHFoDgBph6GsRpgW73pv27h2v/L12z8
+        7+TkBMbJycn/X79+jWEITPMEZANOXH/6ny92IdiQpy/fgQ3YvXsPVkPAmlcevgXWwBA8BwPHTNj3v7W1
+        9f+H9x+xGgJ2OkgzCINshrlALn05igtABiAbAlIHNwBk08ydV8CCIIysGaQJFg7IGMUAdBdce/gKrhkb
+        RjcAJQxAEtg0IWMUA0AEyBCQwP3798kzAGoIWAKbBnQ8agABA4jFWA0gFf///58BAOqQNa2ELWFLAAAA
+        AElFTkSuQmCC
 </value>
   </data>
   <data name="aboutToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">

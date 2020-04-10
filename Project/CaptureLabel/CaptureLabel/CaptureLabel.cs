@@ -54,10 +54,11 @@ namespace CaptureLabel
             typeof(Panel).InvokeMember("DoubleBuffered", BindingFlags.SetProperty
                | BindingFlags.Instance | BindingFlags.NonPublic, null,
                imagePanel, new object[] { true });
+            /*
             typeof(Panel).InvokeMember("DoubleBuffered", BindingFlags.SetProperty
                | BindingFlags.Instance | BindingFlags.NonPublic, null,
                ZoomViewP, new object[] { true });
-
+            */
             initMode(mode);
         }
 
@@ -80,7 +81,7 @@ namespace CaptureLabel
                     scrollUp();
 
                 if (!isLoaded)
-                    rectangles.resetCoordinates();
+                    rectangles.resetCoordinates(mode);
 
                 rectangles.resetFocusList();
                 someoneIsInFocus = false;
@@ -104,25 +105,25 @@ namespace CaptureLabel
                 {
                     rectangles.addToFocused(-1, 0);
                     imagePanel.Refresh();
-                    setZoomView(mouseX, mouseY);
+                    //setZoomView(mouseX, mouseY);
                 }
                 if (e.KeyCode == Keys.Right)
                 {
                     rectangles.addToFocused(1, 0);
                     imagePanel.Refresh();
-                    setZoomView(mouseX, mouseY);
+                    //setZoomView(mouseX, mouseY);
                 }
                 if (e.KeyCode == Keys.Down)
                 {
                     rectangles.addToFocused(0, 1);
                     imagePanel.Refresh();
-                    setZoomView(mouseX, mouseY);
+                    //setZoomView(mouseX, mouseY);
                 }
                 if (e.KeyCode == Keys.Up)
                 {
                     rectangles.addToFocused(0, -1);
                     imagePanel.Refresh();
-                    setZoomView(mouseX, mouseY);
+                    //setZoomView(mouseX, mouseY);
                 }
             }
 
@@ -163,7 +164,7 @@ namespace CaptureLabel
                 mouseX = Cursor.Position.X;
                 mouseY = Cursor.Position.Y;
 
-                setZoomView(mouseX, mouseY);
+                //setZoomView(mouseX, mouseY);
 
                 // set rect in focus
                 currentlyInFocus = rectangles.contains(e.Location);
@@ -260,7 +261,7 @@ namespace CaptureLabel
             }
 
             if (!isLoaded)
-                rectangles.resetCoordinates();
+                rectangles.resetCoordinates(mode);
             rectangles.resetFocusList();
             someoneIsInFocus = false;
             imagePanel.Refresh();
@@ -413,6 +414,7 @@ namespace CaptureLabel
                     this.groupBox2.Height / 2 - imagePanel.Size.Height / 2);
         }
         */
+        /*
         private void setZoomView(int xCoordinate, int yCoordinate)
         {
             // Zoom View copy
@@ -431,7 +433,7 @@ namespace CaptureLabel
             }
             ZoomViewP.BackgroundImage = zoomedPortion;
         }
-
+        */
         private void scrollDown()
         {
             currentImageIndex++;
@@ -677,7 +679,7 @@ namespace CaptureLabel
             if (currentMode == 'e')
             {
                 rectangles = new RectangleContainer();
-                //lookAngleGB.Visible = false;
+                lookAngleGB.Visible = false;
             }
         }
 

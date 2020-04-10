@@ -212,16 +212,18 @@ namespace CaptureLabel
             }
         }
 
-        public void resetCoordinates()
+        public void resetCoordinates(char mode)
         {
             int j = 0;
+
+            int[] rectSLocation = (mode == 'f') ? Constants.faceModeStartPos : rectStartLoc;
 
             for (int i = 0; i < rectContainer.Count * 2; i += 2, j++)
             {
                 Rectangle rect = rectContainer[j];
 
-                rect.X = rectStartLoc[i];
-                rect.Y = rectStartLoc[i + 1];
+                rect.X = rectSLocation[i];
+                rect.Y = rectSLocation[i + 1];
 
                 rectContainer[j] = rect;
             }
@@ -241,10 +243,10 @@ namespace CaptureLabel
             rectContainer[index] = rect;
         }
 
-        public void resetState()
+        public void resetState(char mode)
         {
             resetFocusList();
-            resetCoordinates();
+            resetCoordinates(mode);
         }
     }
 }

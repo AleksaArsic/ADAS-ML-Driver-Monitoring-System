@@ -83,7 +83,7 @@ namespace CaptureLabel
             200, 200,
 
             250, 250,
-            300, 250
+            350, 250
         };
 
         public static readonly Size[] faceModeStartSize =
