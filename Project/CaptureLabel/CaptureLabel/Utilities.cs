@@ -121,6 +121,62 @@ namespace CaptureLabel
             writer.Close();
         }
 
+        public static void writeMinMax<T, U>(char mode, CoordinatesContainer<T> minMax, CoordinatesContainer<U> faceModeMinMax, string fileName)
+        {
+            bool boolMode = (mode == 'f' ? true : false);
+            string csvPath = Path.Combine(new string[] { CaptureLabel.imageFolder,
+                                                        (boolMode ? "FaceMode" : "FaceElement") +
+                                                        fileName }) + ".csv";
+            TextWriter writer = new StreamWriter(@csvPath, false, Encoding.UTF8);
+            CsvSerializer serializer = new CsvSerializer(writer, System.Globalization.CultureInfo.CurrentCulture);
+            CsvWriter csv = new CsvWriter(serializer);
+
+            List<List<T>> minMaxT = new List<List<T>>(minMax.getCoordinates());
+            minMaxT = Enumerable.Range(0, minMaxT[0].Count)
+                        .Select(i => minMaxT.Select(lst => lst[i]).ToList()).ToList();
+
+            csv.WriteField("");
+
+            string[] rectNames = (boolMode) ? Constants.namesF : Constants.namesE;
+
+            
+            foreach (string s in rectNames)
+            {
+                csv.WriteField(s);
+                csv.WriteField("");
+            }
+
+            if (boolMode)
+                csv.WriteField("Face size:");
+
+            csv.NextRecord();
+            csv.WriteField("");
+
+            for (int i = 0; i < rectNames.Length; i++)
+            {
+                csv.WriteField("(x,");
+                csv.WriteField("y)");
+            }
+
+            csv.NextRecord();
+            csv.WriteField("Min:");
+
+            for (int i = 0; i < minMaxT.Count; i++)
+            {
+
+                for(int j = 0; j < minMaxT[i].Count; j++)
+                    csv.WriteField(minMaxT[i][j]);
+
+                if(mode == 'f')
+                    csv.WriteField(faceModeMinMax.getRow(0)[i]);
+
+                csv.NextRecord();
+                csv.WriteField("Max:");
+            }
+
+            writer.Close();
+        }
+
         public static CoordinatesContainer<T> readFromCSV<T>(string path, char mode)
         {
 

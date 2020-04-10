@@ -782,15 +782,22 @@ namespace CaptureLabel
             Tuple<List<List<double>>, List<List<int>>> normalizedFS;
             CoordinatesContainer<double> normalizedCoordinates;
             CoordinatesContainer<double> normalizedFaceSize;
+            CoordinatesContainer<int> minMaxCoord;
+            CoordinatesContainer<int> minMaxFS;
 
             saveCoordinates();
             normalized = Utilities.normalizeOutput<double, int>(realCoordinatesList);
             normalizedFS = Utilities.normalizeOutput<double, int>(faceModeSize);
 
             normalizedCoordinates = new CoordinatesContainer<double>(normalized.Item1);
+            minMaxCoord = new CoordinatesContainer<int>(normalized.Item2);
             normalizedFaceSize = new CoordinatesContainer<double>(normalizedFS.Item1);
+            minMaxFS = new CoordinatesContainer<int>(normalizedFS.Item2);
+
 
             Utilities.writeToCSV(mode, normalizedCoordinates, imageNames, lookAngleContainer, normalizedFaceSize, true);
+            Utilities.writeMinMax(mode, minMaxCoord, minMaxFS, "MinMaxValues");
+
         }
     }
 }
