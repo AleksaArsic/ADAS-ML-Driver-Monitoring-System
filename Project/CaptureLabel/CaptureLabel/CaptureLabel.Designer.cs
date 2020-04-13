@@ -167,7 +167,7 @@ namespace CaptureLabel
             // 
             this.newToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("newToolStripMenuItem.Image")));
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(265, 22);
             this.newToolStripMenuItem.Text = "New";
             this.newToolStripMenuItem.Click += new System.EventHandler(this.newToolStripMenuItem_Click);
             // 
@@ -175,6 +175,7 @@ namespace CaptureLabel
             // 
             this.saveToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("saveToolStripMenuItem.Image")));
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
+            this.saveToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
             this.saveToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
             this.saveToolStripMenuItem.Text = "Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
@@ -183,6 +184,8 @@ namespace CaptureLabel
             // 
             this.saveAsToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("saveAsToolStripMenuItem.Image")));
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
+            this.saveAsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.S)));
             this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
             this.saveAsToolStripMenuItem.Text = "Save as...";
             this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
@@ -196,7 +199,9 @@ namespace CaptureLabel
             // 
             this.exportNormalizedCsvToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("exportNormalizedCsvToolStripMenuItem.Image")));
             this.exportNormalizedCsvToolStripMenuItem.Name = "exportNormalizedCsvToolStripMenuItem";
-            this.exportNormalizedCsvToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
+            this.exportNormalizedCsvToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.E)));
+            this.exportNormalizedCsvToolStripMenuItem.Size = new System.Drawing.Size(265, 22);
             this.exportNormalizedCsvToolStripMenuItem.Text = "Export normalized .csv";
             this.exportNormalizedCsvToolStripMenuItem.Click += new System.EventHandler(this.exportNormalizedCsvToolStripMenuItem_Click);
             // 

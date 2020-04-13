@@ -9,47 +9,11 @@ namespace CaptureLabel
         private List<Rectangle> rectContainer = new List<Rectangle>();
         private List<bool> rectFocusList = new List<bool>();
 
-        private Size rectSize = new Size(10, 10);
-
-        private readonly int[] rectStartLoc =
-            {
-                // (x, y)
-
-                // LEFT EYE
-                // leftEyeUp
-                250, 200,
-                // leftEyeDown
-                250, 250,
-                // leftEyeLeft
-                200, 225,
-                // leftEyeRight
-                300, 225,
-
-                // RIGHT EYE
-                // rightEyeUp
-                750, 200,
-                // rightEyeDown
-                750, 250,
-                // rightEyeLeft
-                700, 225,
-                // rightEyeRight
-                800, 225,
-
-                // NOSE
-                500, 400,
-
-                // MOUTH
-                // mouthUp
-                500, 500,
-                // mouthDown
-                500, 600
-            };
-
         public RectangleContainer()
         {
-            for (int i = 0; i < rectStartLoc.Length; i += 2)
+            for (int i = 0; i < Constants.faceElementStartPos.Length; i += 2)
             {
-                rectContainer.Add(new Rectangle(new Point(rectStartLoc[i], rectStartLoc[i + 1]), rectSize));
+                rectContainer.Add(new Rectangle(new Point(Constants.faceElementStartPos[i], Constants.faceElementStartPos[i + 1]), Constants.rectSize));
                 rectFocusList.Add(false);
             }
         }
@@ -216,7 +180,7 @@ namespace CaptureLabel
         {
             int j = 0;
 
-            int[] rectSLocation = (mode == 'f') ? Constants.faceModeStartPos : rectStartLoc;
+            int[] rectSLocation = (mode == 'f') ? Constants.faceModeStartPos : Constants.faceElementStartPos;
 
             for (int i = 0; i < rectContainer.Count * 2; i += 2, j++)
             {

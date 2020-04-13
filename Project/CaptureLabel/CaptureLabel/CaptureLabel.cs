@@ -15,12 +15,17 @@ namespace CaptureLabel
         public static string imageFolder = "";
         public static string csvPath = "";
         public static string csvFileName = "newCsv.csv";
+        public static string saveDirectory = "";
+        public static string exportDirectory = "";
+        public static string exportMinMaxDirectory = "";
         private List<string> imageLocation = new List<string>();
         private List<string> imageNames = new List<string>();
         private List<double> imageResizeFactor = new List<double>();
         private List<double> imagePadX = new List<double>();
         private List<double> imagePadY = new List<double>();
         private int currentImageIndex = 0;
+
+        private bool savedAs = false;
 
         // Rectangle labelers variables
         private RectangleContainer rectangles;
@@ -145,13 +150,16 @@ namespace CaptureLabel
             }
 
 
+            /*
             if (e.KeyCode == Keys.Z)
             {
+                // correct coordinates only if the face mode is used
                 saveCoordinates();
                 Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, Constants.modeFRectScale);
                 Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer, faceModeSize);
                 Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, Constants.modeFRectScale, true);
             }
+            */
         }
 
 
@@ -571,8 +579,8 @@ namespace CaptureLabel
 
             int realW = imagePanel.BackgroundImage.Width;
             int realH = imagePanel.BackgroundImage.Height;
-            int currentW = imagePanel.ClientRectangle.Width;
-            int currentH = imagePanel.ClientRectangle.Height;
+            int currentW = imagePanel.Width;
+            int currentH = imagePanel.Height;
             double wFactor = (double)currentW / realW;
             double hFactor = (double)currentH / realH;
 
@@ -654,6 +662,7 @@ namespace CaptureLabel
             currentImageIndex = 0;
             isLoaded = false;
             someoneIsInFocus = false;
+            savedAs = false;
 
             imageLocation = new List<string>();
             imageNames = new List<string>();
@@ -725,7 +734,10 @@ namespace CaptureLabel
             if(MessageBox.Show(Constants.saveProgressString, "Caution!", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 // save logic
-                Console.WriteLine("Save");
+                if (!savedAs)
+                    saveAs();
+                else
+                    save();
             }
             
             loaded = false;
@@ -739,21 +751,78 @@ namespace CaptureLabel
 
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            saveCoordinates();
-            Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer, faceModeSize);
+            if (!loaded)
+            {
+                MessageBox.Show(Constants.pleaseImport, Constants.pleaseImportCaption, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                if(!savedAs)
+                    saveAs();
+                else
+                    save();
+            }
         }
 
         private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // save as logic
+
+            saveAs();
+        }
+
+        private void saveAs()
+        {
+            if (!loaded)
+            {
+                MessageBox.Show(Constants.pleaseImport, Constants.pleaseImportCaption, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                SaveFileDialog saveFileDialog = new SaveFileDialog();
+                saveFileDialog.Filter = "CSV File|*.csv|All files|*.*";
+                saveFileDialog.Title = "Save .csv File";
+                saveFileDialog.RestoreDirectory = true;
+
+                if(saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // only correct if face mode is used
+
+                    saveDirectory = saveFileDialog.FileName;//Path.GetFullPath(saveFileDialog.FileName);    
+
+                    saveCoordinates();
+                    Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, Constants.modeFRectScale);
+                    Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer, faceModeSize);
+                    Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, Constants.modeFRectScale, true);
+
+                    savedAs = true;
+                }
+
+            }
+        }
+
+        private void save()
+        {
+            saveCoordinates();
+            Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer, faceModeSize);
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show(Constants.saveProgressString, "Caution!", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            if (loaded)
             {
-                // save logic
-                Console.WriteLine("Save");
+                if (MessageBox.Show(Constants.saveProgressString, "Caution!", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    // save logic
+
+                    if (!savedAs)
+                        saveAs();
+                    else
+                    {
+                        save();
+                        MessageBox.Show(Constants.progressSaved, Constants.progressSavedCaption, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
             }
             
             Application.Exit();
@@ -785,17 +854,63 @@ namespace CaptureLabel
 
         private void exportNormalizedCsvToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if(!loaded)
+            {
+                MessageBox.Show(Constants.pleaseImport, Constants.pleaseImportCaptionExport, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                if(!savedAs)
+                {
+
+                    if (!String.IsNullOrEmpty(csvPath))
+                    {
+                        saveDirectory = csvPath;
+                        save();
+                    }
+                    else
+                    {
+                        MessageBox.Show(Constants.pleaseSave, Constants.pleaseSaveCaption, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        saveAs();
+                    }
+                }
+                else
+                {
+                    save();
+                }
+
+
+                SaveFileDialog saveFileDialog = new SaveFileDialog();
+                saveFileDialog.Filter = "CSV File|*.csv|All files|*.*";
+                saveFileDialog.Title = "Export normalized .csv File";
+                saveFileDialog.RestoreDirectory = true;
+
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    exportDirectory = saveFileDialog.FileName;
+                    exportMinMaxDirectory = Path.Combine(Path.GetDirectoryName(saveFileDialog.FileName),
+                                            Path.GetFileNameWithoutExtension(saveFileDialog.FileName) + "_min_max.csv");
+
+                    exportNormalized();
+                }
+
+            }
+
+        }
+
+        private void exportNormalized()
+        {
             Tuple<List<List<double>>, List<List<int>>> normalized;
             Tuple<List<List<double>>, List<List<int>>> normalizedFS;
             CoordinatesContainer<double> normalizedCoordinates;
             CoordinatesContainer<double> normalizedFaceSize;
             CoordinatesContainer<int> minMaxCoord;
             CoordinatesContainer<int> minMaxFS;
-            
+
             saveCoordinates();
 
             Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, Constants.modeFRectScale);
-            
+
             normalized = Utilities.normalizeOutput<double, int>(realCoordinatesList);
             normalizedFS = Utilities.normalizeOutput<double, int>(faceModeSize);
 
@@ -810,7 +925,5 @@ namespace CaptureLabel
 
             Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, Constants.modeFRectScale, true);
         }
-
-        
     }
 }

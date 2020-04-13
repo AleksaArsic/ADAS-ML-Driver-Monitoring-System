@@ -17,8 +17,15 @@ namespace CaptureLabel
         public static readonly string errorCaption = "Error!";
         public static readonly string pathExceptionMsg = "Path not valid.";
         public static readonly string csvFileNameExceptionMsg = "Input file is not .csv file format";
-
+        public static readonly string pleaseImport = "Please import data first";
+        public static readonly string pleaseImportCaption = "Nothing to be saved";
+        public static readonly string pleaseImportCaptionExport = "Nothing to be exported";
+        public static readonly string pleaseSave = "Please save your progress";
+        public static readonly string pleaseSaveCaption = "Please save";
         public static readonly string saveProgressString = "All changes will be deleted. Do you want to save them?";
+        public static readonly string progressSaved = "Progress saved successfully";
+        public static readonly string progressSavedCaption = "Progress saved";
+
 
         public static readonly int[] rectStartPos = { 200, 200 };
 
@@ -77,6 +84,42 @@ namespace CaptureLabel
             "Left eye",
             "Right eye "
         };
+
+        public static Size rectSize = new Size(10, 10);
+
+        public static readonly int[] faceElementStartPos =
+            {
+                // (x, y)
+
+                // LEFT EYE
+                // leftEyeUp
+                250, 200,
+                // leftEyeDown
+                250, 250,
+                // leftEyeLeft
+                200, 225,
+                // leftEyeRight
+                300, 225,
+
+                // RIGHT EYE
+                // rightEyeUp
+                750, 200,
+                // rightEyeDown
+                750, 250,
+                // rightEyeLeft
+                700, 225,
+                // rightEyeRight
+                800, 225,
+
+                // NOSE
+                500, 400,
+
+                // MOUTH
+                // mouthUp
+                500, 500,
+                // mouthDown
+                500, 600
+            };
 
         public static readonly int[] faceModeStartPos =
         {

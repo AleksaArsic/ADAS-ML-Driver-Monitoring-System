@@ -62,10 +62,13 @@ namespace CaptureLabel
         public static void writeToCSV<T, U>(char mode, CoordinatesContainer<T> realCoordinatesList, List<string> imageNames, CoordinatesContainer<U> lookAngleContainer, CoordinatesContainer<T> faceModeSize, bool normalized = false)
         {
             bool boolMode = (mode == 'f' ? true : false);
-            string csvPath = Path.Combine(new string[] { CaptureLabel.imageFolder, 
-                                                        (boolMode ? "FaceMode" : "FaceElement") + 
-                                                        CaptureLabel.csvFileName  +
-                                                        (normalized ? "_normalized" : "") }) + ".csv";
+            //string csvPath = CaptureLabel.saveDirectory;
+            //Path.Combine(new string[] { CaptureLabel.imageFolder, 
+            //(boolMode ? "FaceMode" : "FaceElement") + 
+            //CaptureLabel.csvFileName  +
+            //(normalized ? "_normalized" : "") }) + ".csv";
+
+            string csvPath = (normalized == true ? CaptureLabel.exportDirectory : CaptureLabel.saveDirectory);
             TextWriter writer = new StreamWriter(@csvPath, false, Encoding.UTF8);
             CsvSerializer serializer = new CsvSerializer(writer, System.Globalization.CultureInfo.CurrentCulture);
             CsvWriter csv = new CsvWriter(serializer);
@@ -124,10 +127,7 @@ namespace CaptureLabel
         public static void writeMinMax<T, U>(char mode, CoordinatesContainer<T> minMax, CoordinatesContainer<U> faceModeMinMax, string fileName)
         {
             bool boolMode = (mode == 'f' ? true : false);
-            string csvPath = Path.Combine(new string[] { CaptureLabel.imageFolder,
-                                                        (boolMode ? "FaceMode" : "FaceElement") +
-                                                        fileName }) + ".csv";
-            TextWriter writer = new StreamWriter(@csvPath, false, Encoding.UTF8);
+            TextWriter writer = new StreamWriter(CaptureLabel.exportMinMaxDirectory, false, Encoding.UTF8);
             CsvSerializer serializer = new CsvSerializer(writer, System.Globalization.CultureInfo.CurrentCulture);
             CsvWriter csv = new CsvWriter(serializer);
 
@@ -210,7 +210,6 @@ namespace CaptureLabel
 
         public static CoordinatesContainer<T> readLookAngleFromCSV<T>(string path)
         {
-
             CoordinatesContainer<T> result = new CoordinatesContainer<T>();
             List<T> singleRow = new List<T>();
             T value;
