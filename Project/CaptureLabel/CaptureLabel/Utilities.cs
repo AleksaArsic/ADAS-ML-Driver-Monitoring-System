@@ -223,7 +223,7 @@ namespace CaptureLabel
 
                 while (csv.Read())
                 {
-                    for (int i = 7; csv.TryGetField<T>(i, out value); i++)
+                    for (int i = 7; csv.TryGetField<T>(i, out value) && i < 11; i++)
                     {
                         singleRow.Add(value);
                     }
