@@ -245,9 +245,9 @@ namespace CaptureLabel
             if(mode == 'f' && Control.ModifierKeys == Keys.Control)
             {
                 if (e.Delta > 0)
-                    rectangles.addToRectSize(0, Constants.modeFRectDeltaSize, Constants.modeFRectDeltaSize * Constants.modeFRectScale);
+                    rectangles.addToRectSize(0, Constants.modeFRectDeltaSize, (int)(Constants.modeFRectDeltaSize * Constants.modeFRectScale));
                 else
-                    rectangles.addToRectSize(0, -Constants.modeFRectDeltaSize, -Constants.modeFRectDeltaSize * Constants.modeFRectScale);
+                    rectangles.addToRectSize(0, -Constants.modeFRectDeltaSize, (int)(-Constants.modeFRectDeltaSize * Constants.modeFRectScale));
 
                 imagePanel.Refresh();
 
@@ -560,7 +560,7 @@ namespace CaptureLabel
                 lookAngle = lookAngleContainer.getRow(index).ToArray();
 
                 if (mode == 'f')
-                    rectangles.setRectSize(0, new Size(faceSize[0], faceSize[0] * Constants.modeFRectScale));
+                    rectangles.setRectSize(0, new Size(faceSize[0], (int)(faceSize[0] * Constants.modeFRectScale)));
 
                 // set checkboxes
                 setCheckBoxes(new CheckBox[] { leftCB, rightCB, upCB, downCB });
@@ -790,10 +790,14 @@ namespace CaptureLabel
 
                     saveDirectory = saveFileDialog.FileName;//Path.GetFullPath(saveFileDialog.FileName);    
 
+                    /*
                     saveCoordinates();
                     Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, Constants.modeFRectScale);
                     Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer, faceModeSize);
                     Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, Constants.modeFRectScale, true);
+                    */
+
+                    save();
 
                     savedAs = true;
                 }
@@ -804,7 +808,9 @@ namespace CaptureLabel
         private void save()
         {
             saveCoordinates();
+            Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, Constants.modeFRectScale);
             Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer, faceModeSize);
+            Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, Constants.modeFRectScale, true);
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)

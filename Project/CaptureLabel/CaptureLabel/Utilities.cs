@@ -68,6 +68,7 @@ namespace CaptureLabel
             //CaptureLabel.csvFileName  +
             //(normalized ? "_normalized" : "") }) + ".csv";
 
+            // should be embedded in try-catch
             string csvPath = (normalized == true ? CaptureLabel.exportDirectory : CaptureLabel.saveDirectory);
             TextWriter writer = new StreamWriter(@csvPath, false, Encoding.UTF8);
             CsvSerializer serializer = new CsvSerializer(writer, System.Globalization.CultureInfo.CurrentCulture);
@@ -308,7 +309,7 @@ namespace CaptureLabel
 
             return Tuple.Create(result, minMaxValues);
         }
-        public static void correctFaceCoordinates(CoordinatesContainer<int> realCoordinatesList, CoordinatesContainer<int> faceModeSize, int scale, bool reverse = false)
+        public static void correctFaceCoordinates(CoordinatesContainer<int> realCoordinatesList, CoordinatesContainer<int> faceModeSize, double scale, bool reverse = false)
         {
             int i = 0;
             // correction factor for the first if face mode
@@ -316,7 +317,7 @@ namespace CaptureLabel
             {
                 int halfWidth = (reverse == false ? faceModeSize.getRow(i)[0] / 2 : -faceModeSize.getRow(i)[0] / 2);
                 l[0] = l[0] + halfWidth;
-                l[1] = l[1] + halfWidth * scale;
+                l[1] = l[1] + (int)(halfWidth * scale);
                 i++;
             }
         }
