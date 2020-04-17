@@ -29,12 +29,18 @@ def startCapture(val):
 def keyframesTracker(val):
     pass
 
+def change_res(cap, width, height):
+    cap.set(3, width)
+    cap.set(4, height)
+
 def frameCapture(vsource):
 
     if(isinstance(vsource, int)):
         cap = cv2.VideoCapture(vsource + cv2.CAP_DSHOW)
+        change_res(cap, 1280, 720)
     else:
         cap = cv2.VideoCapture(vsource)
+
 
     #cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     #cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
