@@ -20,3 +20,6 @@ ImageCapture.py -v <--vsource> [-h]
  - 0 - internal camera
  - 1 - external camera
  - < path > \ *.<video_format> - video 
+
+**Output:**
+  - ./<dir_name> - directory that contains captured images from <--vsource>
