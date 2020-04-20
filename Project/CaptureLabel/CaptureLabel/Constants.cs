@@ -25,7 +25,7 @@ namespace CaptureLabel
         public static readonly string saveProgressString = "All changes will be deleted. Do you want to save them?";
         public static readonly string progressSaved = "Progress saved successfully";
         public static readonly string progressSavedCaption = "Progress saved";
-
+        public static readonly string modeSwitchInformation = "Please re-import data to complete mode switch.";
 
         public static readonly int[] rectStartPos = { 200, 200 };
 

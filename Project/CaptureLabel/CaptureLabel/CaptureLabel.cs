@@ -845,8 +845,23 @@ namespace CaptureLabel
             faceElementsDetectionToolStripMenuItem.Checked = false;
             faceDetectionToolStripMenuItem.Checked = true;
 
-            if (!modeSet)
-                mode = Utilities.switchMode(faceDetectionToolStripMenuItem, faceElementsDetectionToolStripMenuItem);
+            if (loaded)
+            {
+                if (MessageBox.Show(Constants.saveProgressString, "Caution!", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    // save logic
+                    if (!savedAs)
+                        saveAs();
+                    else
+                        save();
+                }
+
+            }
+
+            MessageBox.Show(Constants.modeSwitchInformation, "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            //if (!modeSet)
+            mode = Utilities.switchMode(faceDetectionToolStripMenuItem, faceElementsDetectionToolStripMenuItem);
         }
 
         private void faceElementsDetectionToolStripMenuItem_Click(object sender, EventArgs e)
@@ -854,8 +869,23 @@ namespace CaptureLabel
             faceDetectionToolStripMenuItem.Checked = false;
             faceElementsDetectionToolStripMenuItem.Checked = true;
 
-            if (!modeSet)
-                mode = Utilities.switchMode(faceDetectionToolStripMenuItem, faceElementsDetectionToolStripMenuItem);
+            if (loaded)
+            {
+                if (MessageBox.Show(Constants.saveProgressString, "Caution!", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    // save logic
+                    if (!savedAs)
+                        saveAs();
+                    else
+                        save();
+                }
+
+            }
+
+            MessageBox.Show(Constants.modeSwitchInformation, "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            //if (!modeSet)
+            mode = Utilities.switchMode(faceDetectionToolStripMenuItem, faceElementsDetectionToolStripMenuItem);
         }
 
         private void exportNormalizedCsvToolStripMenuItem_Click(object sender, EventArgs e)
