@@ -420,4 +420,6 @@ MigrationBackup/
 
 # 3D Images
 *.3dm
-*.max
+
+# sensitive
+POPUNJEN OBRAZAC - Velibor Ilić.doc
