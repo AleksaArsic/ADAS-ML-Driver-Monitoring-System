@@ -309,9 +309,22 @@ namespace CaptureLabel
 
             return Tuple.Create(result, minMaxValues);
         }
-        public static void correctFaceCoordinates(CoordinatesContainer<int> realCoordinatesList, CoordinatesContainer<int> faceModeSize, double scale, bool reverse = false)
+        public static void correctFaceCoordinates(CoordinatesContainer<int> realCoordinatesList, CoordinatesContainer<int> faceModeSize, List<double> imageResizeFactor, double scale, bool reverse = false)
         {
             int i = 0;
+
+            // scale faceModeSize (face width) to get real coordinates of face right
+            if(!reverse)
+            {
+                foreach (List<int> l in faceModeSize.getCoordinates())
+                {
+                    l[0] = (int)(l[0] / imageResizeFactor[i]);
+                    i++;
+                }
+            }
+            
+
+            i = 0;
             // correction factor for the first if face mode
             foreach (List<int> l in realCoordinatesList.getCoordinates())
             {
@@ -319,6 +332,17 @@ namespace CaptureLabel
                 l[0] = l[0] + halfWidth;
                 l[1] = l[1] + (int)(halfWidth * scale);
                 i++;
+            }
+
+            // scale faceModeSize (face width) to get relative coordinates (rectangleCoordinates) of face right
+            i = 0;
+            if(reverse)
+            {
+                foreach (List<int> l in faceModeSize.getCoordinates())
+                {
+                    l[0] = (int)(l[0] * imageResizeFactor[i]);
+                    i++;
+                }
             }
         }
     }

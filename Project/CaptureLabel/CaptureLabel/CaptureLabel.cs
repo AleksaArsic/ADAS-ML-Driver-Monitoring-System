@@ -372,16 +372,16 @@ namespace CaptureLabel
 
                         faceModeSize = Utilities.readFaceSizeFromCSV<int>(csvPath);
 
-                        if (mode == 'f')
-                            Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, Constants.modeFRectScale, true);
-
                         for (int i = 0; i < imageNames.Count; i++)
                         {
                             imagePanel.BackgroundImage = Image.FromFile(imageLocation[i]);
                             calculateResizeFactor(i);
                             imagePanel.BackgroundImage.Dispose();
                         }
-                        
+
+                        if (mode == 'f')
+                            Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale, true);
+
                         List<int> singleRow;
                         // set rectangle coordinates based on real one read from .csv file
                         for (int i = 0; i < realCoordinatesList.getSize(); i++)
@@ -808,9 +808,9 @@ namespace CaptureLabel
         private void save()
         {
             saveCoordinates();
-            Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, Constants.modeFRectScale);
+            Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale);
             Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer, faceModeSize);
-            Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, Constants.modeFRectScale, true);
+            Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale, true);
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -945,7 +945,7 @@ namespace CaptureLabel
 
             saveCoordinates();
 
-            Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, Constants.modeFRectScale);
+            Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale);
 
             normalized = Utilities.normalizeOutput<double, int>(realCoordinatesList);
             normalizedFS = Utilities.normalizeOutput<double, int>(faceModeSize);
@@ -959,7 +959,7 @@ namespace CaptureLabel
             Utilities.writeToCSV(mode, normalizedCoordinates, imageNames, lookAngleContainer, normalizedFaceSize, true);
             Utilities.writeMinMax(mode, minMaxCoord, minMaxFS, "MinMaxValues");
 
-            Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, Constants.modeFRectScale, true);
+            Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale, true);
         }
     }
 }
