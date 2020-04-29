@@ -124,12 +124,13 @@ def predictFromImages():
     denormalizeAllPredictions(predictions, minMaxValues)
 
     # first load images again because we at this point have only gray images
+    images = []
     [images, filenames] = Utilities.loadImages(imgsDir, images)
 
     # crop images
 
     cnt = 0    
-    for image in images:
+    for img in images:
         # calculate coordinates to crop from
 
         topLeftX = int(predictions[cnt][0] - (predictions[cnt][6] / 2))
@@ -138,7 +139,8 @@ def predictFromImages():
         bottomRightX = int(predictions[cnt][0] + (predictions[cnt][6] / 2))
         bottomRightY = int(predictions[cnt][1] + ((predictions[cnt][6] / 2) * 1.5))
 
-        croppedImage = image[topLeftY:bottomRightY, topLeftX:bottomRightX]
+        print(img.shape)
+        croppedImage = img[topLeftY:bottomRightY, topLeftX:bottomRightX]
 
         cv2.imwrite('D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\output_2020_04_17_11_39_49_faces\\' + filenames[cnt] + '.jpg', croppedImage)
 
