@@ -139,8 +139,8 @@ def predictFromImages():
         bottomRightX = int(predictions[cnt][0] + (predictions[cnt][6] / 2))
         bottomRightY = int(predictions[cnt][1] + ((predictions[cnt][6] / 2) * 1.5))
 
-        print(img.shape)
         croppedImage = img[topLeftY:bottomRightY, topLeftX:bottomRightX]
+        croppedImage = cv2.cvtColor(croppedImage, cv2.COLOR_BGR2RGB)
 
         cv2.imwrite('D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\output_2020_04_17_11_39_49_faces\\' + filenames[cnt] + '.jpg', croppedImage)
 
