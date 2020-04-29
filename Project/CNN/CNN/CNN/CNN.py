@@ -23,8 +23,12 @@ minMaxCSVpath = 'D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\output_2020_04_
 start = 0
 max = 8000
 
+images = []
+filenames = []
+minMaxValues = []
+predictions = []
 
-def predictFace(vsource = 1):
+def predictFace(vsource = 1, savePredictions = False):
     width = 0
     height = 0
 
@@ -61,6 +65,9 @@ def predictFace(vsource = 1):
             
             frameId += 1
             
+            if(savePredictions):
+                predictions.append(prediction)
+
             if(cv2.waitKey(25) & 0xFF == ord('q')):
                 break
         else:
@@ -101,6 +108,50 @@ def drawPredictionOnImage(prediction, image):
 
         return image
 
+def predictFromImages():
+
+    global images
+    global filenames
+
+    [images, filenames] = Utilities.loadImagesAndGrayscale(imgsDir, images, inputWidth, inputHeight)
+
+    df_im = np.asarray(images)
+    df_im = df_im.reshape(df_im.shape[0], inputWidth, inputHeight, 1)
+
+    predictions = model.predict(df_im, verbose = 1)
+
+    # denormalize all predictions
+    denormalizeAllPredictions(predictions, minMaxValues)
+
+    # first load images again because we at this point have only gray images
+    [images, filenames] = Utilities.loadImages(imgsDir, images)
+
+    # crop images
+
+    cnt = 0    
+    for image in images:
+        # calculate coordinates to crop from
+
+        topLeftX = int(predictions[cnt][0] - (predictions[cnt][6] / 2))
+        topLeftY = int(predictions[cnt][1] - ((predictions[cnt][6] / 2) * 1.5))
+
+        bottomRightX = int(predictions[cnt][0] + (predictions[cnt][6] / 2))
+        bottomRightY = int(predictions[cnt][1] + ((predictions[cnt][6] / 2) * 1.5))
+
+        croppedImage = image[topLeftY:bottomRightY, topLeftX:bottomRightX]
+
+        cv2.imwrite('D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\output_2020_04_17_11_39_49_faces\\' + filenames[cnt] + '.jpg', croppedImage)
+
+        cnt = cnt + 1
+
+
+def denormalizeAllPredictions(predictions, minMaxValues):
+
+    for pred in predictions:
+        pred[0] = (pred[0] * (minMaxValues[1][0] - minMaxValues[0][0]) + minMaxValues[0][0])
+        pred[1] = (pred[1] * (minMaxValues[1][1] - minMaxValues[0][1]) + minMaxValues[0][1])
+        pred[6] = (pred[6] * (minMaxValues[1][6] - minMaxValues[0][6]) + minMaxValues[0][6])
+
 
 if __name__ == "__main__":
     script_start = datetime.datetime.now()
@@ -112,9 +163,13 @@ if __name__ == "__main__":
     model.load_weights(model_name)
 
     # load minimal and maximal values for denormalization
-    minMaxValues = []
     minMaxValues = Utilities.readMinMaxFromCSV(minMaxCSVpath)
-    predictFace(1)
+
+    # predict face from live video source
+    #predictFace(1)
+
+    # predict face from image source
+    predictFromImages()
 
     #Utilities.showStat(filenames, predictions)
     #Utilities.drawPredictionsToDisk(predictions, filenames, imgsDir)

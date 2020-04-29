@@ -1,5 +1,7 @@
 import numpy as np
 import cv2
+import os
+import glob
 import PIL as PIL
 from PIL import Image, ImageDraw
 
@@ -21,12 +23,31 @@ def readCSV(filepath):
             result.append(s)
     return result
 
-def loadImages(images):
-    print ('loading  images  (' + str(start)+','+str(start+max)+ ')...')
+def loadImages(imgsDir, images):
+    print ('loading  images...')
 
     filenames = []
 
-    os.chdir("D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\output_2020_04_17_11_39_49\\")
+    os.chdir(imgsDir)
+    for imagePath in glob.glob("*.jpg"):
+        img = Image.open(imagePath)
+        img = np.asarray(img)
+
+        images.append(img)
+      
+        fname = os.path.basename(imagePath)
+        filenames.append(fname)
+
+    print ('loading complete!')
+    
+    return [images, filenames]
+
+def loadImagesAndGrayscale(imgsDir, images, inputWidth = 100, inputHeight = 100):
+    print ('loading  images...')
+
+    filenames = []
+
+    os.chdir(imgsDir)
     for imagePath in glob.glob("*.jpg"):
         img = Image.open(imagePath)
 
@@ -46,7 +67,7 @@ def loadImages(images):
     
     return [images, filenames]
 
-def loadImagesAndCategories(images, imgsDir, inputWidth, inputHeight, categories, catPath):
+def loadImagesAndCategories(images, imgsDir, categories, catPath, minMaxValues, inputWidth = 100, inputHeight = 100):
     print ('loading  images...')
 
     filenames = []
@@ -99,7 +120,7 @@ def loadImagesAndCategories(images, imgsDir, inputWidth, inputHeight, categories
             gray = grayConversion(img)
 
             # debug
-            drawExpected(gray, fname, faceX, faceY, faceW)
+            drawExpected(gray, fname, faceX, faceY, faceW, minMaxValues)
             
             img1 = gray/255
 

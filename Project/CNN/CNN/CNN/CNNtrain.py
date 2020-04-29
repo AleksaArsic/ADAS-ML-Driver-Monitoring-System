@@ -35,9 +35,12 @@ max = 8000
 
 imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\output_2020_04_17_11_39_49\\"
 normalizedDataPath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\output_2020_04_17_11_39_49_faceMode_normalized.csv"
+minMaxCSVpath = 'D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\output_2020_04_17_11_39_49_faceMode_min_max.csv'
 
 images=[]
 categories = []
+minMaxValues = []
+
 
 def plotTrainingResults(val_acc, val_loss, train_acc, train_loss):
 
@@ -64,7 +67,8 @@ def plotTrainingResults(val_acc, val_loss, train_acc, train_loss):
 if __name__ == "__main__":
     script_start = datetime.datetime.now()
 
-    [images, categories, filenames] = Utilities.loadImagesAndCategories(images, imgsDir, inputWidth, inputHeight, categories, normalizedDataPath)
+    minMaxValues = Utilities.readMinMaxFromCSV(minMaxCSVpath)
+    [images, categories, filenames] = Utilities.loadImagesAndCategories(images, imgsDir, categories, normalizedDataPath, minMaxValues, inputWidth, inputHeight,)
 
     model = cnn.create_model(inputWidth, inputHeight, 1)
 
@@ -109,7 +113,6 @@ if __name__ == "__main__":
 
     #plot accuracy and loss
     plotTrainingResults(val_acc, val_loss, train_acc, train_loss)
-   
 
     script_end = datetime.datetime.now()
     print (script_end-script_start)
