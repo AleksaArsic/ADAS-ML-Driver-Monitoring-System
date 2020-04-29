@@ -1,187 +1,124 @@
-import numpy as np 
-import pandas as pd 
-import keras
-from keras.preprocessing.image import ImageDataGenerator, load_img
-from keras.callbacks import TensorBoard
-from keras.callbacks import EarlyStopping, ModelCheckpoint
-from sklearn.model_selection import train_test_split
-
-import matplotlib.pyplot as plt
-import random
-from time import time
 import cv2
-
-import os
-from PIL import Image, ImageDraw
-import PIL as PIL
-
-import tensorflow as tf 
-
+import random
 import datetime
 import glob, os
-
+import Utilities
+import PIL as PIL
+import numpy as np 
+import pandas as pd 
 import CNNmodel as cnn
+import tensorflow as tf 
+from time import time
+from tensorflow import keras
+from PIL import Image, ImageDraw
 
-script_start = datetime.datetime.now()
+windowName = "Video source"
 
-lett_h = 100
-lett_w = 100
+inputHeight = 100
+inputWidth = 100
 
-imgs_dir = 'D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\output_2020_04_17_11_39_49\\'
-
+imgsDir = 'D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\output_2020_04_17_11_39_49\\'
+minMaxCSVpath = 'D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\output_2020_04_17_11_39_49_faceMode_min_max.csv'
+ 
 start = 0
 max = 8000
 
-r = 1
 
-# Recreate the exact same model, including its weights and the optimizer
+def predictFace(vsource = 1):
+    width = 0
+    height = 0
 
-# Show the model architecture
-model_name = "model_img"+str(r)+".h5"
-#model = tf.keras.models.load_model(model_name)
+    if(isinstance(vsource, int)):
+        cap = cv2.VideoCapture(vsource + cv2.CAP_DSHOW)
+        width  = cap.get(3)  # float
+        height = cap.get(4) # float
+        #change_res(cap, 1280, 720)
+    else:
+        cap = cv2.VideoCapture(vsource)
 
-model = cnn.create_model(lett_w, lett_h, 1)
+    if(cap.isOpened() == False):
+        print("Error opening video source")
 
-#model = load_model(model_name)
-model.load_weights(model_name)
-model.summary()
+    # frame number
+    frameId = 0
 
+    cv2.namedWindow(windowName)
 
-def grayConversion(image):
-    grayValue = 0.07 * image[:,:,2] + 0.72 * image[:,:,1] + 0.21 * image[:,:,0]
-    gray_img = grayValue.astype(np.uint8)
-    return gray_img
+    while(cap.isOpened()):  
+        
+        ret, frame = cap.read();
+        
+        if(ret == True):
+            #predict 
+            img = cv2.resize(frame, (inputWidth, inputHeight), Image.ANTIALIAS)
+            img = np.asarray(img)
+            gray = Utilities.grayConversion(img)
+            img1 = gray/255
 
-def load_images(images):
-    print ('loading  images  (' + str(start)+','+str(start+max)+ ')...')
-
-    filenames = []
-
-    os.chdir("D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\output_2020_04_17_11_39_49\\")
-    for imagePath in glob.glob("*.jpg"):
-        img = Image.open(imagePath)
-
-        img = img.resize((lett_w,lett_h), Image.ANTIALIAS)
-        img = np.asarray(img)
+            prediction = model.predict(img1[np.newaxis, :, :, np.newaxis], verbose = 1)
+            drawPredictionOnImage(prediction, frame)
+            cv2.imshow(windowName, frame)
             
-        gray = grayConversion(img)
-
-        img1 = gray/255
-
-        images.append(img1)
-      
-        fname = os.path.basename(imagePath)
-        filenames.append(fname)
-
-    print ('loading complete!')
-    
-    return [images, filenames]
-
-
-images = []
-filenames = []
-[images, filenames] = load_images(images)
-
-df_im = np.asarray(images)
-df_im=df_im.reshape(df_im.shape[0], lett_w, lett_h, 1)
-
-predictions = model.predict(df_im, verbose=0)
-
-def drawPredictions(predictions, filenames):
-
-    cnt = 0
-
-    for fname in filenames:
-        image_path='D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\output_2020_04_17_11_39_49\\' + fname
-
-        faceX = predictions[cnt][0]
-        faceY = predictions[cnt][1]
-        faceW = predictions[cnt][6]
-
-        #denormalize
-        faceXDenom = (faceX * (457 - 192) + 192)
-        faceYDenom = (faceY * (375 - 217) + 217)
-        faceWDenom = (faceW * (304 - 128) + 128)
-
-        img = Image.open(image_path)
-
-        img = img.resize((lett_w,lett_h), Image.ANTIALIAS)
-        img = np.asarray(img)
+            frameId += 1
             
-        gray = grayConversion(img)
+            if(cv2.waitKey(25) & 0xFF == ord('q')):
+                break
+        else:
+            break
 
-        result = Image.fromarray((gray).astype(np.uint8))
+    cap.release()
+    cv2.destroyAllWindows()
+
+def drawPredictionOnImage(prediction, image):
+        faceX = prediction[0][0]
+        faceY = prediction[0][1]
+        faceW = prediction[0][6]
+
+        leftEyeX = prediction[0][2]
+        leftEyeY = prediction[0][3]
+
+        rightEyeX = prediction[0][4]
+        rightEyeY = prediction[0][5]
+
+        faceXDenom = (faceX * (minMaxValues[1][0] - minMaxValues[0][0]) + minMaxValues[0][0])
+        faceYDenom = (faceY * (minMaxValues[1][1] - minMaxValues[0][1]) + minMaxValues[0][1])
+        faceWDenom = (faceW * (minMaxValues[1][6] - minMaxValues[0][6]) + minMaxValues[0][6])
+
+        lEyeXDenom = (leftEyeX * (minMaxValues[1][2] - minMaxValues[0][2]) + minMaxValues[0][2])
+        lEyeYDenom = (leftEyeY * (minMaxValues[1][3] - minMaxValues[0][3]) + minMaxValues[0][3])
+        rEyeXDenom = (rightEyeX * (minMaxValues[1][4] - minMaxValues[0][4]) + minMaxValues[0][4])
+        rEyeYDenom = (rightEyeY * (minMaxValues[1][5] - minMaxValues[0][4]) + minMaxValues[0][5])
 
         topLeftX = faceXDenom - (faceWDenom / 2)
         topLeftY = faceYDenom - ((faceWDenom / 2) * 1.5)
 
-        topLeftX /= 6.4
-        topLeftY /= 4.8
-
         bottomRightX = faceXDenom + (faceWDenom / 2)
         bottomRightY = faceYDenom + ((faceWDenom / 2) * 1.5)
 
-        bottomRightX /= 6.4
-        bottomRightY /= 4.8
+        cv2.rectangle(image, (int(topLeftX),int(topLeftY)), (int(bottomRightX),int(bottomRightY)) , (0,255,0), 2)
+        cv2.rectangle(image, (int(lEyeXDenom),int(lEyeYDenom)), (int(lEyeXDenom + 3),int(lEyeYDenom + 3)) , (0,0,255), 2)
+        cv2.rectangle(image, (int(rEyeXDenom),int(rEyeYDenom)), (int(rEyeXDenom + 3),int(rEyeYDenom + 3)) , (0,0,255), 2)
 
-        #draw rectangle on face
-        test = ImageDraw.Draw(result)
-        test.rectangle((topLeftX, topLeftX, 
-                    bottomRightX, bottomRightY), outline = 'red')
+        return image
 
-        #result.show()
-        result.save('D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\output_2020_04_17_11_39_49_grayscale_predictions\\' + fname)
 
-        cnt = cnt + 1
+if __name__ == "__main__":
+    script_start = datetime.datetime.now()
 
-def show_stat(filenames, predictions):
-    cnt = 0
-    ok_cnt = 0
-    c1 = 0
-    compare = []
-    errors = []
+    # Recreate the exact same model
+    model_name = "model_img1.h5"
+    model = cnn.create_model(inputWidth, inputHeight, 1)
 
-    for fnames in filenames:
-        f = filenames[cnt]
-        c1 = 0
-        ss = ''
-        sctg = ''
-        for item in predictions[cnt]:
-            #if item>0.5:
-            #    p=1
-            #else:
-            #    p=0
-            p = item #predictions[cnt]
-            predictions[cnt][c1] = p
-            ss = ss+str(p)+','
-            #c = categories[cnt][c1]
-            #sctg = sctg+str(c)+','
-            c1 = c1 + 1
+    model.load_weights(model_name)
 
-        if ss==sctg:
-            ok_cnt = ok_cnt + 1
-        else:
-            errors.append(f)
+    # load minimal and maximal values for denormalization
+    minMaxValues = []
+    minMaxValues = Utilities.readMinMaxFromCSV(minMaxCSVpath)
+    predictFace(1)
 
-        s = f+','+ss
+    #Utilities.showStat(filenames, predictions)
+    #Utilities.drawPredictionsToDisk(predictions, filenames, imgsDir)
 
-        compare.append(s)
-        cnt = cnt+1
-
-    with open('img' + str(r)+'_results_'+'_'+str(start)+'_'+str(start+max)+'.csv', 'w') as f:
-        for item in compare:
-            f.write("%s\n" % item)
-
-    with open('Accuracy_img' + str(r)+'_results_'+'_'+str(start)+'_'+str(start+max)+'.csv', 'w') as f:
-        f.write("Accuracy = %s\n" % str(ok_cnt/cnt))
-
-    with open('errors.csv', 'w') as f:
-        for item in errors:
-            f.write("%s\n" % item)
-
-show_stat(filenames, predictions)
-drawPredictions(predictions, filenames)
-
-script_end = datetime.datetime.now()
-print (script_end-script_start)
+    script_end = datetime.datetime.now()
+    print (script_end-script_start)
 

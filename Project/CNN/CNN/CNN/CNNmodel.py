@@ -1,7 +1,16 @@
-import keras
-import tensorflow as tf 
+import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dropout, Flatten, Dense, Activation
+
+#BatchNormalization = tf.keras.layers.BatchNormalization
+#Conv2D = tf.keras.layers.Conv2D
+#MaxPooling2D = tf.keras.layers.MaxPooling2D
+#Activation = tf.keras.layers.Activation
+#Flatten = tf.keras.layers.Flatten
+#Dropout = tf.keras.layers.Dropout
+#Dense = tf.keras.layers.Dense
+#Sequential = tf.keras.models.Sequential
+
 
 def create_model(inputWidth, inputHeight, ch):
 
@@ -28,7 +37,7 @@ def create_model(inputWidth, inputHeight, ch):
     model.add(Dense(7)) # kaze da mreza ima 24 izlaza
     model.add(Activation('sigmoid'))
 
-    model.compile(optimizer="adadelta",loss="binary_crossentropy",metrics=["accuracy"])
+    model.compile(optimizer="adam",loss='mean_squared_error', metrics=["accuracy"])
 
     model.summary()
 

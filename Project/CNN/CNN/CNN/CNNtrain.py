@@ -1,9 +1,11 @@
 import numpy as np 
 import pandas as pd 
-import keras
-from keras.preprocessing.image import ImageDataGenerator, load_img
-from keras.callbacks import TensorBoard
-from keras.callbacks import EarlyStopping, ModelCheckpoint
+import tensorflow as tf 
+import Utilities
+from tensorflow import keras
+from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img
+from tensorflow.keras.callbacks import TensorBoard
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from sklearn.model_selection import train_test_split
 
 import matplotlib.pyplot as plt
@@ -15,195 +17,99 @@ import os
 from PIL import Image, ImageDraw
 import PIL as PIL
 
-import tensorflow as tf 
-
 import datetime
 
 import CNNmodel as cnn
-
-script_start = datetime.datetime.now()
 
 # data augumentation
 # https://machinelearningmastery.com/how-to-configure-image-data-augmentation-when-training-deep-learning-neural-networks/
 # shift left, right, top, down
 # zoom in, zoom out
 
-lett_h = 100
-lett_w = 100
 
-def read_data (idx):
-    result = []
-    dat_file = open('D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\4_norm2.csv','r')
-    lines=dat_file.readlines()
-    for line in lines:
-        if len(line)>0:
-            p1 = line.find(',')
-            filename = line[0:p1]
-            categ = line[p1+1:]
-            s = filename+','+categ
-            result.append(s)
-    return result
-
-imgs_dir = 'D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\output_2020_04_17_11_39_49\\'
+inputHeight = 100
+inputWidth = 100
 
 start = 0
 max = 8000
 
-r = 1
-
-def drawExpected(grayImg, fname, faceX, faceY, faceW):
-    #denormalize
-    faceXDenom = (faceX * (455 - 192) + 192)
-    faceYDenom = (faceY * (373 - 215) + 215)
-    faceWDenom = (faceW * (304 - 128) + 128)
-
-    result = Image.fromarray((grayImg).astype(np.uint8))
-
-    topLeftX = faceXDenom - (faceWDenom / 2)
-    topLeftY = faceYDenom - ((faceWDenom / 2) * 1.5)
-
-    topLeftX /= 6.4
-    topLeftY /= 4.8
-
-    bottomRightX = faceXDenom + (faceWDenom / 2)
-    bottomRightY = faceYDenom + ((faceWDenom / 2) * 1.5)
-
-    bottomRightX /= 6.4
-    bottomRightY /= 4.8
-
-    #draw rectangle on face
-    cv2.rectangle(grayImg, (int(topLeftX),int(topLeftY)), (int(bottomRightX),int(bottomRightY)) , (0,255,0), 2)
-    cv2.imwrite('output_2020_04_17_11_39_49_grayscale\\' + fname + '.jpg', grayImg)
-
-
-
-def grayConversion(image):
-    grayValue = 0.07 * image[:,:,2] + 0.72 * image[:,:,1] + 0.21 * image[:,:,0]
-    gray_img = grayValue.astype(np.uint8)
-    return gray_img
-
-def load_images(images, categories):
-    print ('loading  images  (' + str(start)+','+str(start+max)+ ')...')
-
-    filenames = []
-    lines = read_data (r)
-    cnt = 0
-    for line in lines:
-        #if len(line)>0:
-
-        if cnt < 2:
-           cnt = cnt + 1
-           continue
-
-        faceX = 0
-        faceY = 0
-        faceW = 0
-
-        if (len(line)>0) & (cnt>=start) & (cnt <= (start + max)):
-            p1 = line.find(',')
-            fname = line[0:p1]
-            p1 = p1+1
-            image_path='D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\output_2020_04_17_11_39_49\\' + fname + '.jpg'
-            filenames.append(fname)
-
-            cat=line[p1:]
-
-            cat = cat.rstrip(',\n')
-            cat = cat.split(',')
-            cat.pop(6)
-            cat.pop(6)
-            cat.pop(6)
-            cat.pop(6)
-
-            cnt = 0
-            for item in cat:
-                cat[cnt] = float(item)
-                cnt = cnt + 1
-            cat = np.asarray(cat)
-
-            faceX = cat[0]
-            faceY = cat[1]
-            faceW = cat[6]
-
-            categories.append(cat)
-
-            img = Image.open(image_path)
-
-            img = img.resize((lett_w,lett_h), Image.ANTIALIAS)
-            img = np.asarray(img)
-            
-            gray = grayConversion(img)
-
-            # debug
-            drawExpected(gray, fname, faceX, faceY, faceW)
-            
-            img1 = gray/255
-
-            images.append(img1)
-
-        cnt = cnt + 1
-    print ('loading complete!')
-    
-    return [images, categories, filenames]
+imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\output_2020_04_17_11_39_49\\"
+normalizedDataPath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\output_2020_04_17_11_39_49_faceMode_normalized.csv"
 
 images=[]
 categories = []
 
-[images, categories, filenames] = load_images(images, categories)
+def plotTrainingResults(val_acc, val_loss, train_acc, train_loss):
 
-model = cnn.create_model(lett_w, lett_h, 1)
+    epochs = range(1,len(train_acc)+1)
+    #Plottig the training and validation loss
+    plt.plot(epochs, val_acc, 'bo', label='Validation Accuracy')
+    plt.plot(epochs, train_acc, 'b', label='Train Accuracy')
+    plt.title('Train and Validation Accuracy')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    plt.savefig('model'+str(r)+'_'+str(start)+'_'+str(start+max)+'.png')
 
-# prebaci u format koji mrezi odgovara 
-df_im = np.asarray(images)
-df_im=df_im.reshape(df_im.shape[0], lett_w, lett_h, 1)
-df_cat = np.asarray(categories)
-df_cat = df_cat.reshape(df_cat.shape[0], 7)
-tr_im, val_im, tr_cat, val_cat = train_test_split(df_im, df_cat, test_size=0.2)
+    plt.clf()
 
+    plt.plot(epochs, val_loss, 'r', label='Validation Loss')
+    plt.plot(epochs, train_loss, 'b', label='Train Loss')
+    plt.title('Loss / Mean Sqared Error')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    plt.savefig('model'+str(r)+'_'+str(start)+'_'+str(start+max)+'_loss.png')
 
-config = tf.compat.v1.ConfigProto()
-config.gpu_options.allow_growth = True
-session = tf.compat.v1.Session(config=config)
+if __name__ == "__main__":
+    script_start = datetime.datetime.now()
 
-tensorboard = TensorBoard(log_dir=imgs_dir + "logs_img" + str(r) + "\{}".format(time()))
+    [images, categories, filenames] = Utilities.loadImagesAndCategories(images, imgsDir, inputWidth, inputHeight, categories, normalizedDataPath)
 
-model_name = "model_img"+str(r)+".h5"
-callbacks = [
-    EarlyStopping(monitor='val_accuracy', mode = 'max', patience=350, verbose=1),
-    keras.callbacks.ReduceLROnPlateau(monitor='val_accuracy', mode = 'max', factor=0.25, patience=15, min_lr=0.000001, verbose=1),
-    ModelCheckpoint(model_name, monitor='val_accuracy', mode = 'max', verbose=1, save_best_only=True, save_weights_only=True),
-    tensorboard
-]
+    model = cnn.create_model(inputWidth, inputHeight, 1)
 
-#network training
-model_history = model.fit(df_im, df_cat, # df_im - input ; df_cat - output
-            batch_size=2,
-            #batch_size=64,
-            epochs=350,
-            validation_data=(val_im, val_cat),
-            callbacks=callbacks
-)
-
-model.load_weights(model_name)
-
-
-#Visualizing accuracy and loss of training the model
-history_dict=model_history.history
-print(history_dict.keys())
-train_acc = history_dict['accuracy']
-val_acc = history_dict['val_accuracy']
+    # prebaci u format koji mrezi odgovara 
+    df_im = np.asarray(images)
+    df_im = df_im.reshape(df_im.shape[0], inputWidth, inputHeight, 1)
+    df_cat = np.asarray(categories)
+    df_cat = df_cat.reshape(df_cat.shape[0], 7)
+    tr_im, val_im, tr_cat, val_cat = train_test_split(df_im, df_cat, test_size=0.2)
 
 
-epochs = range(1,len(train_acc)+1)
-#Plottig the training and validation loss
-plt.plot(epochs, val_acc, 'bo', label='Validation Accuracy')
-plt.plot(epochs, train_acc, 'b', label='Train Accuracy')
-plt.title('Train and Validation Accuracy')
-plt.xlabel('Epochs')
-plt.ylabel('Accuracy')
-plt.legend()
-plt.savefig('model'+str(r)+'_'+str(start)+'_'+str(start+max)+'.png')
+    #config = tf.compat.v1.ConfigProto()
+    #config.gpu_options.allow_growth = True
+    #session = tf.compat.v1.Session(config=config)
 
+    tensorboard = TensorBoard(log_dir=imgsDir + "logs_img1" + "\{}".format(time()))
 
-script_end = datetime.datetime.now()
-print (script_end-script_start)
+    model_name = "model_img1.h5"
+    callbacks = [
+        EarlyStopping(monitor='val_accuracy', mode = 'max', patience=350, verbose=1),
+        keras.callbacks.ReduceLROnPlateau(monitor='val_accuracy', mode = 'max', factor=0.5, patience=15, min_lr=0.000001, verbose=1),
+        ModelCheckpoint(model_name, monitor='val_accuracy', mode = 'max', verbose=1, save_best_only=True, save_weights_only=True),
+        tensorboard
+    ]
+
+    #network training
+    model_history = model.fit(df_im, df_cat, # df_im - input ; df_cat - output
+                batch_size=2,
+                #batch_size=64,
+                epochs=350,
+                validation_data=(val_im, val_cat),
+                callbacks=callbacks
+    )
+
+    #Visualizing accuracy and loss of training the model
+    history_dict=model_history.history
+    print(history_dict.keys())
+    val_acc = history_dict['val_accuracy']
+    val_loss = history_dict['val_loss']
+    train_acc = history_dict['accuracy']
+    train_loss = history_dict['train_loss']
+
+    #plot accuracy and loss
+    plotTrainingResults(val_acc, val_loss, train_acc, train_loss)
+   
+
+    script_end = datetime.datetime.now()
+    print (script_end-script_start)
