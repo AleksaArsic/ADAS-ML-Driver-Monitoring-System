@@ -84,13 +84,13 @@ namespace CaptureLabel
                 csv.WriteField("");
             }
 
-            if (boolMode)
-            {
+            //if (boolMode)
+            //{
                 foreach (string s in Constants.lookingAngleString)
                     csv.WriteField(s);
 
                 csv.WriteField("Face width:");
-            }
+            //}
 
             csv.NextRecord();
 
@@ -111,13 +111,13 @@ namespace CaptureLabel
                 foreach (T value in realCoordinatesList.getRow(i))
                     csv.WriteField(value);
 
-                if (mode == 'f')
-                {
+                //if (mode == 'f')
+                //{
                     foreach (U value in lookAngleContainer.getRow(i))
                         csv.WriteField(value);
 
                     csv.WriteField(faceModeSize.getRow(i)[0]);
-                }
+                //}
 
                 csv.NextRecord();
             }

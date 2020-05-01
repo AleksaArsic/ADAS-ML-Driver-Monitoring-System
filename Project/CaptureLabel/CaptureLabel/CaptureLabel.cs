@@ -493,12 +493,13 @@ namespace CaptureLabel
                 resizeFactor = imageResizeFactor[currentImageIndex];
             }
 
+            int faceWidth = (mode == 'f') ? rectangles.getRectangles()[0].Width : (int)(imagePanel.BackgroundImage.Width * imageResizeFactor[currentImageIndex]);
             // calculate real coordinates
             if (coordinatesList.getRow(currentImageIndex) == null)
             {
                 lookAngleContainer.addRow(lookAngle.ToList());
                 //rectSizeFmode.Add(rectangles.getRectangles()[0].Width);
-                faceModeSize.addRow(new List<int> { rectangles.getRectangles()[0].Width });
+                faceModeSize.addRow(new List<int> { faceWidth });
                 coordinatesList.addRow(coordinates);
                 realCoordinatesList.addRow(calculateRealCoordinates(coordinates));
             }
@@ -507,7 +508,7 @@ namespace CaptureLabel
                 lookAngleContainer.replaceRow(lookAngle.ToList(), currentImageIndex);
                 coordinatesList.replaceRow(coordinates, currentImageIndex);
                 realCoordinatesList.replaceRow(calculateRealCoordinates(coordinates), currentImageIndex);
-                faceModeSize.replaceRow(new List<int> { rectangles.getRectangles()[0].Width }, currentImageIndex);
+                faceModeSize.replaceRow(new List<int> { faceWidth }, currentImageIndex);
                 //rectSizeFmode[currentImageIndex] = rectangles.getRectangles()[0].Width;
             }
 
@@ -683,12 +684,12 @@ namespace CaptureLabel
             if (currentMode == 'f')
             {
                 rectangles = new RectangleContainer(3, Constants.faceModeStartPos, Constants.faceModeStartSize);
-                lookAngleGB.Visible = true;
+                //lookAngleGB.Visible = true;
             }
             if (currentMode == 'e')
             {
                 rectangles = new RectangleContainer();
-                lookAngleGB.Visible = false;
+                //lookAngleGB.Visible = false;
             }
         }
 
@@ -955,11 +956,11 @@ namespace CaptureLabel
             normalizedFaceSize = new CoordinatesContainer<double>(normalizedFS.Item1);
             minMaxFS = new CoordinatesContainer<int>(normalizedFS.Item2);
 
-
             Utilities.writeToCSV(mode, normalizedCoordinates, imageNames, lookAngleContainer, normalizedFaceSize, true);
             Utilities.writeMinMax(mode, minMaxCoord, minMaxFS, "MinMaxValues");
 
             Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale, true);
         }
+
     }
 }

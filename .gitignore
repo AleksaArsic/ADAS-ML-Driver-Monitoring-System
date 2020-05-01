@@ -423,6 +423,7 @@ MigrationBackup/
 
 # sensitive
 POPUNJEN OBRAZAC - Velibor Ilić.doc
+Roadmap.docx
 
 # cnn model
 *.h5

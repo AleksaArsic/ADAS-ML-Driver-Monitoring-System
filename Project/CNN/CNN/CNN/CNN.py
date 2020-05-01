@@ -106,6 +106,8 @@ def drawPredictionOnImage(prediction, image):
         cv2.rectangle(image, (int(lEyeXDenom),int(lEyeYDenom)), (int(lEyeXDenom + 3),int(lEyeYDenom + 3)) , (0,0,255), 2)
         cv2.rectangle(image, (int(rEyeXDenom),int(rEyeYDenom)), (int(rEyeXDenom + 3),int(rEyeYDenom + 3)) , (0,0,255), 2)
 
+        print("Face on: (" + str(prediction[0][0]) + ", " + str(prediction[0][1]) + ")")
+
         return image
 
 def predictFromImages():
@@ -168,10 +170,10 @@ if __name__ == "__main__":
     minMaxValues = Utilities.readMinMaxFromCSV(minMaxCSVpath)
 
     # predict face from live video source
-    #predictFace(1)
+    predictFace(1)
 
     # predict face from image source
-    predictFromImages()
+    #predictFromImages()
 
     #Utilities.showStat(filenames, predictions)
     #Utilities.drawPredictionsToDisk(predictions, filenames, imgsDir)
