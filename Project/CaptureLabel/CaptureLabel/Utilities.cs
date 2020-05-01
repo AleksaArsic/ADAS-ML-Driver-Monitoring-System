@@ -59,7 +59,7 @@ namespace CaptureLabel
             return '0';
         }
 
-        public static void writeToCSV<T, U>(char mode, CoordinatesContainer<T> realCoordinatesList, List<string> imageNames, CoordinatesContainer<U> lookAngleContainer, CoordinatesContainer<T> faceModeSize, bool normalized = false)
+        public static void writeToCSV<T, U, X>(char mode, CoordinatesContainer<T> realCoordinatesList, List<string> imageNames, CoordinatesContainer<U> lookAngleContainer, CoordinatesContainer<X> faceModeSize, bool normalized = false)
         {
             bool boolMode = (mode == 'f' ? true : false);
             //string csvPath = CaptureLabel.saveDirectory;
@@ -125,7 +125,7 @@ namespace CaptureLabel
             writer.Close();
         }
 
-        public static void writeMinMax<T, U>(char mode, CoordinatesContainer<T> minMax, CoordinatesContainer<U> faceModeMinMax, string fileName)
+        public static void writeMinMax<T, U>(char mode, CoordinatesContainer<T> minMax, CoordinatesContainer<U> faceModeMinMax)
         {
             bool boolMode = (mode == 'f' ? true : false);
             TextWriter writer = new StreamWriter(CaptureLabel.exportMinMaxDirectory, false, Encoding.UTF8);
@@ -196,6 +196,7 @@ namespace CaptureLabel
                 {
                     for (int i = 1; csv.TryGetField<T>(i, out value); i++)
                     {
+                        if (mode == 'e' && i == 23) break;
                         if (mode == 'f' && i == 7) break;
 
                         singleRow.Add(value);
@@ -224,6 +225,7 @@ namespace CaptureLabel
 
                 while (csv.Read())
                 {
+                    // correct to read look angle from face element .csv too
                     for (int i = 7; csv.TryGetField<T>(i, out value) && i < 11; i++)
                     {
                         singleRow.Add(value);
@@ -253,6 +255,7 @@ namespace CaptureLabel
 
                 while (csv.Read())
                 {
+                    // correct to read face size from face element .csv too
                     for (int i = 11; csv.TryGetField<T>(i, out value); i++)
                     {
                         singleRow.Add(value);
@@ -266,21 +269,32 @@ namespace CaptureLabel
             return result;
         }
 
-        public static Tuple<List<List<T>>, List<List<int>>>  normalizeOutput<T, U>(CoordinatesContainer<U> realCoordinatesList)
+        public static Tuple<List<List<T>>, List<List<int>>> normalizeOutput<T, U>(CoordinatesContainer<U> realCoordinatesList, CoordinatesContainer<int> faceModeSize = null, char mode = 'f')
         {
-            CoordinatesContainer<U> retCoordinates = realCoordinatesList;
+            Tuple<List<List<T>>, List<List<int>>> normalized;
+
+            if (mode == 'f')
+                normalized = normalizeOutputFaceMode<T, U>(realCoordinatesList);
+            else
+                normalized = normalizeOutputFaceElements<T, U>(realCoordinatesList, faceModeSize);
+
+            return normalized;
+        }
+
+        public static Tuple<List<List<T>>, List<List<int>>> normalizeOutputFaceMode<T, U>(CoordinatesContainer<U> realCoordinatesList)
+        {
+            //CoordinatesContainer<U> retCoordinates = realCoordinatesList;
 
             List<List<U>> coordinates = new List<List<U>>(realCoordinatesList.getCoordinates());
             List<List<int>> minMaxValues = new List<List<int>>();
             List<List<T>> result = new List<List<T>>();
-
 
             // transpose elements
             coordinates = Enumerable.Range(0, coordinates[0].Count)
                         .Select(i => coordinates.Select(lst => lst[i]).ToList()).ToList();
 
             // normalize elements
-            foreach(List<U> l in coordinates)
+            foreach (List<U> l in coordinates)
             {
                 int min = Convert.ToInt32(l.Min());
                 int max = Convert.ToInt32(l.Max());
@@ -289,7 +303,7 @@ namespace CaptureLabel
 
                 List<T> temp = new List<T>();
 
-                for(int i = 0; i < l.Count; i++)
+                for (int i = 0; i < l.Count; i++)
                 {
                     double val = (double)(Convert.ToInt32(l[i]) - min) / (max - min);
 
@@ -305,10 +319,49 @@ namespace CaptureLabel
             // transpose elements
             result = Enumerable.Range(0, result[0].Count)
                         .Select(i => result.Select(lst => lst[i]).ToList()).ToList();
-            
+
 
             return Tuple.Create(result, minMaxValues);
         }
+
+        public static Tuple<List<List<T>>, List<List<int>>> normalizeOutputFaceElements<T, U>(CoordinatesContainer<U> realCoordinatesList, CoordinatesContainer<int> faceModeSize)
+        {
+
+            List<List<U>> coordinates = new List<List<U>>(realCoordinatesList.getCoordinates());
+            List<List<int>> minMaxValues = new List<List<int>>();
+            List<List<T>> result = new List<List<T>>();
+
+
+            // normalize elements
+            int i = 0;
+            foreach (List<U> l in coordinates)
+            {
+                int faceWidth = faceModeSize.getRow(i)[0];
+
+                List<T> temp = new List<T>();
+
+                for (int j = 0; j < l.Count; j += 2)
+                {
+                    double valX = (double)(Convert.ToDouble(l[j]) / faceWidth);
+                    double valY = (double)(Convert.ToDouble(l[j + 1]) / (faceWidth * Constants.modeFRectScale));
+
+                    if (Double.IsNaN(valX) || Double.IsNaN(valY))
+                    {
+                        valX = 0;
+                        valY = 0;
+                    }
+                    temp.Add((T)(object)valX);
+                    temp.Add((T)(object)valY);
+                }
+
+                result.Add(temp);
+                i++;
+            }
+
+
+            return Tuple.Create(result, minMaxValues);
+        }
+
         public static void correctFaceCoordinates(CoordinatesContainer<int> realCoordinatesList, CoordinatesContainer<int> faceModeSize, List<double> imageResizeFactor, double scale, bool reverse = false)
         {
             int i = 0;
@@ -323,7 +376,6 @@ namespace CaptureLabel
                 }
             }
             
-
             i = 0;
             // correction factor for the first if face mode
             foreach (List<int> l in realCoordinatesList.getCoordinates())

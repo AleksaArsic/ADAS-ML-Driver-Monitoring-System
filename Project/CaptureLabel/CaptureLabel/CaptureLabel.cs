@@ -390,6 +390,7 @@ namespace CaptureLabel
                             coordinatesList.addRow(new List<int>(calculateRectangleCoordinates(singleRow, i)));
                         }
 
+
                         imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
 
                         loadCoordinates(currentImageIndex);
@@ -493,7 +494,7 @@ namespace CaptureLabel
                 resizeFactor = imageResizeFactor[currentImageIndex];
             }
 
-            int faceWidth = (mode == 'f') ? rectangles.getRectangles()[0].Width : (int)(imagePanel.BackgroundImage.Width * imageResizeFactor[currentImageIndex]);
+            int faceWidth = (mode == 'f') ? rectangles.getRectangles()[0].Width : imagePanel.BackgroundImage.Width;
             // calculate real coordinates
             if (coordinatesList.getRow(currentImageIndex) == null)
             {
@@ -809,9 +810,11 @@ namespace CaptureLabel
         private void save()
         {
             saveCoordinates();
-            Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale);
+            if(mode == 'f')
+                Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale);
             Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer, faceModeSize);
-            Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale, true);
+            if (mode == 'f')
+                Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale, true);
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -946,20 +949,34 @@ namespace CaptureLabel
 
             saveCoordinates();
 
-            Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale);
+            if (mode == 'f')
+            {
+                Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale);
 
-            normalized = Utilities.normalizeOutput<double, int>(realCoordinatesList);
-            normalizedFS = Utilities.normalizeOutput<double, int>(faceModeSize);
+                normalized = Utilities.normalizeOutput<double, int>(realCoordinatesList);
+                normalizedFS = Utilities.normalizeOutput<double, int>(faceModeSize);
 
-            normalizedCoordinates = new CoordinatesContainer<double>(normalized.Item1);
-            minMaxCoord = new CoordinatesContainer<int>(normalized.Item2);
-            normalizedFaceSize = new CoordinatesContainer<double>(normalizedFS.Item1);
-            minMaxFS = new CoordinatesContainer<int>(normalizedFS.Item2);
+                normalizedCoordinates = new CoordinatesContainer<double>(normalized.Item1);
+                minMaxCoord = new CoordinatesContainer<int>(normalized.Item2);
+                normalizedFaceSize = new CoordinatesContainer<double>(normalizedFS.Item1);
+                minMaxFS = new CoordinatesContainer<int>(normalizedFS.Item2);
 
-            Utilities.writeToCSV(mode, normalizedCoordinates, imageNames, lookAngleContainer, normalizedFaceSize, true);
-            Utilities.writeMinMax(mode, minMaxCoord, minMaxFS, "MinMaxValues");
+                Utilities.writeToCSV(mode, normalizedCoordinates, imageNames, lookAngleContainer, normalizedFaceSize, true);
+                Utilities.writeMinMax(mode, minMaxCoord, minMaxFS);
 
-            Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale, true);
+                Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale, true);
+            }
+            else
+            {
+                normalized = Utilities.normalizeOutput<double, int>(realCoordinatesList, faceModeSize, 'e');
+
+                normalizedCoordinates = new CoordinatesContainer<double>(normalized.Item1);
+
+                Utilities.writeToCSV(mode, normalizedCoordinates, imageNames, lookAngleContainer, faceModeSize, true);
+            }
+
+
+
         }
 
     }
