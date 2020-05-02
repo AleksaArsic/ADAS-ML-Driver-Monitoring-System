@@ -1,4 +1,5 @@
 import cv2
+import math
 import random
 import datetime
 import glob, os
@@ -96,11 +97,11 @@ def drawPredictionOnImage(prediction, image):
         rEyeXDenom = (rightEyeX * (minMaxValues[1][4] - minMaxValues[0][4]) + minMaxValues[0][4])
         rEyeYDenom = (rightEyeY * (minMaxValues[1][5] - minMaxValues[0][4]) + minMaxValues[0][5])
 
-        topLeftX = faceXDenom - (faceWDenom / 2)
-        topLeftY = faceYDenom - ((faceWDenom / 2) * 1.5)
+        topLeftX = faceXDenom - math.ceil((faceWDenom / 2))
+        topLeftY = faceYDenom - math.ceil(((faceWDenom / 2) * 1.5))
 
-        bottomRightX = faceXDenom + (faceWDenom / 2)
-        bottomRightY = faceYDenom + ((faceWDenom / 2) * 1.5)
+        bottomRightX = faceXDenom + math.ceil((faceWDenom / 2))
+        bottomRightY = faceYDenom + math.ceil(((faceWDenom / 2) * 1.5))
 
         cv2.rectangle(image, (int(topLeftX),int(topLeftY)), (int(bottomRightX),int(bottomRightY)) , (0,255,0), 2)
         cv2.rectangle(image, (int(lEyeXDenom),int(lEyeYDenom)), (int(lEyeXDenom + 3),int(lEyeYDenom + 3)) , (0,0,255), 2)
@@ -135,11 +136,11 @@ def predictFromImages():
     for img in images:
         # calculate coordinates to crop from
 
-        topLeftX = int(predictions[cnt][0] - (predictions[cnt][6] / 2))
-        topLeftY = int(predictions[cnt][1] - ((predictions[cnt][6] / 2) * 1.5))
+        topLeftX = int(predictions[cnt][0] - math.ceil((predictions[cnt][6] / 2)))
+        topLeftY = int(predictions[cnt][1] - math.ceil(((predictions[cnt][6] / 2) * 1.5)))
 
-        bottomRightX = int(predictions[cnt][0] + (predictions[cnt][6] / 2))
-        bottomRightY = int(predictions[cnt][1] + ((predictions[cnt][6] / 2) * 1.5))
+        bottomRightX = int(predictions[cnt][0] + math.ceil((predictions[cnt][6] / 2)))
+        bottomRightY = int(predictions[cnt][1] + math.ceil(((predictions[cnt][6] / 2) * 1.5)))
 
         croppedImage = img[topLeftY:bottomRightY, topLeftX:bottomRightX]
         croppedImage = cv2.cvtColor(croppedImage, cv2.COLOR_BGR2RGB)

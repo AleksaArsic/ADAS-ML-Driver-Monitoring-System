@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import os
 import glob
+import math
 import PIL as PIL
 from PIL import Image, ImageDraw
 
@@ -231,17 +232,17 @@ def drawPredictionsToDisk(predictions, filenames, imgsDir, minMaxValues):
 
         result = Image.fromarray((gray).astype(np.uint8))
 
-        topLeftX = faceXDenom - (faceWDenom / 2)
-        topLeftY = faceYDenom - ((faceWDenom / 2) * 1.5)
+        topLeftX = faceXDenom - math.ceil((faceWDenom / 2))
+        topLeftY = faceYDenom - math.ceil(((faceWDenom / 2) * 1.5))
 
-        topLeftX /= 6.4
-        topLeftY /= 4.8
+        topLeftX = math.ceil(topLeftX / 6.4)
+        topLeftY = math.ceil(topLeftY / 4.8)
 
-        bottomRightX = faceXDenom + (faceWDenom / 2)
-        bottomRightY = faceYDenom + ((faceWDenom / 2) * 1.5)
+        bottomRightX = faceXDenom + math.ceil((faceWDenom / 2))
+        bottomRightY = faceYDenom + math.ceil(((faceWDenom / 2) * 1.5))
 
-        bottomRightX /= 6.4
-        bottomRightY /= 4.8
+        bottomRightX = math.ceil(bottomRightX / 6.4)
+        bottomRightY = math.ceil(bottomRightY / 4.8)
 
 
         cv2.rectangle(gray, (int(topLeftX),int(topLeftY)), (int(bottomRightX),int(bottomRightY)) , (0,255,0), 2)
@@ -259,17 +260,17 @@ def drawExpected(grayImg, fname, faceX, faceY, faceW, minMaxValues):
 
     result = Image.fromarray((grayImg).astype(np.uint8))
 
-    topLeftX = faceXDenom - (faceWDenom / 2)
-    topLeftY = faceYDenom - ((faceWDenom / 2) * 1.5)
+    topLeftX = faceXDenom - math.ceil((faceWDenom / 2))
+    topLeftY = faceYDenom - math.ceil(((faceWDenom / 2) * 1.5))
 
-    topLeftX /= 6.4
-    topLeftY /= 4.8
+    topLeftX = math.ceil(topLeftX / 6.4)
+    topLeftY = math.ceil(topLeftY / 4.8)
 
-    bottomRightX = faceXDenom + (faceWDenom / 2)
-    bottomRightY = faceYDenom + ((faceWDenom / 2) * 1.5)
+    bottomRightX = faceXDenom + math.ceil((faceWDenom / 2))
+    bottomRightY = faceYDenom + math.ceil(((faceWDenom / 2) * 1.5))
 
-    bottomRightX /= 6.4
-    bottomRightY /= 4.8
+    bottomRightX = math.ceil(bottomRightX / 6.4)
+    bottomRightY = math.ceil(bottomRightY / 4.8)
 
     #draw rectangle on face
     cv2.rectangle(grayImg, (int(topLeftX),int(topLeftY)), (int(bottomRightX),int(bottomRightY)) , (0,255,0), 2)
