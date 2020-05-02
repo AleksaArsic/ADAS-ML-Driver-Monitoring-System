@@ -614,8 +614,8 @@ namespace CaptureLabel
             int tempY = 0;
             for (int i = 0; i < l.Count; i += 2)
             {
-                tempX = (int)((l[i] - imagePadX[currentImageIndex]) / imageResizeFactor[currentImageIndex]);
-                tempY = (int)((l[i + 1] - imagePadY[currentImageIndex]) / imageResizeFactor[currentImageIndex]);
+                tempX = (int)(Math.Ceiling((l[i] - imagePadX[currentImageIndex]) / imageResizeFactor[currentImageIndex]));
+                tempY = (int)(Math.Ceiling((l[i + 1] - imagePadY[currentImageIndex]) / imageResizeFactor[currentImageIndex]));
                 realCoordinates.Add(tempX);
                 realCoordinates.Add(tempY);
             }
@@ -633,8 +633,8 @@ namespace CaptureLabel
             int tempY = 0;
             for (int i = 0; i < l.Count; i += 2)
             {
-                tempX = (int)((l[i] * imageResizeFactor[index]) + imagePadX[index]);
-                tempY = (int)((l[i + 1] * imageResizeFactor[index]) + imagePadY[index]);
+                tempX = (int)(Math.Ceiling((l[i] * imageResizeFactor[index])) + imagePadX[index]);
+                tempY = (int)(Math.Ceiling((l[i + 1] * imageResizeFactor[index])) + imagePadY[index]);
                 rectCoordinates.Add(tempX);
                 rectCoordinates.Add(tempY);
             }
