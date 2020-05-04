@@ -29,6 +29,10 @@ filenames = []
 minMaxValues = []
 predictions = []
 
+# debug
+faceLocation = ''
+faceLocationNorm = ''
+
 def predictFace(vsource = 1, savePredictions = False):
     width = 0
     height = 0
@@ -70,6 +74,27 @@ def predictFace(vsource = 1, savePredictions = False):
                 predictions.append(prediction)
 
             if(cv2.waitKey(25) & 0xFF == ord('q')):
+                font                   = cv2.FONT_HERSHEY_SIMPLEX
+                bottomLeftCornerOfText = (10,470)
+                bottomLeftCornerOfText2 = (10,30)
+                fontScale              = 0.5
+                fontColor              = (0,0,255)
+                lineType               = 2
+
+                cv2.putText(frame,faceLocation, 
+                bottomLeftCornerOfText, 
+                font, 
+                fontScale,
+                fontColor,
+                lineType)
+                cv2.putText(frame,faceLocationNorm, 
+                bottomLeftCornerOfText2, 
+                font, 
+                fontScale,
+                fontColor,
+                lineType)
+                cv2.imwrite('C:\\Users\\Cisra\\Desktop\\face01.jpg', frame)
+
                 break
         else:
             break
@@ -78,38 +103,47 @@ def predictFace(vsource = 1, savePredictions = False):
     cv2.destroyAllWindows()
 
 def drawPredictionOnImage(prediction, image):
-        faceX = prediction[0][0]
-        faceY = prediction[0][1]
-        faceW = prediction[0][6]
+    global faceLocation
+    global faceLocationNorm
 
-        leftEyeX = prediction[0][2]
-        leftEyeY = prediction[0][3]
+    faceX = prediction[0][0]
+    faceY = prediction[0][1]
+    faceW = prediction[0][6]
 
-        rightEyeX = prediction[0][4]
-        rightEyeY = prediction[0][5]
+    leftEyeX = prediction[0][2]
+    leftEyeY = prediction[0][3]
 
-        faceXDenom = (faceX * (minMaxValues[1][0] - minMaxValues[0][0]) + minMaxValues[0][0])
-        faceYDenom = (faceY * (minMaxValues[1][1] - minMaxValues[0][1]) + minMaxValues[0][1])
-        faceWDenom = (faceW * (minMaxValues[1][6] - minMaxValues[0][6]) + minMaxValues[0][6])
+    rightEyeX = prediction[0][4]
+    rightEyeY = prediction[0][5]
 
-        lEyeXDenom = (leftEyeX * (minMaxValues[1][2] - minMaxValues[0][2]) + minMaxValues[0][2])
-        lEyeYDenom = (leftEyeY * (minMaxValues[1][3] - minMaxValues[0][3]) + minMaxValues[0][3])
-        rEyeXDenom = (rightEyeX * (minMaxValues[1][4] - minMaxValues[0][4]) + minMaxValues[0][4])
-        rEyeYDenom = (rightEyeY * (minMaxValues[1][5] - minMaxValues[0][4]) + minMaxValues[0][5])
+    faceXDenom = (faceX * (minMaxValues[1][0] - minMaxValues[0][0]) + minMaxValues[0][0])
+    faceYDenom = (faceY * (minMaxValues[1][1] - minMaxValues[0][1]) + minMaxValues[0][1])
+    faceWDenom = (faceW * (minMaxValues[1][6] - minMaxValues[0][6]) + minMaxValues[0][6])
 
-        topLeftX = faceXDenom - math.ceil((faceWDenom / 2))
-        topLeftY = faceYDenom - math.ceil(((faceWDenom / 2) * 1.5))
+    faceLocationNorm = "(x, y, w): (" + str(faceX) + ", " + str(faceY) + ", " + str(faceW) + ")"
+    faceLocation = "(x, y, w): (" + str(faceXDenom) + ", " + str(faceYDenom) + ", " + str(faceWDenom) + ")"
+    print("(x, y, w): (" + str(faceX) + ", " + str(faceY) + ", " + str(faceW) + ")")
+    print("(x, y, w): (" + str(faceXDenom) + ", " + str(faceYDenom) + ", " + str(faceWDenom) + ")")
 
-        bottomRightX = faceXDenom + math.ceil((faceWDenom / 2))
-        bottomRightY = faceYDenom + math.ceil(((faceWDenom / 2) * 1.5))
 
-        cv2.rectangle(image, (int(topLeftX),int(topLeftY)), (int(bottomRightX),int(bottomRightY)) , (0,255,0), 2)
-        cv2.rectangle(image, (int(lEyeXDenom),int(lEyeYDenom)), (int(lEyeXDenom + 3),int(lEyeYDenom + 3)) , (0,0,255), 2)
-        cv2.rectangle(image, (int(rEyeXDenom),int(rEyeYDenom)), (int(rEyeXDenom + 3),int(rEyeYDenom + 3)) , (0,0,255), 2)
+    lEyeXDenom = (leftEyeX * (minMaxValues[1][2] - minMaxValues[0][2]) + minMaxValues[0][2])
+    lEyeYDenom = (leftEyeY * (minMaxValues[1][3] - minMaxValues[0][3]) + minMaxValues[0][3])
+    rEyeXDenom = (rightEyeX * (minMaxValues[1][4] - minMaxValues[0][4]) + minMaxValues[0][4])
+    rEyeYDenom = (rightEyeY * (minMaxValues[1][5] - minMaxValues[0][4]) + minMaxValues[0][5])
 
-        print("Face on: (" + str(prediction[0][0]) + ", " + str(prediction[0][1]) + ")")
+    topLeftX = faceXDenom - math.ceil((faceWDenom / 2))
+    topLeftY = faceYDenom - math.ceil(((faceWDenom / 2) * 1.5))
 
-        return image
+    bottomRightX = faceXDenom + math.ceil((faceWDenom / 2))
+    bottomRightY = faceYDenom + math.ceil(((faceWDenom / 2) * 1.5))
+
+    cv2.rectangle(image, (int(topLeftX),int(topLeftY)), (int(bottomRightX),int(bottomRightY)) , (0,255,0), 2)
+    cv2.rectangle(image, (int(lEyeXDenom),int(lEyeYDenom)), (int(lEyeXDenom + 3),int(lEyeYDenom + 3)) , (0,0,255), 2)
+    cv2.rectangle(image, (int(rEyeXDenom),int(rEyeYDenom)), (int(rEyeXDenom + 3),int(rEyeYDenom + 3)) , (0,0,255), 2)
+
+    print("Face on: (" + str(prediction[0][0]) + ", " + str(prediction[0][1]) + ")")
+
+    return image
 
 def predictFromImages():
 

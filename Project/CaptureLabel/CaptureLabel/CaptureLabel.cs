@@ -44,6 +44,8 @@ namespace CaptureLabel
         private CoordinatesContainer<int> lookAngleContainer = new CoordinatesContainer<int>();
         private CoordinatesContainer<int> faceModeSize = new CoordinatesContainer<int>();
 
+        private List<int> isFacePresent = new List<int>();
+
         bool loaded = false;
 
         // mouse position
@@ -366,11 +368,12 @@ namespace CaptureLabel
                     {
                         // read and load coordinates from .csv
                         realCoordinatesList = Utilities.readFromCSV<int>(csvPath, mode);
-
                         //if (mode == 'f')
-                        lookAngleContainer = Utilities.readLookAngleFromCSV<int>(csvPath);
+                        lookAngleContainer = Utilities.readLookAngleFromCSV<int>(csvPath, mode);
+                        faceModeSize = Utilities.readFaceSizeFromCSV<int>(csvPath, mode);
 
-                        faceModeSize = Utilities.readFaceSizeFromCSV<int>(csvPath);
+                        if (mode == 'f')
+                            isFacePresent = Utilities.readIsFacePresentFromCSV(csvPath);
 
                         for (int i = 0; i < imageNames.Count; i++)
                         {
@@ -499,6 +502,7 @@ namespace CaptureLabel
             if (coordinatesList.getRow(currentImageIndex) == null)
             {
                 lookAngleContainer.addRow(lookAngle.ToList());
+                isFacePresent.Add((noFaceCB.Checked ? 1 : 0));
                 //rectSizeFmode.Add(rectangles.getRectangles()[0].Width);
                 faceModeSize.addRow(new List<int> { faceWidth });
                 coordinatesList.addRow(coordinates);
@@ -507,6 +511,7 @@ namespace CaptureLabel
             else
             {
                 lookAngleContainer.replaceRow(lookAngle.ToList(), currentImageIndex);
+                isFacePresent[currentImageIndex] = (noFaceCB.Checked ? 1 : 0);
                 coordinatesList.replaceRow(coordinates, currentImageIndex);
                 realCoordinatesList.replaceRow(calculateRealCoordinates(coordinates), currentImageIndex);
                 faceModeSize.replaceRow(new List<int> { faceWidth }, currentImageIndex);
@@ -515,45 +520,24 @@ namespace CaptureLabel
 
             lookAngle = new int[] { 0, 0, 0, 0 };
             setCheckBoxes(new CheckBox[] { leftCB, rightCB, upCB, downCB });
+
+            noFaceCB.Checked = false;
         }
 
         private bool loadCoordinates(int index)
         {
             if (index >= realCoordinatesList.getSize())
                 return false;
-            /*
-            List<int> singleRow;
-            // set rectangle coordinates based on real one read from .csv file
-            for (int i = 0; i < realCoordinatesList.getSize(); i++)
-            {
-                singleRow = realCoordinatesList.getRow(i);
-                List<int> tempCord = new List<int>(calculateRectangleCoordinates(singleRow));
-                coordinatesList.addRow(tempCord);
-                singleRow.Clear();
-            }
-            */
-            /*
-            //if (index > coordinatesList.getSize())
-            //{
-                calculateResizeFactor(index);
-
-                List<int> singleRow = calculateRectangleCoordinates(realCoordinatesList.getRow(index));
-
-                if (singleRow != null)
-                {
-                    coordinatesList.replaceRow(singleRow, index);
-                    rectangles.setAllRectCoordinates(singleRow);
-                    return true;
-                }
-            //}
-            */
-
-           
 
             List<int> singleRow = coordinatesList.getRow(index);
             List<int> faceSize = faceModeSize.getRow(index);
             //List<int> singleRow = calculateRectangleCoordinates(realCoordinatesList.getRow(index), index);
             lookAngle = new int[] { 0, 0, 0, 0 };
+
+            //if (isFacePresent.Count > currentImageIndex)
+            noFaceCB.Checked = (isFacePresent[index] == 0 ? false : true);
+            //else
+              //  noFaceCB.Checked = false;
 
             if (singleRow != null)
             {
@@ -661,6 +645,8 @@ namespace CaptureLabel
             faceModeSize = null;
             lookAngleContainer = null;
 
+            isFacePresent = null;
+
             currentImageIndex = 0;
             isLoaded = false;
             someoneIsInFocus = false;
@@ -678,19 +664,25 @@ namespace CaptureLabel
             faceModeSize = new CoordinatesContainer<int>();
             lookAngleContainer = new CoordinatesContainer<int>();
 
-        }
+            isFacePresent = new List<int>();
 
-        private void initMode(char currentMode)
+    }
+
+    private void initMode(char currentMode)
         {
             if (currentMode == 'f')
             {
                 rectangles = new RectangleContainer(3, Constants.faceModeStartPos, Constants.faceModeStartSize);
+                lookAngleGB.Text = Constants.faceAngleCB;
                 //lookAngleGB.Visible = true;
+                faceOptionsGB.Visible = true;
             }
             if (currentMode == 'e')
             {
-                rectangles = new RectangleContainer();
+                rectangles = new RectangleContainer(5, Constants.faceElementStartPos, Constants.rectSize);
+                lookAngleGB.Text = Constants.lookAngleCB;
                 //lookAngleGB.Visible = false;
+                faceOptionsGB.Visible = false;
             }
         }
 
@@ -729,6 +721,19 @@ namespace CaptureLabel
             {
                 lookAngleCBs[i].Checked = (lookAngle[i] == 1 ? true : false);
             }
+        }
+
+        private void noFaceCB_CheckedChanged(object sender, EventArgs e)
+        {
+            //setFaceAvailability(noFaceCB, currentImageIndex);
+        }
+
+        private void setFaceAvailability(CheckBox cb, int index)
+        {
+            if (isFacePresent.Count <= index)
+                isFacePresent.Add((cb.Checked ? 1 : 0));
+            else
+                isFacePresent[index] = cb.Checked ? 1 : 0;
         }
 
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
@@ -812,7 +817,7 @@ namespace CaptureLabel
             saveCoordinates();
             if(mode == 'f')
                 Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale);
-            Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer, faceModeSize);
+            Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer, faceModeSize, isFacePresent);
             if (mode == 'f')
                 Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale, true);
         }
@@ -860,9 +865,9 @@ namespace CaptureLabel
                         save();
                 }
 
+                MessageBox.Show(Constants.modeSwitchInformation, "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
 
-            MessageBox.Show(Constants.modeSwitchInformation, "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             //if (!modeSet)
             mode = Utilities.switchMode(faceDetectionToolStripMenuItem, faceElementsDetectionToolStripMenuItem);
@@ -884,9 +889,9 @@ namespace CaptureLabel
                         save();
                 }
 
+                MessageBox.Show(Constants.modeSwitchInformation, "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
 
-            MessageBox.Show(Constants.modeSwitchInformation, "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             //if (!modeSet)
             mode = Utilities.switchMode(faceDetectionToolStripMenuItem, faceElementsDetectionToolStripMenuItem);
@@ -961,7 +966,7 @@ namespace CaptureLabel
                 normalizedFaceSize = new CoordinatesContainer<double>(normalizedFS.Item1);
                 minMaxFS = new CoordinatesContainer<int>(normalizedFS.Item2);
 
-                Utilities.writeToCSV(mode, normalizedCoordinates, imageNames, lookAngleContainer, normalizedFaceSize, true);
+                Utilities.writeToCSV(mode, normalizedCoordinates, imageNames, lookAngleContainer, normalizedFaceSize, isFacePresent, true);
                 Utilities.writeMinMax(mode, minMaxCoord, minMaxFS);
 
                 Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale, true);
@@ -972,7 +977,7 @@ namespace CaptureLabel
 
                 normalizedCoordinates = new CoordinatesContainer<double>(normalized.Item1);
 
-                Utilities.writeToCSV(mode, normalizedCoordinates, imageNames, lookAngleContainer, faceModeSize, true);
+                Utilities.writeToCSV(mode, normalizedCoordinates, imageNames, lookAngleContainer, faceModeSize, isFacePresent, true);
             }
 
 

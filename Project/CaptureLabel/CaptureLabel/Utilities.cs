@@ -59,7 +59,7 @@ namespace CaptureLabel
             return '0';
         }
 
-        public static void writeToCSV<T, U, X>(char mode, CoordinatesContainer<T> realCoordinatesList, List<string> imageNames, CoordinatesContainer<U> lookAngleContainer, CoordinatesContainer<X> faceModeSize, bool normalized = false)
+        public static void writeToCSV<T, U, X>(char mode, CoordinatesContainer<T> realCoordinatesList, List<string> imageNames, CoordinatesContainer<U> lookAngleContainer, CoordinatesContainer<X> faceModeSize, List<int> isFacePresent, bool normalized = false)
         {
             bool boolMode = (mode == 'f' ? true : false);
             //string csvPath = CaptureLabel.saveDirectory;
@@ -78,6 +78,9 @@ namespace CaptureLabel
 
             string[] rectNames = (boolMode) ? Constants.namesF : Constants.namesE;
 
+            if (mode == 'f')
+                csv.WriteField("noFace");
+
             foreach (string s in rectNames)
             {
                 csv.WriteField(s);
@@ -95,6 +98,7 @@ namespace CaptureLabel
             csv.NextRecord();
 
             csv.WriteField("Picture:");
+            csv.WriteField("");
 
             for (int i = 0; i < rectNames.Length; i++)
             {
@@ -107,6 +111,9 @@ namespace CaptureLabel
             for (int i = 0; i < realCoordinatesList.getSize(); i++)
             {
                 csv.WriteField(imageNames[i]);
+
+                if (mode == 'f')
+                    csv.WriteField(isFacePresent[i]);
 
                 foreach (T value in realCoordinatesList.getRow(i))
                     csv.WriteField(value);
@@ -194,10 +201,10 @@ namespace CaptureLabel
 
                 while (csv.Read())
                 {
-                    for (int i = 1; csv.TryGetField<T>(i, out value); i++)
+                    for (int i = 2; csv.TryGetField<T>(i, out value); i++)
                     {
                         if (mode == 'e' && i == 23) break;
-                        if (mode == 'f' && i == 7) break;
+                        if (mode == 'f' && i == 8) break;
 
                         singleRow.Add(value);
                     }
@@ -210,11 +217,14 @@ namespace CaptureLabel
             return result;
         }
 
-        public static CoordinatesContainer<T> readLookAngleFromCSV<T>(string path)
+        public static CoordinatesContainer<T> readLookAngleFromCSV<T>(string path, char mode)
         {
             CoordinatesContainer<T> result = new CoordinatesContainer<T>();
             List<T> singleRow = new List<T>();
             T value;
+
+            int start = (mode == 'f') ? 8 : 23;
+
             using (TextReader fileReader = File.OpenText(path))
             {
                 var csv = new CsvReader(fileReader, System.Globalization.CultureInfo.CurrentCulture);
@@ -226,7 +236,7 @@ namespace CaptureLabel
                 while (csv.Read())
                 {
                     // correct to read look angle from face element .csv too
-                    for (int i = 7; csv.TryGetField<T>(i, out value) && i < 11; i++)
+                    for (int i = start; csv.TryGetField<T>(i, out value) && i < start + 4; i++)
                     {
                         singleRow.Add(value);
                     }
@@ -239,12 +249,15 @@ namespace CaptureLabel
             return result;
         }
 
-        public static CoordinatesContainer<T> readFaceSizeFromCSV<T>(string path)
+        public static CoordinatesContainer<T> readFaceSizeFromCSV<T>(string path, char mode)
         {
 
             CoordinatesContainer<T> result = new CoordinatesContainer<T>();
             List<T> singleRow = new List<T>();
             T value;
+
+            int start = (mode == 'f') ? 12 : 27;
+
             using (TextReader fileReader = File.OpenText(path))
             {
                 var csv = new CsvReader(fileReader, System.Globalization.CultureInfo.CurrentCulture);
@@ -256,13 +269,37 @@ namespace CaptureLabel
                 while (csv.Read())
                 {
                     // correct to read face size from face element .csv too
-                    for (int i = 11; csv.TryGetField<T>(i, out value); i++)
+                    for (int i = start; csv.TryGetField<T>(i, out value); i++)
                     {
                         singleRow.Add(value);
                     }
                     List<T> temp = new List<T>(singleRow);
                     result.addRow(temp);
                     singleRow.Clear();
+                }
+
+            }
+            return result;
+        }
+
+        public static List<int> readIsFacePresentFromCSV(string path)
+        {
+            List<int> result = new List<int>();
+            int value = 0;
+
+            using (TextReader fileReader = File.OpenText(path))
+            {
+                var csv = new CsvReader(fileReader, System.Globalization.CultureInfo.CurrentCulture);
+                csv.Configuration.HasHeaderRecord = false;
+
+                csv.Read();
+                csv.Read();
+
+                while (csv.Read())
+                {
+
+                    csv.TryGetField<int>(1, out value);
+                    result.Add(value);
                 }
 
             }

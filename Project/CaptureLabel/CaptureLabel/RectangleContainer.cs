@@ -17,6 +17,18 @@ namespace CaptureLabel
                 rectFocusList.Add(false);
             }
         }
+        public RectangleContainer(int rectNo, int[] startPos, Size rectSize)
+        {
+            if (rectNo > startPos.Length)
+                return;
+
+            int j = 0;
+            for (int i = 0; i < rectNo * 2; i += 2, j++)
+            {
+                rectContainer.Add(new Rectangle(new Point(startPos[i], startPos[i + 1]), rectSize));
+                rectFocusList.Add(false);
+            }
+        }
 
         public RectangleContainer(int rectNo, int[] startPos, Size[] rectSize)
         {

@@ -66,6 +66,8 @@ namespace CaptureLabel
             this.upCB = new System.Windows.Forms.CheckBox();
             this.rightCB = new System.Windows.Forms.CheckBox();
             this.leftCB = new System.Windows.Forms.CheckBox();
+            this.noFaceCB = new System.Windows.Forms.CheckBox();
+            this.faceOptionsGB = new System.Windows.Forms.GroupBox();
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -73,6 +75,7 @@ namespace CaptureLabel
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource2)).BeginInit();
             this.statusStrip1.SuspendLayout();
             this.lookAngleGB.SuspendLayout();
+            this.faceOptionsGB.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -306,7 +309,7 @@ namespace CaptureLabel
             this.lookAngleGB.Controls.Add(this.leftCB);
             this.lookAngleGB.Location = new System.Drawing.Point(1055, 252);
             this.lookAngleGB.Name = "lookAngleGB";
-            this.lookAngleGB.Size = new System.Drawing.Size(126, 79);
+            this.lookAngleGB.Size = new System.Drawing.Size(126, 69);
             this.lookAngleGB.TabIndex = 4;
             this.lookAngleGB.TabStop = false;
             this.lookAngleGB.Text = "Look angle";
@@ -355,11 +358,33 @@ namespace CaptureLabel
             this.leftCB.UseVisualStyleBackColor = true;
             this.leftCB.CheckedChanged += new System.EventHandler(this.leftCB_CheckedChanged);
             // 
+            // noFaceCB
+            // 
+            this.noFaceCB.AutoSize = true;
+            this.noFaceCB.Location = new System.Drawing.Point(6, 17);
+            this.noFaceCB.Name = "noFaceCB";
+            this.noFaceCB.Size = new System.Drawing.Size(64, 17);
+            this.noFaceCB.TabIndex = 10;
+            this.noFaceCB.Text = "No face";
+            this.noFaceCB.UseVisualStyleBackColor = true;
+            this.noFaceCB.CheckedChanged += new System.EventHandler(this.noFaceCB_CheckedChanged);
+            // 
+            // faceOptionsGB
+            // 
+            this.faceOptionsGB.Controls.Add(this.noFaceCB);
+            this.faceOptionsGB.Location = new System.Drawing.Point(1055, 327);
+            this.faceOptionsGB.Name = "faceOptionsGB";
+            this.faceOptionsGB.Size = new System.Drawing.Size(126, 42);
+            this.faceOptionsGB.TabIndex = 11;
+            this.faceOptionsGB.TabStop = false;
+            this.faceOptionsGB.Text = "Face options";
+            // 
             // CaptureLabel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1576, 966);
+            this.Controls.Add(this.faceOptionsGB);
             this.Controls.Add(this.lookAngleGB);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.groupBox2);
@@ -382,6 +407,8 @@ namespace CaptureLabel
             this.statusStrip1.PerformLayout();
             this.lookAngleGB.ResumeLayout(false);
             this.lookAngleGB.PerformLayout();
+            this.faceOptionsGB.ResumeLayout(false);
+            this.faceOptionsGB.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -421,6 +448,8 @@ namespace CaptureLabel
         private ToolStripSeparator toolStripSeparator1;
         private ToolStripMenuItem exportNormalizedCsvToolStripMenuItem;
         private ToolStripSeparator toolStripSeparator2;
+        private CheckBox noFaceCB;
+        private GroupBox faceOptionsGB;
     }
 }
 

@@ -27,8 +27,22 @@ namespace CaptureLabel
         public static readonly string progressSavedCaption = "Progress saved";
         public static readonly string modeSwitchInformation = "Please re-import data to complete mode switch.";
 
+
+        public static readonly string faceAngleCB = "Face angle";
+        public static readonly string lookAngleCB = "Look angle";
+
         public static readonly int[] rectStartPos = { 200, 200 };
 
+        public static readonly Keys[] focusShortcutsE =
+            {
+                Keys.D1,
+                Keys.D2,
+                Keys.D3,
+                Keys.Q,
+                Keys.W
+            };
+
+        /*
         public static readonly Keys[] focusShortcutsE = 
             { 
                 Keys.D1,
@@ -43,6 +57,7 @@ namespace CaptureLabel
                 Keys.S,
                 Keys.D
             };
+        */
 
         public static readonly Keys[] focusShortcutsF =
             {
@@ -53,6 +68,16 @@ namespace CaptureLabel
 
         public static readonly string inFocusString = "Currently in focus: ";
 
+        public static readonly string[] rectangleNameE =
+        {
+            "Left Eye",
+            "Right Eye",
+            "Nose",
+            "Mouth Up",
+            "Mouth Down"
+        };
+
+        /*
         public static readonly string[] rectangleNameE =
         {
             "Left eye Up",
@@ -67,10 +92,14 @@ namespace CaptureLabel
             "Mouth Up",
             "Mouth Down"
         };
+        */
 
         public static readonly string[] namesE =
-            {"LE Up", "LE Down", "LE Left", "LE Right", "RE Up", "RE Down", "RE Left", "RE Right",
-               "Nose", "Mouth Up", "Mouth Down"};
+            { "Left Eye", "RightEye", "Nose", "Mouth Up", "Mouth Down"};
+
+        //public static readonly string[] namesE =
+          //  {"LE Up", "LE Down", "LE Left", "LE Right", "RE Up", "RE Down", "RE Left", "RE Right",
+            //   "Nose", "Mouth Up", "Mouth Down"};
 
         public static readonly string[] namesF =
             {"Face", "Left eye", "Right eye"};
@@ -93,23 +122,23 @@ namespace CaptureLabel
 
                 // LEFT EYE
                 // leftEyeUp
-                250, 200,
+                //250, 200,
                 // leftEyeDown
-                250, 250,
+                //250, 250,
                 // leftEyeLeft
-                200, 225,
+                //200, 225,
                 // leftEyeRight
                 300, 225,
 
                 // RIGHT EYE
                 // rightEyeUp
-                750, 200,
+                //750, 200,
                 // rightEyeDown
-                750, 250,
+                //750, 250,
                 // rightEyeLeft
                 700, 225,
                 // rightEyeRight
-                800, 225,
+                //800, 225,
 
                 // NOSE
                 500, 400,
