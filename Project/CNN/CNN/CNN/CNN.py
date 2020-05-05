@@ -130,7 +130,7 @@ def drawPredictionOnImage(prediction, image):
     lEyeXDenom = (leftEyeX * (minMaxValues[1][2] - minMaxValues[0][2]) + minMaxValues[0][2])
     lEyeYDenom = (leftEyeY * (minMaxValues[1][3] - minMaxValues[0][3]) + minMaxValues[0][3])
     rEyeXDenom = (rightEyeX * (minMaxValues[1][4] - minMaxValues[0][4]) + minMaxValues[0][4])
-    rEyeYDenom = (rightEyeY * (minMaxValues[1][5] - minMaxValues[0][4]) + minMaxValues[0][5])
+    rEyeYDenom = (rightEyeY * (minMaxValues[1][5] - minMaxValues[0][5]) + minMaxValues[0][5])
 
     topLeftX = faceXDenom - math.ceil((faceWDenom / 2))
     topLeftY = faceYDenom - math.ceil(((faceWDenom / 2) * 1.5))

@@ -236,9 +236,9 @@ namespace CaptureLabel
             if(mode == 'f' && Control.ModifierKeys == Keys.Control)
             {
                 if (e.Delta > 0)
-                    rectangles.addToRectSize(0, Constants.modeFRectDeltaSize, (int)(Constants.modeFRectDeltaSize * Constants.modeFRectScale));
+                    rectangles.rescaleRect(0, Constants.modeFRectDeltaSize, Constants.modeFRectScale);
                 else
-                    rectangles.addToRectSize(0, -Constants.modeFRectDeltaSize, (int)(-Constants.modeFRectDeltaSize * Constants.modeFRectScale));
+                    rectangles.rescaleRect(0, -Constants.modeFRectDeltaSize, Constants.modeFRectScale);
 
                 imagePanel.Refresh();
 

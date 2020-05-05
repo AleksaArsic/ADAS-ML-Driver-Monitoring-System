@@ -210,14 +210,29 @@ namespace CaptureLabel
             Rectangle rect = rectContainer[index];
 
             // minimal size is 5px
-            if (rect.Width > 5 && rect.Height > 5)
+            if (rect.Width > 5)
             {
                 rect.Width += width;
-                rect.Height += height;
+                rect.Height = height;
             }
 
             rectContainer[index] = rect;
         }
+
+        public void rescaleRect(int index, int width, double factor)
+        {
+            Rectangle rect = rectContainer[index];
+
+            // minimal size is 5px
+            if (rect.Width > 5)
+            {
+                rect.Width += width;
+                rect.Height = (int)(Math.Ceiling(rect.Width * factor));
+            }
+
+            rectContainer[index] = rect;
+        }
+
 
         public void resetState(char mode)
         {
