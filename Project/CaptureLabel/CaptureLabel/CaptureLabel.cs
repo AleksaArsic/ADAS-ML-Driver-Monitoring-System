@@ -366,14 +366,24 @@ namespace CaptureLabel
                     // check for existing .csv file
                     if(!String.IsNullOrEmpty(csvPath) && csvPath.Contains(".csv"))
                     {
-                        // read and load coordinates from .csv
-                        realCoordinatesList = Utilities.readFromCSV<int>(csvPath, mode);
-                        //if (mode == 'f')
-                        lookAngleContainer = Utilities.readLookAngleFromCSV<int>(csvPath, mode);
-                        faceModeSize = Utilities.readFaceSizeFromCSV<int>(csvPath, mode);
+                        //List<List<int>> csvTemp = Utilities.parseCSV(csvPath, mode);
 
-                        if (mode == 'f')
-                            isFacePresent = Utilities.readIsFacePresentFromCSV(csvPath);
+                        Tuple<List<int>, List<CoordinatesContainer<int>>> tempCSV = Utilities.parseCSV(csvPath, mode);
+
+                        if(mode == 'f')
+                            isFacePresent = tempCSV.Item1;
+                        realCoordinatesList = new CoordinatesContainer<int>(tempCSV.Item2[0]);
+                        lookAngleContainer = new CoordinatesContainer<int>(tempCSV.Item2[1]);
+                        faceModeSize = new CoordinatesContainer<int>(tempCSV.Item2[2]);
+
+                        // read and load coordinates from .csv
+                        //realCoordinatesList = Utilities.readFromCSV<int>(csvPath, mode);
+                        //if (mode == 'f')
+                        //lookAngleContainer = Utilities.readLookAngleFromCSV<int>(csvPath, mode);
+                        //faceModeSize = Utilities.readFaceSizeFromCSV<int>(csvPath, mode);
+
+                        //if (mode == 'f')
+                            //isFacePresent = Utilities.readIsFacePresentFromCSV(csvPath);
 
                         for (int i = 0; i < imageNames.Count; i++)
                         {
@@ -502,20 +512,24 @@ namespace CaptureLabel
             if (coordinatesList.getRow(currentImageIndex) == null)
             {
                 lookAngleContainer.addRow(lookAngle.ToList());
-                isFacePresent.Add((noFaceCB.Checked ? 1 : 0));
                 //rectSizeFmode.Add(rectangles.getRectangles()[0].Width);
                 faceModeSize.addRow(new List<int> { faceWidth });
                 coordinatesList.addRow(coordinates);
                 realCoordinatesList.addRow(calculateRealCoordinates(coordinates));
+
+                if(mode == 'f')
+                    isFacePresent.Add((noFaceCB.Checked ? 1 : 0));
             }
             else
             {
                 lookAngleContainer.replaceRow(lookAngle.ToList(), currentImageIndex);
-                isFacePresent[currentImageIndex] = (noFaceCB.Checked ? 1 : 0);
                 coordinatesList.replaceRow(coordinates, currentImageIndex);
                 realCoordinatesList.replaceRow(calculateRealCoordinates(coordinates), currentImageIndex);
                 faceModeSize.replaceRow(new List<int> { faceWidth }, currentImageIndex);
                 //rectSizeFmode[currentImageIndex] = rectangles.getRectangles()[0].Width;
+
+                if(mode == 'f')
+                    isFacePresent[currentImageIndex] = (noFaceCB.Checked ? 1 : 0);
             }
 
             lookAngle = new int[] { 0, 0, 0, 0 };
@@ -535,7 +549,8 @@ namespace CaptureLabel
             lookAngle = new int[] { 0, 0, 0, 0 };
 
             //if (isFacePresent.Count > currentImageIndex)
-            noFaceCB.Checked = (isFacePresent[index] == 0 ? false : true);
+            if(mode == 'f')
+                noFaceCB.Checked = (isFacePresent[index] == 0 ? false : true);
             //else
               //  noFaceCB.Checked = false;
 
@@ -546,11 +561,11 @@ namespace CaptureLabel
                 lookAngle = lookAngleContainer.getRow(index).ToArray();
 
                 if (mode == 'f')
+                {
                     rectangles.setRectSize(0, new Size(faceSize[0], (int)(faceSize[0] * Constants.modeFRectScale)));
+                }
 
-                // set checkboxes
                 setCheckBoxes(new CheckBox[] { leftCB, rightCB, upCB, downCB });
-
                 return true;
             }
             

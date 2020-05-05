@@ -102,6 +102,7 @@ def predictFace(vsource = 1, savePredictions = False):
     cap.release()
     cv2.destroyAllWindows()
 
+# indexes + 1 because we added new expected prediction
 def drawPredictionOnImage(prediction, image):
     global faceLocation
     global faceLocationNorm

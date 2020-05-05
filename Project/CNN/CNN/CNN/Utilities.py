@@ -96,10 +96,10 @@ def loadImagesAndCategories(images, imgsDir, categories, catPath, minMaxValues, 
 
             cat = cat.rstrip(',\n')
             cat = cat.split(',')
-            cat.pop(6)
-            cat.pop(6)
-            cat.pop(6)
-            cat.pop(6)
+            cat.pop(7)
+            cat.pop(7)
+            cat.pop(7)
+            cat.pop(7)
 
             cnt_cat = 0
             for item in cat:
@@ -121,7 +121,7 @@ def loadImagesAndCategories(images, imgsDir, categories, catPath, minMaxValues, 
             gray = grayConversion(img)
 
             # debug
-            drawExpected(gray, fname, faceX, faceY, faceW, minMaxValues)
+            #drawExpected(gray, fname, faceX, faceY, faceW, minMaxValues)
             
             img1 = gray/255
 

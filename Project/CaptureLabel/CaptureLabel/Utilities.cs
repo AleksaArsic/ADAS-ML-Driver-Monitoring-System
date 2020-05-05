@@ -98,7 +98,8 @@ namespace CaptureLabel
             csv.NextRecord();
 
             csv.WriteField("Picture:");
-            csv.WriteField("");
+            if(mode == 'f')
+                csv.WriteField("");
 
             for (int i = 0; i < rectNames.Length; i++)
             {
@@ -185,12 +186,14 @@ namespace CaptureLabel
             writer.Close();
         }
 
-        public static CoordinatesContainer<T> readFromCSV<T>(string path, char mode)
+        public static Tuple<List<int>, List<CoordinatesContainer<int>>> parseCSV(string path, char mode)
         {
+            List<List<int>> result = new List<List<int>>();
+            List<int> singleRow = new List<int>();
+            int value = 0;
 
-            CoordinatesContainer<T> result = new CoordinatesContainer<T>();
-            List<T> singleRow = new List<T>();
-            T value;
+            Tuple<List<int>, List<CoordinatesContainer<int>>> retVal;
+
             using (TextReader fileReader = File.OpenText(path))
             {
                 var csv = new CsvReader(fileReader, System.Globalization.CultureInfo.CurrentCulture);
@@ -201,9 +204,143 @@ namespace CaptureLabel
 
                 while (csv.Read())
                 {
-                    for (int i = 2; csv.TryGetField<T>(i, out value); i++)
+                    for (int i = 1; csv.TryGetField<int>(i, out value); i++)
                     {
-                        if (mode == 'e' && i == 23) break;
+                        singleRow.Add(value);
+                    }
+                    List<int> temp = new List<int>(singleRow);
+                    result.Add(temp);
+                    singleRow.Clear();
+                }
+
+                if (mode == 'f')
+                    retVal = parseFaceMode(result);
+                else
+                    retVal = parseFaceElements(result);
+
+                return retVal;
+            }
+        }
+
+        public static Tuple<List<int>, List<CoordinatesContainer<int>>> parseFaceMode(List<List<int>> lines)
+        {
+            List<int> item1 = new List<int>();
+            List<CoordinatesContainer<int>> item2 = new List<CoordinatesContainer<int>>();
+            CoordinatesContainer<int> realCoordinates = new CoordinatesContainer<int>();
+            CoordinatesContainer<int> lookAngleContainer = new CoordinatesContainer<int>();
+            CoordinatesContainer<int> faceModeSize = new CoordinatesContainer<int>();
+
+            List<int> singleRow = new List<int>();
+
+            //int i = 0;
+            foreach (List<int> line in lines)
+            {
+                item1.Add(line[0]);
+
+                for(int i = 1; i < 7; i++)
+                {
+                    singleRow.Add(line[i]);
+                }
+
+                List<int> temp = new List<int>(singleRow);
+                realCoordinates.addRow(temp);
+                singleRow.Clear();
+
+                for(int i = 7; i < 11; i++)
+                {
+                    singleRow.Add(line[i]);
+                }
+
+                temp = new List<int>(singleRow);
+                lookAngleContainer.addRow(temp);
+                singleRow.Clear();
+
+                singleRow.Add(line[11]);
+
+                temp = new List<int>(singleRow);
+                faceModeSize.addRow(temp);
+                singleRow.Clear();
+            }
+
+            item2.Add(realCoordinates);
+            item2.Add(lookAngleContainer);
+            item2.Add(faceModeSize);
+
+            return Tuple.Create(item1, item2);
+        }
+
+        public static Tuple<List<int>, List<CoordinatesContainer<int>>> parseFaceElements(List<List<int>> lines)
+        {
+            List<int> item1 = new List<int>();
+            List<CoordinatesContainer<int>> item2 = new List<CoordinatesContainer<int>>();
+            CoordinatesContainer<int> realCoordinates = new CoordinatesContainer<int>();
+            CoordinatesContainer<int> lookAngleContainer = new CoordinatesContainer<int>();
+            CoordinatesContainer<int> faceModeSize = new CoordinatesContainer<int>();
+
+            List<int> singleRow = new List<int>();
+
+            //int i = 0;
+            foreach (List<int> line in lines)
+            {
+                //item1.Add(line[0]);
+
+                for (int i = 0; i < 10; i++)
+                {
+                    singleRow.Add(line[i]);
+                }
+
+                List<int> temp = new List<int>(singleRow);
+                realCoordinates.addRow(temp);
+                singleRow.Clear();
+
+                for (int i = 10; i < 14; i++)
+                {
+                    singleRow.Add(line[i]);
+                }
+
+                temp = new List<int>(singleRow);
+                lookAngleContainer.addRow(temp);
+                singleRow.Clear();
+
+                singleRow.Add(line[14]);
+
+                temp = new List<int>(singleRow);
+                faceModeSize.addRow(temp);
+                singleRow.Clear();
+            }
+
+            item2.Add(realCoordinates);
+            item2.Add(lookAngleContainer);
+            item2.Add(faceModeSize);
+
+            return Tuple.Create(item1, item2);
+        }
+
+        public static CoordinatesContainer<T> readFromCSV<T>(string path, char mode)
+        {
+
+            CoordinatesContainer<T> result = new CoordinatesContainer<T>();
+            List<T> singleRow = new List<T>();
+            T value;
+
+            int start = 1;
+
+            using (TextReader fileReader = File.OpenText(path))
+            {
+                var csv = new CsvReader(fileReader, System.Globalization.CultureInfo.CurrentCulture);
+                csv.Configuration.HasHeaderRecord = false;
+
+                csv.Read();
+                csv.Read();
+
+                if (mode == 'f')
+                    start = 2;
+
+                while (csv.Read())
+                {
+                    for (int i = start; csv.TryGetField<T>(i, out value); i++)
+                    {
+                        if (mode == 'e' && i == 11) break;
                         if (mode == 'f' && i == 8) break;
 
                         singleRow.Add(value);
@@ -223,7 +360,7 @@ namespace CaptureLabel
             List<T> singleRow = new List<T>();
             T value;
 
-            int start = (mode == 'f') ? 8 : 23;
+            int start = (mode == 'f') ? 8 : 11;
 
             using (TextReader fileReader = File.OpenText(path))
             {

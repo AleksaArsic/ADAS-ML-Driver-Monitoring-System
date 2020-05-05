@@ -17,6 +17,11 @@ namespace CaptureLabel
             rowCoordinates = new List<List<T>>(l);
         }
 
+        public CoordinatesContainer(CoordinatesContainer<T> container)
+        {
+            rowCoordinates = new List<List<T>>(container.getCoordinates());
+        }
+
         public void addRow(List<T> row)
         {
             rowCoordinates.Add(row);
