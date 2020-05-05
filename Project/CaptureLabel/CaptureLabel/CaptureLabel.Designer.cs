@@ -68,6 +68,9 @@ namespace CaptureLabel
             this.leftCB = new System.Windows.Forms.CheckBox();
             this.noFaceCB = new System.Windows.Forms.CheckBox();
             this.faceOptionsGB = new System.Windows.Forms.GroupBox();
+            this.eyePropertiesGB = new System.Windows.Forms.GroupBox();
+            this.LEnotVCB = new System.Windows.Forms.CheckBox();
+            this.REnotVCB = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -76,6 +79,7 @@ namespace CaptureLabel
             this.statusStrip1.SuspendLayout();
             this.lookAngleGB.SuspendLayout();
             this.faceOptionsGB.SuspendLayout();
+            this.eyePropertiesGB.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -379,11 +383,46 @@ namespace CaptureLabel
             this.faceOptionsGB.TabStop = false;
             this.faceOptionsGB.Text = "Face options";
             // 
+            // eyePropertiesGB
+            // 
+            this.eyePropertiesGB.Controls.Add(this.REnotVCB);
+            this.eyePropertiesGB.Controls.Add(this.LEnotVCB);
+            this.eyePropertiesGB.Location = new System.Drawing.Point(1055, 327);
+            this.eyePropertiesGB.Name = "eyePropertiesGB";
+            this.eyePropertiesGB.Size = new System.Drawing.Size(200, 69);
+            this.eyePropertiesGB.TabIndex = 13;
+            this.eyePropertiesGB.TabStop = false;
+            this.eyePropertiesGB.Text = "Eye properties ";
+            this.eyePropertiesGB.Visible = false;
+            // 
+            // LEnotVCB
+            // 
+            this.LEnotVCB.AutoSize = true;
+            this.LEnotVCB.Location = new System.Drawing.Point(6, 19);
+            this.LEnotVCB.Name = "LEnotVCB";
+            this.LEnotVCB.Size = new System.Drawing.Size(114, 17);
+            this.LEnotVCB.TabIndex = 0;
+            this.LEnotVCB.Text = "Left eye not visible";
+            this.LEnotVCB.UseVisualStyleBackColor = true;
+            this.LEnotVCB.CheckedChanged += new System.EventHandler(this.LEnotVCB_CheckedChanged);
+            // 
+            // REnotVCB
+            // 
+            this.REnotVCB.AutoSize = true;
+            this.REnotVCB.Location = new System.Drawing.Point(6, 42);
+            this.REnotVCB.Name = "REnotVCB";
+            this.REnotVCB.Size = new System.Drawing.Size(121, 17);
+            this.REnotVCB.TabIndex = 1;
+            this.REnotVCB.Text = "Right eye not visible";
+            this.REnotVCB.UseVisualStyleBackColor = true;
+            this.REnotVCB.CheckedChanged += new System.EventHandler(this.REnotVCB_CheckedChanged);
+            // 
             // CaptureLabel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1576, 966);
+            this.Controls.Add(this.eyePropertiesGB);
             this.Controls.Add(this.faceOptionsGB);
             this.Controls.Add(this.lookAngleGB);
             this.Controls.Add(this.statusStrip1);
@@ -409,6 +448,8 @@ namespace CaptureLabel
             this.lookAngleGB.PerformLayout();
             this.faceOptionsGB.ResumeLayout(false);
             this.faceOptionsGB.PerformLayout();
+            this.eyePropertiesGB.ResumeLayout(false);
+            this.eyePropertiesGB.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -450,6 +491,9 @@ namespace CaptureLabel
         private ToolStripSeparator toolStripSeparator2;
         private CheckBox noFaceCB;
         private GroupBox faceOptionsGB;
+        private GroupBox eyePropertiesGB;
+        private CheckBox REnotVCB;
+        private CheckBox LEnotVCB;
     }
 }
 

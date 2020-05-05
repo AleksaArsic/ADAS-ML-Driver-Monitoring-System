@@ -59,15 +59,11 @@ namespace CaptureLabel
             return '0';
         }
 
-        public static void writeToCSV<T, U, X>(char mode, CoordinatesContainer<T> realCoordinatesList, List<string> imageNames, CoordinatesContainer<U> lookAngleContainer, CoordinatesContainer<X> faceModeSize, List<int> isFacePresent, bool normalized = false)
+        public static void writeToCSV<T, U, X>(char mode, CoordinatesContainer<T> realCoordinatesList, List<string> imageNames, 
+                                                CoordinatesContainer<U> lookAngleContainer, CoordinatesContainer<X> faceModeSize, 
+                                                List<int> isFacePresent = null, CoordinatesContainer<U> eyesNotVisibleContainer = null, bool normalized = false)
         {
             bool boolMode = (mode == 'f' ? true : false);
-            //string csvPath = CaptureLabel.saveDirectory;
-            //Path.Combine(new string[] { CaptureLabel.imageFolder, 
-            //(boolMode ? "FaceMode" : "FaceElement") + 
-            //CaptureLabel.csvFileName  +
-            //(normalized ? "_normalized" : "") }) + ".csv";
-
             // should be embedded in try-catch
             string csvPath = (normalized == true ? CaptureLabel.exportDirectory : CaptureLabel.saveDirectory);
             TextWriter writer = new StreamWriter(@csvPath, false, Encoding.UTF8);
@@ -80,6 +76,12 @@ namespace CaptureLabel
 
             if (mode == 'f')
                 csv.WriteField("noFace");
+
+            if(mode == 'e')
+            {
+                csv.WriteField("noLeftEye");
+                csv.WriteField("noRightEye");
+            }
 
             foreach (string s in rectNames)
             {
@@ -98,7 +100,8 @@ namespace CaptureLabel
             csv.NextRecord();
 
             csv.WriteField("Picture:");
-            if(mode == 'f')
+            csv.WriteField("");
+            if (mode == 'e')
                 csv.WriteField("");
 
             for (int i = 0; i < rectNames.Length; i++)
@@ -115,6 +118,11 @@ namespace CaptureLabel
 
                 if (mode == 'f')
                     csv.WriteField(isFacePresent[i]);
+                if (mode == 'e')
+                {
+                    foreach (U value in eyesNotVisibleContainer.getRow(i))
+                        csv.WriteField(value);
+                }
 
                 foreach (T value in realCoordinatesList.getRow(i))
                     csv.WriteField(value);
@@ -265,7 +273,7 @@ namespace CaptureLabel
             item2.Add(realCoordinates);
             item2.Add(lookAngleContainer);
             item2.Add(faceModeSize);
-
+           
             return Tuple.Create(item1, item2);
         }
 
@@ -273,6 +281,7 @@ namespace CaptureLabel
         {
             List<int> item1 = new List<int>();
             List<CoordinatesContainer<int>> item2 = new List<CoordinatesContainer<int>>();
+            CoordinatesContainer<int> eyesNotVisibleContainer = new CoordinatesContainer<int>();
             CoordinatesContainer<int> realCoordinates = new CoordinatesContainer<int>();
             CoordinatesContainer<int> lookAngleContainer = new CoordinatesContainer<int>();
             CoordinatesContainer<int> faceModeSize = new CoordinatesContainer<int>();
@@ -284,12 +293,19 @@ namespace CaptureLabel
             {
                 //item1.Add(line[0]);
 
+                singleRow.Add(line[0]);
+                singleRow.Add(line[1]);
+
+                List<int> temp = new List<int>(singleRow);
+                eyesNotVisibleContainer.addRow(temp);
+                singleRow.Clear();
+
                 for (int i = 0; i < 10; i++)
                 {
                     singleRow.Add(line[i]);
                 }
 
-                List<int> temp = new List<int>(singleRow);
+                temp = new List<int>(singleRow);
                 realCoordinates.addRow(temp);
                 singleRow.Clear();
 
@@ -312,10 +328,11 @@ namespace CaptureLabel
             item2.Add(realCoordinates);
             item2.Add(lookAngleContainer);
             item2.Add(faceModeSize);
+            item2.Add(eyesNotVisibleContainer);
 
             return Tuple.Create(item1, item2);
         }
-
+/*
         public static CoordinatesContainer<T> readFromCSV<T>(string path, char mode)
         {
 
@@ -442,7 +459,7 @@ namespace CaptureLabel
             }
             return result;
         }
-
+*/
         public static Tuple<List<List<T>>, List<List<int>>> normalizeOutput<T, U>(CoordinatesContainer<U> realCoordinatesList, CoordinatesContainer<int> faceModeSize = null, char mode = 'f')
         {
             Tuple<List<List<T>>, List<List<int>>> normalized;
