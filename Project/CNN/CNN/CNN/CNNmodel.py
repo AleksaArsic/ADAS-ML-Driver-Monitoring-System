@@ -11,8 +11,9 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dropout, Flatten, Dens
 #Dense = tf.keras.layers.Dense
 #Sequential = tf.keras.models.Sequential
 
+#outputNo = 8
 
-def create_model(inputWidth, inputHeight, ch):
+def create_model(inputWidth, inputHeight, ch, outputNo):
 
     model = Sequential()
 
@@ -34,7 +35,7 @@ def create_model(inputWidth, inputHeight, ch):
     model.add(Dense(64, activation='relu'))
     model.add(Dropout(0.25))
     model.add(Dense(32, activation='relu'))
-    model.add(Dense(7)) # kaze da mreza ima 24 izlaza
+    model.add(Dense(outputNo)) 
     model.add(Activation('sigmoid'))
 
     model.compile(optimizer="adam",loss='mean_squared_error', metrics=["accuracy"])

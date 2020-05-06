@@ -37,7 +37,7 @@ def frameCapture(vsource):
 
     if(isinstance(vsource, int)):
         cap = cv2.VideoCapture(vsource + cv2.CAP_DSHOW)
-        change_res(cap, 1280, 720)
+        change_res(cap, 640, 480)
     else:
         cap = cv2.VideoCapture(vsource)
 

@@ -6,6 +6,13 @@ import math
 import PIL as PIL
 from PIL import Image, ImageDraw
 
+inputHeight = 100
+inputWidth = 100
+
+start = 0
+max = 8000
+r = 1
+
 def grayConversion(image):
     grayValue = 0.07 * image[:,:,2] + 0.72 * image[:,:,1] + 0.21 * image[:,:,0]
     gray_img = grayValue.astype(np.uint8)
@@ -68,7 +75,8 @@ def loadImagesAndGrayscale(imgsDir, images, inputWidth = 100, inputHeight = 100)
     
     return [images, filenames]
 
-def loadImagesAndCategories(images, imgsDir, categories, catPath, minMaxValues, inputWidth = 100, inputHeight = 100):
+#def loadImagesAndCategories(images, imgsDir, categories, catPath, minMaxValues, phase = 1, inputWidth = 100, inputHeight = 100):
+def loadImagesAndCategories(images, imgsDir, categories, catPath, phase = 1, inputWidth = 100, inputHeight = 100):
     print ('loading  images...')
 
     filenames = []
@@ -96,10 +104,20 @@ def loadImagesAndCategories(images, imgsDir, categories, catPath, minMaxValues, 
 
             cat = cat.rstrip(',\n')
             cat = cat.split(',')
-            cat.pop(7)
-            cat.pop(7)
-            cat.pop(7)
-            cat.pop(7)
+
+            # phase 1 specific
+            if(phase == 1):
+                cat.pop(7)
+                cat.pop(7)
+                cat.pop(7)
+                cat.pop(7)
+            elif(phase == 2):
+                cat.pop(12)
+                cat.pop(12)
+                cat.pop(12)
+                cat.pop(12)
+                cat.pop(12)
+
 
             cnt_cat = 0
             for item in cat:
@@ -107,9 +125,11 @@ def loadImagesAndCategories(images, imgsDir, categories, catPath, minMaxValues, 
                 cnt_cat = cnt_cat + 1
             cat = np.asarray(cat)
 
-            faceX = cat[0]
-            faceY = cat[1]
-            faceW = cat[6]
+
+            #phase 1 specific
+            faceX = cat[1]
+            faceY = cat[2]
+            faceW = cat[7]
 
             categories.append(cat)
 
@@ -215,9 +235,9 @@ def drawPredictionsToDisk(predictions, filenames, imgsDir, minMaxValues):
     for fname in filenames:
         imagePath = imgsDir + fname
 
-        faceX = predictions[cnt][0]
-        faceY = predictions[cnt][1]
-        faceW = predictions[cnt][6]
+        faceX = predictions[cnt][1]
+        faceY = predictions[cnt][2]
+        faceW = predictions[cnt][7]
         
         faceXDenom = (faceX * (minMaxValues[1][0] - minMaxValues[0][0]) + minMaxValues[0][0])
         faceYDenom = (faceY * (minMaxValues[1][1] - minMaxValues[0][1]) + minMaxValues[0][1])
@@ -228,7 +248,7 @@ def drawPredictionsToDisk(predictions, filenames, imgsDir, minMaxValues):
         img = img.resize((inputWidth,inputHeight), Image.ANTIALIAS)
         img = np.asarray(img)
             
-        gray = Utilities.grayConversion(img)
+        gray = grayConversion(img)
 
         result = Image.fromarray((gray).astype(np.uint8))
 
@@ -246,7 +266,7 @@ def drawPredictionsToDisk(predictions, filenames, imgsDir, minMaxValues):
 
 
         cv2.rectangle(gray, (int(topLeftX),int(topLeftY)), (int(bottomRightX),int(bottomRightY)) , (0,255,0), 2)
-        cv2.imwrite('D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\output_2020_04_17_11_39_49_grayscale_predictions\\' + fname + '.jpg', gray)
+        cv2.imwrite('D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_grayscale_predictions\\' + fname + '.jpg', gray)
 
         cnt = cnt + 1
 
@@ -254,9 +274,9 @@ def drawPredictionsToDisk(predictions, filenames, imgsDir, minMaxValues):
 def drawExpected(grayImg, fname, faceX, faceY, faceW, minMaxValues):
     #denormalize
 
-    faceXDenom = (faceX * (minMaxValues[1][0] - minMaxValues[0][0]) + minMaxValues[0][0])
-    faceYDenom = (faceY * (minMaxValues[1][1] - minMaxValues[0][1]) + minMaxValues[0][1])
-    faceWDenom = (faceW * (minMaxValues[1][6] - minMaxValues[0][6]) + minMaxValues[0][6])
+    faceXDenom = (faceX * (minMaxValues[1][1] - minMaxValues[0][1]) + minMaxValues[0][1])
+    faceYDenom = (faceY * (minMaxValues[1][2] - minMaxValues[0][2]) + minMaxValues[0][2])
+    faceWDenom = (faceW * (minMaxValues[1][7] - minMaxValues[0][7]) + minMaxValues[0][7])
 
     result = Image.fromarray((grayImg).astype(np.uint8))
 
@@ -274,6 +294,6 @@ def drawExpected(grayImg, fname, faceX, faceY, faceW, minMaxValues):
 
     #draw rectangle on face
     cv2.rectangle(grayImg, (int(topLeftX),int(topLeftY)), (int(bottomRightX),int(bottomRightY)) , (0,255,0), 2)
-    cv2.imwrite('output_2020_04_17_11_39_49_grayscale\\' + fname + '.jpg', grayImg)
+    cv2.imwrite('phase01_greyscale\\' + fname + '.jpg', grayImg)
 
 
