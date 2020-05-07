@@ -111,6 +111,7 @@ def loadImagesAndCategories(images, imgsDir, categories, catPath, phase = 1, inp
                 cat.pop(7)
                 cat.pop(7)
                 cat.pop(7)
+            # phase 2 specific
             elif(phase == 2):
                 cat.pop(12)
                 cat.pop(12)
