@@ -49,12 +49,15 @@ namespace CaptureLabel
             return bitmap;
         }
 
-        public static char switchMode(ToolStripMenuItem tsmiFace, ToolStripMenuItem tsmiElements)
+        //public static char switchMode(ToolStripMenuItem tsmiFace, ToolStripMenuItem tsmiElements)
+        public static char switchMode(ToolStripMenuItem[] tsmi)
         {
-            if (tsmiFace.Checked)
+            if (tsmi[0].Checked)
                 return 'f';
-            if (tsmiElements.Checked)
+            if (tsmi[1].Checked)
                 return 'e';
+            if (tsmi[2].Checked)
+                return 'g';
 
             return '0';
         }
@@ -72,7 +75,7 @@ namespace CaptureLabel
 
             csv.WriteField("");
 
-            string[] rectNames = (boolMode) ? Constants.namesF : Constants.namesE;
+            string[] rectNames = ((mode == 'f') ? Constants.rectangleNameF : (mode == 'e' ? Constants.rectangleNameE : Constants.rectangleNameG));
 
             if (mode == 'f')
                 csv.WriteField("noFace");
@@ -94,6 +97,9 @@ namespace CaptureLabel
                 foreach (string s in Constants.lookingAngleString)
                     csv.WriteField(s);
 
+            if (mode == 'g')
+                csv.WriteField("Eye width:");
+            else
                 csv.WriteField("Face width:");
             //}
 
@@ -154,7 +160,7 @@ namespace CaptureLabel
 
             csv.WriteField("");
 
-            string[] rectNames = (boolMode) ? Constants.namesF : Constants.namesE;
+            string[] rectNames = (boolMode) ? Constants.rectangleNameF : Constants.rectangleNameE;
 
             
             foreach (string s in rectNames)

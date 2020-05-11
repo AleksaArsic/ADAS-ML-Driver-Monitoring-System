@@ -72,7 +72,7 @@ if __name__ == "__main__":
     script_start = datetime.datetime.now()
 
     minMaxValues = Utilities.readMinMaxFromCSV(minMaxCSVpath)
-    [images, categories, filenames] = Utilities.loadImagesAndCategories(images, imgsDir, categories, normalizedDataPath, inputWidth, inputHeight)
+    [images, categories, filenames] = Utilities.loadImagesAndCategories(images, imgsDir, categories, normalizedDataPath, phase = 1, inputWidth = inputWidth, inputHeight = inputHeight)
 
     model = cnn.create_model(inputWidth, inputHeight, 1, outputNo)
 

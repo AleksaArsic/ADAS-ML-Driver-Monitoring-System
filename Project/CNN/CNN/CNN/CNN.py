@@ -113,22 +113,23 @@ def predictFace(vsource = 1, savePredictions = False):
         ret, frame = cap.read();
         
         if(ret == True):
+            #grayFrame = Utilities.grayConversion(frame)
+            grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
             #predict face
-            img = cv2.resize(frame, (inputWidth, inputHeight), Image.ANTIALIAS)
+            img = cv2.resize(grayFrame, (inputWidth, inputHeight), Image.ANTIALIAS)
             img = np.asarray(img)
-            gray = Utilities.grayConversion(img)
-            img1 = gray/255
+            img1 = img/255
 
             facePrediction = face_model.predict(img1[np.newaxis, :, :, np.newaxis], verbose = 1)
 
-            faceImg = cropFace(frame, facePrediction)
+            faceImg = cropFace(grayFrame, facePrediction)
             #cv2.imshow("face", faceImg)
 
             # predict face elements
             img = cv2.resize(faceImg, (inputWidth, inputHeight), Image.ANTIALIAS)
             img = np.asarray(img)
-            gray = Utilities.grayConversion(img)
-            img1 = gray/255
+            img1 = img/255
 
             faceElementsPrediction = face_elements_model.predict(img1[np.newaxis, :, :, np.newaxis], verbose = 1)
 
@@ -141,7 +142,7 @@ def predictFace(vsource = 1, savePredictions = False):
             if(savePredictions):
                 predictions.append(facePrediction)
 
-            if(cv2.waitKey(25) & 0xFF == ord('q')):
+            if(cv2.waitKey(1) & 0xFF == ord('q')):
                 break
         else:
             break
@@ -156,25 +157,25 @@ def drawPredictionOnImage(facePrediction, faceElementsPrediction, image):
 
     faceElementsPredDenorm = []
 
-    faceX = facePrediction[0][1]
-    faceY = facePrediction[0][2]
-    faceW = facePrediction[0][7]
+    #faceX = facePrediction[0][1]
+    #faceY = facePrediction[0][2]
+    #faceW = facePrediction[0][7]
 
-    leftEyeX = faceElementsPrediction[0][2]
-    leftEyeY = faceElementsPrediction[0][3]
+    #leftEyeX = faceElementsPrediction[0][2]
+    #leftEyeY = faceElementsPrediction[0][3]
 
-    rightEyeX = faceElementsPrediction[0][4]
-    rightEyeY = faceElementsPrediction[0][5]
+    #rightEyeX = faceElementsPrediction[0][4]
+    #rightEyeY = faceElementsPrediction[0][5]
 
-    faceXDenom = (faceX * (minMaxValues[1][0] - minMaxValues[0][0]) + minMaxValues[0][0])
-    faceYDenom = (faceY * (minMaxValues[1][1] - minMaxValues[0][1]) + minMaxValues[0][1])
-    faceWDenom = (faceW * (minMaxValues[1][6] - minMaxValues[0][6]) + minMaxValues[0][6])
+    faceXDenom = (facePrediction[0][1] * (minMaxValues[1][0] - minMaxValues[0][0]) + minMaxValues[0][0])
+    faceYDenom = (facePrediction[0][2] * (minMaxValues[1][1] - minMaxValues[0][1]) + minMaxValues[0][1])
+    faceWDenom = (facePrediction[0][7] * (minMaxValues[1][6] - minMaxValues[0][6]) + minMaxValues[0][6])
 
     #debug
-    faceLocationNorm = "(x, y, w): (" + str(faceX) + ", " + str(faceY) + ", " + str(faceW) + ")"
-    faceLocation = "(x, y, w): (" + str(faceXDenom) + ", " + str(faceYDenom) + ", " + str(faceWDenom) + ")"
-    print("(x, y, w): (" + str(faceX) + ", " + str(faceY) + ", " + str(faceW) + ")")
-    print("(x, y, w): (" + str(faceXDenom) + ", " + str(faceYDenom) + ", " + str(faceWDenom) + ")")
+    #faceLocationNorm = "(x, y, w): (" + str(faceX) + ", " + str(faceY) + ", " + str(faceW) + ")"
+    #faceLocation = "(x, y, w): (" + str(faceXDenom) + ", " + str(faceYDenom) + ", " + str(faceWDenom) + ")"
+    #print("(x, y, w): (" + str(faceX) + ", " + str(faceY) + ", " + str(faceW) + ")")
+    #print("(x, y, w): (" + str(faceXDenom) + ", " + str(faceYDenom) + ", " + str(faceWDenom) + ")")
 
     topLeftX = faceXDenom - math.ceil((faceWDenom / 2))
     topLeftY = faceYDenom - math.ceil(((faceWDenom / 2) * 1.5))
@@ -188,12 +189,12 @@ def drawPredictionOnImage(facePrediction, faceElementsPrediction, image):
         faceElementsPredDenorm[i] += topLeftX
         faceElementsPredDenorm[i + 1] += topLeftY
 
-    cv2.rectangle(image, (int(topLeftX),int(topLeftY)), (int(bottomRightX),int(bottomRightY)) , (0,255,0), 2)
+    cv2.rectangle(image, (int(topLeftX),int(topLeftY)), (int(bottomRightX),int(bottomRightY)), (0,255,0), 2)
 
     for i in range(0, len(faceElementsPredDenorm), 2):
         cv2.circle(image, (int(faceElementsPredDenorm[i]), int(faceElementsPredDenorm[i + 1])), 1, (0,255,0), 2)
 
-    print("Face on: (" + str(facePrediction[0][1]) + ", " + str(facePrediction[0][2]) + ")")
+    #print("Face on: (" + str(facePrediction[0][1]) + ", " + str(facePrediction[0][2]) + ")")
 
     return image
 

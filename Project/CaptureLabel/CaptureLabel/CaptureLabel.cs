@@ -57,6 +57,9 @@ namespace CaptureLabel
         private char mode = 'f';
         private bool modeSet = false;
 
+        private string[] rectangleFocusNames;
+        private List<int[]> rectSPostion = new List<int[]>();
+
         public CaptureLabel()
         {
             InitializeComponent();
@@ -68,7 +71,17 @@ namespace CaptureLabel
                | BindingFlags.Instance | BindingFlags.NonPublic, null,
                ZoomViewP, new object[] { true });
             */
+            start();
             initMode(mode);
+            
+        }
+
+        // variables initialized only once, at the beginning
+        private void start()
+        {
+            rectSPostion.Add(Constants.faceElementStartPos);
+            rectSPostion.Add(Constants.faceModeStartPos);
+            rectSPostion.Add(Constants.eyeContourStartPos);
         }
 
         private void CaptureLabel_Load(object sender, EventArgs e)
@@ -90,7 +103,7 @@ namespace CaptureLabel
                     scrollUp();
 
                 if (!isLoaded)
-                    rectangles.resetCoordinates(mode);
+                    rectangles.resetCoordinates(rectSPostion[mode - 'e']);
 
                 rectangles.resetFocusList();
                 someoneIsInFocus = false;
@@ -141,7 +154,7 @@ namespace CaptureLabel
             // index out of range when setting focus on elements past index 2 
             // in focusShortcuts array
 
-            Keys[] focusShortcuts = (mode == 'e' ? Constants.focusShortcutsE : Constants.focusShortcutsF);
+            Keys[] focusShortcuts = (mode == 'f' ? Constants.focusShortcutsF : Constants.focusShortcutsE);
 
             if (Array.Exists(focusShortcuts, 
                             element => element == e.KeyCode) &&
@@ -260,7 +273,7 @@ namespace CaptureLabel
             }
 
             if (!isLoaded)
-                rectangles.resetCoordinates(mode);
+                rectangles.resetCoordinates(rectSPostion[mode - 'e']);
             rectangles.resetFocusList();
             someoneIsInFocus = false;
             imagePanel.Refresh();
@@ -277,16 +290,14 @@ namespace CaptureLabel
 
             for(int i = 0; i < rects.Length; i++)
             {
-                if((mode == 'e' && inFocus == i) || (mode == 'f' && i != 0 && inFocus == i))
+                if((mode != 'f' && inFocus == i) || (mode == 'f' && i != 0 && inFocus == i))
                     e.Graphics.FillRectangle(new SolidBrush(Color.Red), rects[i]);
                 else
                     e.Graphics.DrawRectangle(new Pen(Color.Red), rects[i]);
             }
 
-            if (someoneIsInFocus && mode == 'e')
-                inFocusLabel.Text = Constants.inFocusString + " " + Constants.rectangleNameE[rectangles.inFocusIndex()];
-            if(someoneIsInFocus && mode == 'f')
-                inFocusLabel.Text = Constants.inFocusString + " " + Constants.rectangleNameF[rectangles.inFocusIndex()];
+            if(someoneIsInFocus)
+                    inFocusLabel.Text = Constants.inFocusString + " " + rectangleFocusNames[rectangles.inFocusIndex()];
 
             imagePanel.Focus();
         }
@@ -633,6 +644,7 @@ namespace CaptureLabel
 
     private void initMode(char currentMode)
         {
+
             if (currentMode == 'f')
             {
                 rectangles = new RectangleContainer(3, Constants.faceModeStartPos, Constants.faceModeStartSize);
@@ -640,6 +652,8 @@ namespace CaptureLabel
                 //lookAngleGB.Visible = true;
                 faceOptionsGB.Visible = true;
                 eyePropertiesGB.Visible = false;
+
+                rectangleFocusNames = Constants.rectangleNameF;
             }
             if (currentMode == 'e')
             {
@@ -648,6 +662,19 @@ namespace CaptureLabel
                 //lookAngleGB.Visible = false;
                 faceOptionsGB.Visible = false;
                 eyePropertiesGB.Visible = true;
+
+                rectangleFocusNames = Constants.rectangleNameE;
+
+            }
+            if (currentMode == 'g')
+            {
+                rectangles = new RectangleContainer(5, Constants.eyeContourStartPos, Constants.rectSize);
+                lookAngleGB.Text = Constants.lookAngleCB;
+                //lookAngleGB.Visible = false;
+                faceOptionsGB.Visible = false;
+                eyePropertiesGB.Visible = false;
+
+                rectangleFocusNames = Constants.rectangleNameG;
             }
         }
 
@@ -786,7 +813,7 @@ namespace CaptureLabel
                 Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer, faceModeSize, isFacePresent);
                 Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale, true);
             }
-            if(mode == 'e')
+            if(mode == 'e' || mode == 'g')
                 Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer, 
                     faceModeSize, eyesNotVisibleContainer : eyesNotVisibleContainer);
 
@@ -821,6 +848,7 @@ namespace CaptureLabel
         private void faceDetectionToolStripMenuItem_Click(object sender, EventArgs e)
         {
             faceElementsDetectionToolStripMenuItem.Checked = false;
+            eyeContourDetectionToolStripMenuItem.Checked = false;
             faceDetectionToolStripMenuItem.Checked = true;
 
             if (loaded)
@@ -839,12 +867,13 @@ namespace CaptureLabel
 
 
             //if (!modeSet)
-            mode = Utilities.switchMode(faceDetectionToolStripMenuItem, faceElementsDetectionToolStripMenuItem);
+            mode = Utilities.switchMode(new ToolStripMenuItem[] { faceDetectionToolStripMenuItem, faceElementsDetectionToolStripMenuItem, eyeContourDetectionToolStripMenuItem });
         }
 
         private void faceElementsDetectionToolStripMenuItem_Click(object sender, EventArgs e)
         {
             faceDetectionToolStripMenuItem.Checked = false;
+            eyeContourDetectionToolStripMenuItem.Checked = false;
             faceElementsDetectionToolStripMenuItem.Checked = true;
 
             if (loaded)
@@ -863,7 +892,32 @@ namespace CaptureLabel
 
 
             //if (!modeSet)
-            mode = Utilities.switchMode(faceDetectionToolStripMenuItem, faceElementsDetectionToolStripMenuItem);
+            mode = Utilities.switchMode(new ToolStripMenuItem[] { faceDetectionToolStripMenuItem, faceElementsDetectionToolStripMenuItem, eyeContourDetectionToolStripMenuItem });
+        }
+
+
+        private void eyeContourDetectionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            faceElementsDetectionToolStripMenuItem.Checked = false;
+            faceDetectionToolStripMenuItem.Checked = false;
+            eyeContourDetectionToolStripMenuItem.Checked = true;
+
+            if (loaded)
+            {
+                if (MessageBox.Show(Constants.saveProgressString, "Caution!", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    // save logic
+                    if (!savedAs)
+                        saveAs();
+                    else
+                        save();
+                }
+
+                MessageBox.Show(Constants.modeSwitchInformation, "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
+            mode = Utilities.switchMode(new ToolStripMenuItem[] { faceDetectionToolStripMenuItem, faceElementsDetectionToolStripMenuItem, eyeContourDetectionToolStripMenuItem });
+
         }
 
         private void exportNormalizedCsvToolStripMenuItem_Click(object sender, EventArgs e)
@@ -978,5 +1032,6 @@ namespace CaptureLabel
                 eyesNotVisibleCBs[i].Checked = (eyesNotVisible[i] == 1 ? true : false);
             }
         }
+
     }
 }

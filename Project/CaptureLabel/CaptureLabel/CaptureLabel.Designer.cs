@@ -69,8 +69,9 @@ namespace CaptureLabel
             this.noFaceCB = new System.Windows.Forms.CheckBox();
             this.faceOptionsGB = new System.Windows.Forms.GroupBox();
             this.eyePropertiesGB = new System.Windows.Forms.GroupBox();
-            this.LEnotVCB = new System.Windows.Forms.CheckBox();
             this.REnotVCB = new System.Windows.Forms.CheckBox();
+            this.LEnotVCB = new System.Windows.Forms.CheckBox();
+            this.eyeContourDetectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -228,7 +229,8 @@ namespace CaptureLabel
             // 
             this.modeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.faceDetectionToolStripMenuItem,
-            this.faceElementsDetectionToolStripMenuItem});
+            this.faceElementsDetectionToolStripMenuItem,
+            this.eyeContourDetectionToolStripMenuItem});
             this.modeToolStripMenuItem.Name = "modeToolStripMenuItem";
             this.modeToolStripMenuItem.Size = new System.Drawing.Size(50, 20);
             this.modeToolStripMenuItem.Text = "Mode";
@@ -395,6 +397,17 @@ namespace CaptureLabel
             this.eyePropertiesGB.Text = "Eye properties ";
             this.eyePropertiesGB.Visible = false;
             // 
+            // REnotVCB
+            // 
+            this.REnotVCB.AutoSize = true;
+            this.REnotVCB.Location = new System.Drawing.Point(6, 42);
+            this.REnotVCB.Name = "REnotVCB";
+            this.REnotVCB.Size = new System.Drawing.Size(121, 17);
+            this.REnotVCB.TabIndex = 1;
+            this.REnotVCB.Text = "Right eye not visible";
+            this.REnotVCB.UseVisualStyleBackColor = true;
+            this.REnotVCB.CheckedChanged += new System.EventHandler(this.REnotVCB_CheckedChanged);
+            // 
             // LEnotVCB
             // 
             this.LEnotVCB.AutoSize = true;
@@ -406,16 +419,12 @@ namespace CaptureLabel
             this.LEnotVCB.UseVisualStyleBackColor = true;
             this.LEnotVCB.CheckedChanged += new System.EventHandler(this.LEnotVCB_CheckedChanged);
             // 
-            // REnotVCB
+            // eyeContourDetectionToolStripMenuItem
             // 
-            this.REnotVCB.AutoSize = true;
-            this.REnotVCB.Location = new System.Drawing.Point(6, 42);
-            this.REnotVCB.Name = "REnotVCB";
-            this.REnotVCB.Size = new System.Drawing.Size(121, 17);
-            this.REnotVCB.TabIndex = 1;
-            this.REnotVCB.Text = "Right eye not visible";
-            this.REnotVCB.UseVisualStyleBackColor = true;
-            this.REnotVCB.CheckedChanged += new System.EventHandler(this.REnotVCB_CheckedChanged);
+            this.eyeContourDetectionToolStripMenuItem.Name = "eyeContourDetectionToolStripMenuItem";
+            this.eyeContourDetectionToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
+            this.eyeContourDetectionToolStripMenuItem.Text = "Eye contour detection";
+            this.eyeContourDetectionToolStripMenuItem.Click += new System.EventHandler(this.eyeContourDetectionToolStripMenuItem_Click);
             // 
             // CaptureLabel
             // 
@@ -494,6 +503,7 @@ namespace CaptureLabel
         private GroupBox eyePropertiesGB;
         private CheckBox REnotVCB;
         private CheckBox LEnotVCB;
+        private ToolStripMenuItem eyeContourDetectionToolStripMenuItem;
     }
 }
 

@@ -90,7 +90,7 @@ def frameCapture(vsource):
                     cv2.imwrite(os.path.join(workingDirPath, outputDirName, outputImageName + "_{:d}.jpg").format(frameId), frame)
             frameId += 1
             
-            if(cv2.waitKey(25) & 0xFF == ord('q')):
+            if(cv2.waitKey(1) & 0xFF == ord('q')):
                 break
         else:
             break
