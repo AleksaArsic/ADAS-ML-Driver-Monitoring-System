@@ -44,6 +44,7 @@ def loadImages(imgsDir, images):
         images.append(img)
       
         fname = os.path.basename(imagePath)
+        #fname = os.path.splitext(fname)[0]
         filenames.append(fname)
 
     print ('loading complete!')
@@ -118,7 +119,9 @@ def loadImagesAndCategories(images, imgsDir, categories, catPath, phase = 1, inp
                 cat.pop(12)
                 cat.pop(12)
                 cat.pop(12)
-
+            # phase 3 specific
+            elif(phase == 3):
+                cat.pop(15)
 
             cnt_cat = 0
             for item in cat:

@@ -184,7 +184,7 @@ def predictFromImages():
         croppedImage = img[topLeftY:bottomRightY, topLeftX:bottomRightX]
         croppedImage = cv2.cvtColor(croppedImage, cv2.COLOR_BGR2RGB)
 
-        cv2.imwrite('D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces\\' + filenames[cnt] + '.jpg', croppedImage)
+        cv2.imwrite('D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces\\' + filenames[cnt], croppedImage)
 
         cnt = cnt + 1
 

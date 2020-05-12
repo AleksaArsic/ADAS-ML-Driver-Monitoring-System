@@ -199,12 +199,14 @@ def predictFromImages():
         croppedEyeLeft = img[tlLeyeYdenorm:brLeyeYdenorm, tlLeyeXdenorm:brLeyeXdenorm]
         croppedEyeLeft = cv2.cvtColor(croppedEyeLeft, cv2.COLOR_BGR2RGB)
 
-        cv2.imwrite('D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase02_face_elements\\' + filenames[cnt] + '_left.jpg', croppedEyeLeft)
+        filename = os.path.splitext(filenames[cnt])[0]
+
+        cv2.imwrite('D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase02_face_elements\\' + filename + '_left.jpg', croppedEyeLeft)
 
         croppedEyeRight = img[tlReyeYdenorm:brReyeYdenorm, tlReyeXdenorm:brReyeXdenorm]
         croppedEyeRight = cv2.cvtColor(croppedEyeRight, cv2.COLOR_BGR2RGB)
 
-        cv2.imwrite('D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase02_face_elements\\' + filenames[cnt] + '_right.jpg', croppedEyeRight)
+        cv2.imwrite('D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase02_face_elements\\' + filename + '_right.jpg', croppedEyeRight)
 
 
         cnt = cnt + 1
