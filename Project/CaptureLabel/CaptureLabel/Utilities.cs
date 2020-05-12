@@ -53,11 +53,11 @@ namespace CaptureLabel
         public static char switchMode(ToolStripMenuItem[] tsmi)
         {
             if (tsmi[0].Checked)
-                return 'f';
+                return Constants.faceMode;
             if (tsmi[1].Checked)
-                return 'e';
+                return Constants.faceElementsMode;
             if (tsmi[2].Checked)
-                return 'g';
+                return Constants.eyeContourMode;
 
             return '0';
         }
@@ -66,7 +66,7 @@ namespace CaptureLabel
                                                 CoordinatesContainer<U> lookAngleContainer, CoordinatesContainer<X> faceModeSize, 
                                                 List<int> elementState = null, CoordinatesContainer<U> eyesNotVisibleContainer = null, bool normalized = false)
         {
-            //bool boolMode = (mode == 'f' ? true : false);
+            //bool boolMode = (mode == Constants.faceMode ? true : false);
             // should be embedded in try-catch
             string csvPath = (normalized == true ? CaptureLabel.exportDirectory : CaptureLabel.saveDirectory);
             TextWriter writer = new StreamWriter(@csvPath, false, Encoding.UTF8);
@@ -75,16 +75,16 @@ namespace CaptureLabel
 
             csv.WriteField("");
 
-            string[] rectNames = ((mode == 'f') ? Constants.rectangleNameF : (mode == 'e' ? Constants.rectangleNameE : Constants.rectangleNameG));
+            string[] rectNames = ((mode == Constants.faceMode) ? Constants.rectangleNameF : (mode == Constants.faceElementsMode ? Constants.rectangleNameE : Constants.rectangleNameG));
 
-            if (mode == 'f')
+            if (mode == Constants.faceMode)
                 csv.WriteField("noFace");
-            if (mode == 'e')
+            if (mode == Constants.faceElementsMode)
             {
                 csv.WriteField("noLeftEye");
                 csv.WriteField("noRightEye");
             }
-            if (mode == 'g')
+            if (mode == Constants.eyeContourMode)
                 csv.WriteField("eyeClosed");
 
             foreach (string s in rectNames)
@@ -98,7 +98,7 @@ namespace CaptureLabel
                 foreach (string s in Constants.lookingAngleString)
                     csv.WriteField(s);
 
-            if (mode == 'g')
+            if (mode == Constants.eyeContourMode)
                 csv.WriteField("Eye width:");
             else
                 csv.WriteField("Face width:");
@@ -108,7 +108,7 @@ namespace CaptureLabel
 
             csv.WriteField("Picture:");
             csv.WriteField("");
-            if (mode == 'e')
+            if (mode == Constants.faceElementsMode)
                 csv.WriteField("");
 
             for (int i = 0; i < rectNames.Length; i++)
@@ -123,9 +123,9 @@ namespace CaptureLabel
             {
                 csv.WriteField(imageNames[i]);
 
-                if (mode != 'e')
+                if (mode != Constants.faceElementsMode)
                     csv.WriteField(elementState[i]);
-                if (mode == 'e')
+                if (mode == Constants.faceElementsMode)
                 {
                     foreach (U value in eyesNotVisibleContainer.getRow(i))
                         csv.WriteField(value);
@@ -134,7 +134,7 @@ namespace CaptureLabel
                 foreach (T value in realCoordinatesList.getRow(i))
                     csv.WriteField(value);
 
-                //if (mode == 'f')
+                //if (mode == Constants.faceMode)
                 //{
                     foreach (U value in lookAngleContainer.getRow(i))
                         csv.WriteField(value);
@@ -150,7 +150,7 @@ namespace CaptureLabel
 
         public static void writeMinMax<T, U>(char mode, CoordinatesContainer<T> minMax, CoordinatesContainer<U> faceModeMinMax)
         {
-            bool boolMode = (mode == 'f' ? true : false);
+            bool boolMode = (mode == Constants.faceMode ? true : false);
             TextWriter writer = new StreamWriter(CaptureLabel.exportMinMaxDirectory, false, Encoding.UTF8);
             CsvSerializer serializer = new CsvSerializer(writer, System.Globalization.CultureInfo.CurrentCulture);
             CsvWriter csv = new CsvWriter(serializer);
@@ -191,7 +191,7 @@ namespace CaptureLabel
                 for(int j = 0; j < minMaxT[i].Count; j++)
                     csv.WriteField(minMaxT[i][j]);
 
-                if(mode == 'f')
+                if(mode == Constants.faceMode)
                     csv.WriteField(faceModeMinMax.getRow(0)[i]);
 
                 csv.NextRecord();
@@ -228,7 +228,7 @@ namespace CaptureLabel
                     singleRow.Clear();
                 }
 
-                if (mode != 'e')
+                if (mode != Constants.faceElementsMode)
                     retTuple = parseTypeOneCSV(mode, result);
                 else
                     retTuple = parseFaceElements(result);
@@ -250,12 +250,12 @@ namespace CaptureLabel
             int iCoordLow = 0;
             int iCoordHigh = 0;
 
-            if(mode == 'f')
+            if(mode == Constants.faceMode)
             {
                 iCoordLow = 7;
                 iCoordHigh = 11;
             }
-            else if(mode == 'g')
+            else if(mode == Constants.eyeContourMode)
             {
                 iCoordLow = 11;
                 iCoordHigh = 15;
@@ -371,15 +371,15 @@ namespace CaptureLabel
                 csv.Read();
                 csv.Read();
 
-                if (mode == 'f')
+                if (mode == Constants.faceMode)
                     start = 2;
 
                 while (csv.Read())
                 {
                     for (int i = start; csv.TryGetField<T>(i, out value); i++)
                     {
-                        if (mode == 'e' && i == 11) break;
-                        if (mode == 'f' && i == 8) break;
+                        if (mode == Constants.faceElementsMode && i == 11) break;
+                        if (mode == Constants.faceMode && i == 8) break;
 
                         singleRow.Add(value);
                     }
@@ -398,7 +398,7 @@ namespace CaptureLabel
             List<T> singleRow = new List<T>();
             T value;
 
-            int start = (mode == 'f') ? 8 : 11;
+            int start = (mode == Constants.faceMode) ? 8 : 11;
 
             using (TextReader fileReader = File.OpenText(path))
             {
@@ -431,7 +431,7 @@ namespace CaptureLabel
             List<T> singleRow = new List<T>();
             T value;
 
-            int start = (mode == 'f') ? 12 : 27;
+            int start = (mode == Constants.faceMode) ? 12 : 27;
 
             using (TextReader fileReader = File.OpenText(path))
             {
@@ -485,7 +485,7 @@ namespace CaptureLabel
         {
             Tuple<List<List<T>>, List<List<int>>> normalized;
 
-            if (mode == 'f')
+            if (mode == Constants.faceMode)
                 normalized = normalizeOutputFaceMode<T, U>(realCoordinatesList);
             else
                 normalized = normalizeOutputFaceElements<T, U>(realCoordinatesList, faceModeSize);

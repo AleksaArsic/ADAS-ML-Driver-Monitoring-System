@@ -192,8 +192,6 @@ namespace CaptureLabel
         {
             int j = 0;
 
-            //int[] rectSLocation = (mode == 'f') ? Constants.faceModeStartPos : Constants.faceElementStartPos;
-
             for (int i = 0; i < rectContainer.Count * 2; i += 2, j++)
             {
                 Rectangle rect = rectContainer[j];

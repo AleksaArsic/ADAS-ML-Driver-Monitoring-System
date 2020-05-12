@@ -33,6 +33,10 @@ namespace CaptureLabel
 
         public static readonly int[] rectStartPos = { 200, 200 };
 
+        public static readonly char faceMode = 'f';
+        public static readonly char faceElementsMode = 'e';
+        public static readonly char eyeContourMode = 'g';
+
         public static readonly Keys[] focusShortcutsE =
         {
             Keys.D1,

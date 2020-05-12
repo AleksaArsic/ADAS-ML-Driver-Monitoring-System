@@ -55,7 +55,7 @@ namespace CaptureLabel
         private int mouseX = 0;
         private int mouseY = 0;
 
-        private char mode = 'f';
+        private char mode = Constants.faceMode;
         private bool modeSet = false;
 
         private string[] rectangleFocusNames;
@@ -104,7 +104,7 @@ namespace CaptureLabel
                     scrollUp();
 
                 if (!isLoaded)
-                    rectangles.resetCoordinates(rectSPostion[mode - 'e']);
+                    rectangles.resetCoordinates(rectSPostion[mode - Constants.faceElementsMode]);
 
                 rectangles.resetFocusList();
                 someoneIsInFocus = false;
@@ -155,7 +155,7 @@ namespace CaptureLabel
             // index out of range when setting focus on elements past index 2 
             // in focusShortcuts array
 
-            Keys[] focusShortcuts = (mode == 'f' ? Constants.focusShortcutsF : Constants.focusShortcutsE);
+            Keys[] focusShortcuts = (mode == Constants.faceMode ? Constants.focusShortcutsF : Constants.focusShortcutsE);
 
             if (Array.Exists(focusShortcuts, 
                             element => element == e.KeyCode) &&
@@ -247,7 +247,7 @@ namespace CaptureLabel
             
             if (!imagePanel.ClientRectangle.Contains(e.Location) || imagePanel.BackgroundImage == null) return;
 
-            if(mode == 'f' && Control.ModifierKeys == Keys.Control)
+            if(mode == Constants.faceMode && Control.ModifierKeys == Keys.Control)
             {
                 if (e.Delta > 0)
                     rectangles.rescaleRect(0, Constants.modeFRectDeltaSize, Constants.modeFRectScale);
@@ -274,7 +274,7 @@ namespace CaptureLabel
             }
 
             if (!isLoaded)
-                rectangles.resetCoordinates(rectSPostion[mode - 'e']);
+                rectangles.resetCoordinates(rectSPostion[mode - Constants.faceElementsMode]);
             rectangles.resetFocusList();
             someoneIsInFocus = false;
             imagePanel.Refresh();
@@ -291,7 +291,7 @@ namespace CaptureLabel
 
             for(int i = 0; i < rects.Length; i++)
             {
-                if((mode != 'f' && inFocus == i) || (mode == 'f' && i != 0 && inFocus == i))
+                if((mode != Constants.faceMode && inFocus == i) || (mode == Constants.faceMode && i != 0 && inFocus == i))
                     e.Graphics.FillRectangle(new SolidBrush(Color.Red), rects[i]);
                 else
                     e.Graphics.DrawRectangle(new Pen(Color.Red), rects[i]);
@@ -344,11 +344,11 @@ namespace CaptureLabel
 
                         Tuple<List<int>, List<CoordinatesContainer<int>>> tempCSV = Utilities.parseCSV(csvPath, mode);
 
-                        if (mode == 'f')
+                        if (mode == Constants.faceMode)
                             isFacePresent = tempCSV.Item1;
-                        if (mode == 'e')
+                        if (mode == Constants.faceElementsMode)
                             eyesNotVisibleContainer = new CoordinatesContainer<int>(tempCSV.Item2[3]);
-                        if (mode == 'g')
+                        if (mode == Constants.eyeContourMode)
                             eyeClosed = tempCSV.Item1;
 
                         realCoordinatesList = new CoordinatesContainer<int>(tempCSV.Item2[0]);
@@ -357,11 +357,11 @@ namespace CaptureLabel
 
                         // read and load coordinates from .csv
                         //realCoordinatesList = Utilities.readFromCSV<int>(csvPath, mode);
-                        //if (mode == 'f')
+                        //if (mode == Constants.faceMode)
                         //lookAngleContainer = Utilities.readLookAngleFromCSV<int>(csvPath, mode);
                         //faceModeSize = Utilities.readFaceSizeFromCSV<int>(csvPath, mode);
 
-                        //if (mode == 'f')
+                        //if (mode == Constants.faceMode)
                             //isFacePresent = Utilities.readIsFacePresentFromCSV(csvPath);
 
                         for (int i = 0; i < imageNames.Count; i++)
@@ -371,7 +371,7 @@ namespace CaptureLabel
                             imagePanel.BackgroundImage.Dispose();
                         }
 
-                        if (mode == 'f')
+                        if (mode == Constants.faceMode)
                             Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale, true);
 
                         List<int> singleRow;
@@ -454,7 +454,7 @@ namespace CaptureLabel
                 resizeFactor = imageResizeFactor[currentImageIndex];
             }
 
-            int faceWidth = (mode == 'f') ? rectangles.getRectangles()[0].Width : imagePanel.BackgroundImage.Width;
+            int faceWidth = (mode == Constants.faceMode) ? rectangles.getRectangles()[0].Width : imagePanel.BackgroundImage.Width;
             // calculate real coordinates
             if (coordinatesList.getRow(currentImageIndex) == null)
             {
@@ -464,11 +464,11 @@ namespace CaptureLabel
                 coordinatesList.addRow(coordinates);
                 realCoordinatesList.addRow(calculateRealCoordinates(coordinates));
 
-                if (mode == 'f')
+                if (mode == Constants.faceMode)
                     isFacePresent.Add((noFaceCB.Checked ? 1 : 0));
-                if (mode == 'e')
+                if (mode == Constants.faceElementsMode)
                     eyesNotVisibleContainer.addRow(eyesNotVisible.ToList());
-                if (mode == 'g')
+                if (mode == Constants.eyeContourMode)
                     eyeClosed.Add((eyeClosedCB.Checked ? 1 : 0));
             }
             else
@@ -479,25 +479,25 @@ namespace CaptureLabel
                 faceModeSize.replaceRow(new List<int> { faceWidth }, currentImageIndex);
                 //rectSizeFmode[currentImageIndex] = rectangles.getRectangles()[0].Width;
 
-                if (mode == 'f')
+                if (mode == Constants.faceMode)
                     isFacePresent[currentImageIndex] = (noFaceCB.Checked ? 1 : 0);
-                if (mode == 'e')
+                if (mode == Constants.faceElementsMode)
                     eyesNotVisibleContainer.replaceRow(eyesNotVisible.ToList(), currentImageIndex);
-                if (mode == 'g')
+                if (mode == Constants.eyeContourMode)
                     eyeClosed[currentImageIndex] = (eyeClosedCB.Checked ? 1 : 0);
             }
 
             lookAngle = new int[] { 0, 0, 0, 0 };
             setCheckBoxes(new CheckBox[] { leftCB, rightCB, upCB, downCB });
 
-            if (mode == 'e')
+            if (mode == Constants.faceElementsMode)
             {
                 eyesNotVisible = new int[] { 0, 0 };
                 setEyesCheckBoxes(new CheckBox[] { LEnotVCB, REnotVCB });
             }
-            if (mode == 'f')
+            if (mode == Constants.faceMode)
                 noFaceCB.Checked = false;
-            if (mode == 'g')
+            if (mode == Constants.eyeContourMode)
                 eyeClosedCB.Checked = false;
         }
 
@@ -513,9 +513,9 @@ namespace CaptureLabel
             eyesNotVisible = new int[] { 0, 0 };
 
             //if (isFacePresent.Count > currentImageIndex)
-            if(mode == 'f')
+            if(mode == Constants.faceMode)
                 noFaceCB.Checked = (isFacePresent[index] == 0 ? false : true);
-            if (mode == 'g')
+            if (mode == Constants.eyeContourMode)
                 eyeClosedCB.Checked = (eyeClosed[index] == 0 ? false : true);
             //else
               //  noFaceCB.Checked = false;
@@ -526,13 +526,13 @@ namespace CaptureLabel
                 //rectangles.setRectSize(0, new Size(new Point(rectSizeFmode[currentImageIndex], rectSizeFmode[currentImageIndex])));
                 lookAngle = lookAngleContainer.getRow(index).ToArray();
 
-                if (mode == 'e')
+                if (mode == Constants.faceElementsMode)
                 {
                     eyesNotVisible = eyesNotVisibleContainer.getRow(index).ToArray();
                     setEyesCheckBoxes(new CheckBox[] { LEnotVCB, REnotVCB });
                 }
 
-                if (mode == 'f')
+                if (mode == Constants.faceMode)
                 {
                     rectangles.setRectSize(0, new Size(faceSize[0], (int)(faceSize[0] * Constants.modeFRectScale)));
                 }
@@ -659,7 +659,7 @@ namespace CaptureLabel
     private void initMode(char currentMode)
         {
 
-            if (currentMode == 'f')
+            if (currentMode == Constants.faceMode)
             {
                 rectangles = new RectangleContainer(3, Constants.faceModeStartPos, Constants.faceModeStartSize);
                 lookAngleGB.Text = Constants.faceAngleCB;
@@ -670,7 +670,7 @@ namespace CaptureLabel
 
                 rectangleFocusNames = Constants.rectangleNameF;
             }
-            if (currentMode == 'e')
+            if (currentMode == Constants.faceElementsMode)
             {
                 rectangles = new RectangleContainer(5, Constants.faceElementStartPos, Constants.rectSize);
                 lookAngleGB.Text = Constants.lookAngleCB;
@@ -682,7 +682,7 @@ namespace CaptureLabel
                 rectangleFocusNames = Constants.rectangleNameE;
 
             }
-            if (currentMode == 'g')
+            if (currentMode == Constants.eyeContourMode)
             {
                 rectangles = new RectangleContainer(5, Constants.eyeContourStartPos, Constants.rectSize);
                 lookAngleGB.Text = Constants.lookAngleCB;
@@ -824,16 +824,16 @@ namespace CaptureLabel
         private void save()
         {
             saveCoordinates();
-            if (mode == 'f')
+            if (mode == Constants.faceMode)
             {
                 Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale);
                 Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer, faceModeSize, elementState: isFacePresent);
                 Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale, true);
             }
-            if (mode == 'e')
+            if (mode == Constants.faceElementsMode)
                 Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer, 
                     faceModeSize, eyesNotVisibleContainer : eyesNotVisibleContainer);
-            if (mode == 'g')
+            if (mode == Constants.eyeContourMode)
                 Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer,
                     faceModeSize, elementState : eyeClosed);
         }
@@ -996,7 +996,7 @@ namespace CaptureLabel
 
             saveCoordinates();
 
-            if (mode == 'f')
+            if (mode == Constants.faceMode)
             {
                 Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale);
 
@@ -1016,7 +1016,7 @@ namespace CaptureLabel
             }
             else
             {
-                normalized = Utilities.normalizeOutput<double, int>(realCoordinatesList, faceModeSize, 'e');
+                normalized = Utilities.normalizeOutput<double, int>(realCoordinatesList, faceModeSize, Constants.faceElementsMode);
 
                 normalizedCoordinates = new CoordinatesContainer<double>(normalized.Item1);
 
