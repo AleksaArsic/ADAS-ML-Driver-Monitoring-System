@@ -64,9 +64,9 @@ namespace CaptureLabel
 
         public static void writeToCSV<T, U, X>(char mode, CoordinatesContainer<T> realCoordinatesList, List<string> imageNames, 
                                                 CoordinatesContainer<U> lookAngleContainer, CoordinatesContainer<X> faceModeSize, 
-                                                List<int> isFacePresent = null, CoordinatesContainer<U> eyesNotVisibleContainer = null, bool normalized = false)
+                                                List<int> elementState = null, CoordinatesContainer<U> eyesNotVisibleContainer = null, bool normalized = false)
         {
-            bool boolMode = (mode == 'f' ? true : false);
+            //bool boolMode = (mode == 'f' ? true : false);
             // should be embedded in try-catch
             string csvPath = (normalized == true ? CaptureLabel.exportDirectory : CaptureLabel.saveDirectory);
             TextWriter writer = new StreamWriter(@csvPath, false, Encoding.UTF8);
@@ -79,12 +79,13 @@ namespace CaptureLabel
 
             if (mode == 'f')
                 csv.WriteField("noFace");
-
-            if(mode == 'e')
+            if (mode == 'e')
             {
                 csv.WriteField("noLeftEye");
                 csv.WriteField("noRightEye");
             }
+            if (mode == 'g')
+                csv.WriteField("eyeClosed");
 
             foreach (string s in rectNames)
             {
@@ -122,8 +123,8 @@ namespace CaptureLabel
             {
                 csv.WriteField(imageNames[i]);
 
-                if (mode == 'f')
-                    csv.WriteField(isFacePresent[i]);
+                if (mode != 'e')
+                    csv.WriteField(elementState[i]);
                 if (mode == 'e')
                 {
                     foreach (U value in eyesNotVisibleContainer.getRow(i))
@@ -206,7 +207,7 @@ namespace CaptureLabel
             List<int> singleRow = new List<int>();
             int value = 0;
 
-            Tuple<List<int>, List<CoordinatesContainer<int>>> retVal;
+            Tuple<List<int>, List<CoordinatesContainer<int>>> retTuple;
 
             using (TextReader fileReader = File.OpenText(path))
             {
@@ -227,16 +228,16 @@ namespace CaptureLabel
                     singleRow.Clear();
                 }
 
-                if (mode == 'f')
-                    retVal = parseFaceMode(result);
+                if (mode != 'e')
+                    retTuple = parseTypeOneCSV(mode, result);
                 else
-                    retVal = parseFaceElements(result);
+                    retTuple = parseFaceElements(result);
 
-                return retVal;
+                return retTuple;
             }
         }
 
-        public static Tuple<List<int>, List<CoordinatesContainer<int>>> parseFaceMode(List<List<int>> lines)
+        public static Tuple<List<int>, List<CoordinatesContainer<int>>> parseTypeOneCSV(char mode, List<List<int>> lines)
         {
             List<int> item1 = new List<int>();
             List<CoordinatesContainer<int>> item2 = new List<CoordinatesContainer<int>>();
@@ -246,12 +247,26 @@ namespace CaptureLabel
 
             List<int> singleRow = new List<int>();
 
+            int iCoordLow = 0;
+            int iCoordHigh = 0;
+
+            if(mode == 'f')
+            {
+                iCoordLow = 7;
+                iCoordHigh = 11;
+            }
+            else if(mode == 'g')
+            {
+                iCoordLow = 11;
+                iCoordHigh = 15;
+            }
+
             //int i = 0;
             foreach (List<int> line in lines)
             {
                 item1.Add(line[0]);
 
-                for(int i = 1; i < 7; i++)
+                for(int i = 1; i < iCoordLow/*11*/; i++)
                 {
                     singleRow.Add(line[i]);
                 }
@@ -260,7 +275,7 @@ namespace CaptureLabel
                 realCoordinates.addRow(temp);
                 singleRow.Clear();
 
-                for(int i = 7; i < 11; i++)
+                for(int i = iCoordLow /*11*/; i < iCoordHigh /*15*/; i++)
                 {
                     singleRow.Add(line[i]);
                 }
@@ -269,7 +284,7 @@ namespace CaptureLabel
                 lookAngleContainer.addRow(temp);
                 singleRow.Clear();
 
-                singleRow.Add(line[11]);
+                singleRow.Add(line[iCoordHigh]);
 
                 temp = new List<int>(singleRow);
                 faceModeSize.addRow(temp);

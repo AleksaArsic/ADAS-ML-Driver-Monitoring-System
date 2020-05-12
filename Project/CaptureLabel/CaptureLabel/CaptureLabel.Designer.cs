@@ -52,6 +52,7 @@ namespace CaptureLabel
             this.modeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.faceDetectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.faceElementsDetectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.eyeContourDetectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.otherToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
@@ -71,7 +72,8 @@ namespace CaptureLabel
             this.eyePropertiesGB = new System.Windows.Forms.GroupBox();
             this.REnotVCB = new System.Windows.Forms.CheckBox();
             this.LEnotVCB = new System.Windows.Forms.CheckBox();
-            this.eyeContourDetectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.eyePropertiesCGB = new System.Windows.Forms.GroupBox();
+            this.eyeClosedCB = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -81,6 +83,7 @@ namespace CaptureLabel
             this.lookAngleGB.SuspendLayout();
             this.faceOptionsGB.SuspendLayout();
             this.eyePropertiesGB.SuspendLayout();
+            this.eyePropertiesCGB.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -251,6 +254,13 @@ namespace CaptureLabel
             this.faceElementsDetectionToolStripMenuItem.Text = "Face elements detection";
             this.faceElementsDetectionToolStripMenuItem.Click += new System.EventHandler(this.faceElementsDetectionToolStripMenuItem_Click);
             // 
+            // eyeContourDetectionToolStripMenuItem
+            // 
+            this.eyeContourDetectionToolStripMenuItem.Name = "eyeContourDetectionToolStripMenuItem";
+            this.eyeContourDetectionToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
+            this.eyeContourDetectionToolStripMenuItem.Text = "Eye contour detection";
+            this.eyeContourDetectionToolStripMenuItem.Click += new System.EventHandler(this.eyeContourDetectionToolStripMenuItem_Click);
+            // 
             // otherToolStripMenuItem
             // 
             this.otherToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -419,18 +429,32 @@ namespace CaptureLabel
             this.LEnotVCB.UseVisualStyleBackColor = true;
             this.LEnotVCB.CheckedChanged += new System.EventHandler(this.LEnotVCB_CheckedChanged);
             // 
-            // eyeContourDetectionToolStripMenuItem
+            // eyePropertiesCGB
             // 
-            this.eyeContourDetectionToolStripMenuItem.Name = "eyeContourDetectionToolStripMenuItem";
-            this.eyeContourDetectionToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
-            this.eyeContourDetectionToolStripMenuItem.Text = "Eye contour detection";
-            this.eyeContourDetectionToolStripMenuItem.Click += new System.EventHandler(this.eyeContourDetectionToolStripMenuItem_Click);
+            this.eyePropertiesCGB.Controls.Add(this.eyeClosedCB);
+            this.eyePropertiesCGB.Location = new System.Drawing.Point(1055, 327);
+            this.eyePropertiesCGB.Name = "eyePropertiesCGB";
+            this.eyePropertiesCGB.Size = new System.Drawing.Size(200, 43);
+            this.eyePropertiesCGB.TabIndex = 14;
+            this.eyePropertiesCGB.TabStop = false;
+            this.eyePropertiesCGB.Text = "Eye properties";
+            // 
+            // eyeClosedCB
+            // 
+            this.eyeClosedCB.AutoSize = true;
+            this.eyeClosedCB.Location = new System.Drawing.Point(6, 19);
+            this.eyeClosedCB.Name = "eyeClosedCB";
+            this.eyeClosedCB.Size = new System.Drawing.Size(78, 17);
+            this.eyeClosedCB.TabIndex = 0;
+            this.eyeClosedCB.Text = "Eye closed";
+            this.eyeClosedCB.UseVisualStyleBackColor = true;
             // 
             // CaptureLabel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1576, 966);
+            this.Controls.Add(this.eyePropertiesCGB);
             this.Controls.Add(this.eyePropertiesGB);
             this.Controls.Add(this.faceOptionsGB);
             this.Controls.Add(this.lookAngleGB);
@@ -459,6 +483,8 @@ namespace CaptureLabel
             this.faceOptionsGB.PerformLayout();
             this.eyePropertiesGB.ResumeLayout(false);
             this.eyePropertiesGB.PerformLayout();
+            this.eyePropertiesCGB.ResumeLayout(false);
+            this.eyePropertiesCGB.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -504,6 +530,8 @@ namespace CaptureLabel
         private CheckBox REnotVCB;
         private CheckBox LEnotVCB;
         private ToolStripMenuItem eyeContourDetectionToolStripMenuItem;
+        private GroupBox eyePropertiesCGB;
+        private CheckBox eyeClosedCB;
     }
 }
 

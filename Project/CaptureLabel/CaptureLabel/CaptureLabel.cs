@@ -47,6 +47,7 @@ namespace CaptureLabel
         private CoordinatesContainer<int> faceModeSize = new CoordinatesContainer<int>();
 
         private List<int> isFacePresent = new List<int>();
+        private List<int> eyeClosed = new List<int>();
 
         bool loaded = false;
 
@@ -343,10 +344,13 @@ namespace CaptureLabel
 
                         Tuple<List<int>, List<CoordinatesContainer<int>>> tempCSV = Utilities.parseCSV(csvPath, mode);
 
-                        if(mode == 'f')
+                        if (mode == 'f')
                             isFacePresent = tempCSV.Item1;
                         if (mode == 'e')
                             eyesNotVisibleContainer = new CoordinatesContainer<int>(tempCSV.Item2[3]);
+                        if (mode == 'g')
+                            eyeClosed = tempCSV.Item1;
+
                         realCoordinatesList = new CoordinatesContainer<int>(tempCSV.Item2[0]);
                         lookAngleContainer = new CoordinatesContainer<int>(tempCSV.Item2[1]);
                         faceModeSize = new CoordinatesContainer<int>(tempCSV.Item2[2]);
@@ -460,10 +464,12 @@ namespace CaptureLabel
                 coordinatesList.addRow(coordinates);
                 realCoordinatesList.addRow(calculateRealCoordinates(coordinates));
 
-                if(mode == 'f')
+                if (mode == 'f')
                     isFacePresent.Add((noFaceCB.Checked ? 1 : 0));
                 if (mode == 'e')
                     eyesNotVisibleContainer.addRow(eyesNotVisible.ToList());
+                if (mode == 'g')
+                    eyeClosed.Add((eyeClosedCB.Checked ? 1 : 0));
             }
             else
             {
@@ -473,10 +479,12 @@ namespace CaptureLabel
                 faceModeSize.replaceRow(new List<int> { faceWidth }, currentImageIndex);
                 //rectSizeFmode[currentImageIndex] = rectangles.getRectangles()[0].Width;
 
-                if(mode == 'f')
+                if (mode == 'f')
                     isFacePresent[currentImageIndex] = (noFaceCB.Checked ? 1 : 0);
                 if (mode == 'e')
                     eyesNotVisibleContainer.replaceRow(eyesNotVisible.ToList(), currentImageIndex);
+                if (mode == 'g')
+                    eyeClosed[currentImageIndex] = (eyeClosedCB.Checked ? 1 : 0);
             }
 
             lookAngle = new int[] { 0, 0, 0, 0 };
@@ -487,7 +495,10 @@ namespace CaptureLabel
                 eyesNotVisible = new int[] { 0, 0 };
                 setEyesCheckBoxes(new CheckBox[] { LEnotVCB, REnotVCB });
             }
-            noFaceCB.Checked = false;
+            if (mode == 'f')
+                noFaceCB.Checked = false;
+            if (mode == 'g')
+                eyeClosedCB.Checked = false;
         }
 
         private bool loadCoordinates(int index)
@@ -504,6 +515,8 @@ namespace CaptureLabel
             //if (isFacePresent.Count > currentImageIndex)
             if(mode == 'f')
                 noFaceCB.Checked = (isFacePresent[index] == 0 ? false : true);
+            if (mode == 'g')
+                eyeClosedCB.Checked = (eyeClosed[index] == 0 ? false : true);
             //else
               //  noFaceCB.Checked = false;
 
@@ -620,6 +633,7 @@ namespace CaptureLabel
             lookAngleContainer = null;
             eyesNotVisibleContainer = null;
             isFacePresent = null;
+            eyeClosed = null;
 
             currentImageIndex = 0;
             isLoaded = false;
@@ -639,7 +653,7 @@ namespace CaptureLabel
             lookAngleContainer = new CoordinatesContainer<int>();
             eyesNotVisibleContainer = new CoordinatesContainer<int>();
             isFacePresent = new List<int>();
-
+            eyeClosed = new List<int>();
     }
 
     private void initMode(char currentMode)
@@ -652,6 +666,7 @@ namespace CaptureLabel
                 //lookAngleGB.Visible = true;
                 faceOptionsGB.Visible = true;
                 eyePropertiesGB.Visible = false;
+                eyePropertiesCGB.Visible = false;
 
                 rectangleFocusNames = Constants.rectangleNameF;
             }
@@ -662,6 +677,7 @@ namespace CaptureLabel
                 //lookAngleGB.Visible = false;
                 faceOptionsGB.Visible = false;
                 eyePropertiesGB.Visible = true;
+                eyePropertiesCGB.Visible = false;
 
                 rectangleFocusNames = Constants.rectangleNameE;
 
@@ -673,6 +689,7 @@ namespace CaptureLabel
                 //lookAngleGB.Visible = false;
                 faceOptionsGB.Visible = false;
                 eyePropertiesGB.Visible = false;
+                eyePropertiesCGB.Visible = true;
 
                 rectangleFocusNames = Constants.rectangleNameG;
             }
@@ -810,13 +827,15 @@ namespace CaptureLabel
             if (mode == 'f')
             {
                 Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale);
-                Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer, faceModeSize, isFacePresent);
+                Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer, faceModeSize, elementState: isFacePresent);
                 Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale, true);
             }
-            if(mode == 'e' || mode == 'g')
+            if (mode == 'e')
                 Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer, 
                     faceModeSize, eyesNotVisibleContainer : eyesNotVisibleContainer);
-
+            if (mode == 'g')
+                Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer,
+                    faceModeSize, elementState : eyeClosed);
         }
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1002,7 +1021,7 @@ namespace CaptureLabel
                 normalizedCoordinates = new CoordinatesContainer<double>(normalized.Item1);
 
                 Utilities.writeToCSV(mode, normalizedCoordinates, imageNames, lookAngleContainer, 
-                    faceModeSize, eyesNotVisibleContainer : eyesNotVisibleContainer, normalized : true);
+                    faceModeSize, eyesNotVisibleContainer : eyesNotVisibleContainer, elementState : eyeClosed, normalized : true);
             }
         }
 
