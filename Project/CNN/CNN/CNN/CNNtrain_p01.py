@@ -56,7 +56,7 @@ def plotTrainingResults(val_acc, val_loss, train_acc, train_loss):
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend()
-    plt.savefig('model'+str(r)+'_'+str(start)+'_'+str(start+max)+'.png')
+    plt.savefig('model_phase01.png')
 
     plt.clf()
 
@@ -66,7 +66,7 @@ def plotTrainingResults(val_acc, val_loss, train_acc, train_loss):
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend()
-    plt.savefig('model'+str(r)+'_'+str(start)+'_'+str(start+max)+'_loss.png')
+    plt.savefig('model_phase01_loss.png')
 
 if __name__ == "__main__":
     script_start = datetime.datetime.now()
@@ -92,7 +92,7 @@ if __name__ == "__main__":
 
     model_name = "model_phase01.h5"
     callbacks = [
-        EarlyStopping(monitor='val_accuracy', mode = 'max', patience=35, verbose=1),
+        EarlyStopping(monitor='val_accuracy', mode = 'max', patience=350, verbose=1),
         keras.callbacks.ReduceLROnPlateau(monitor='val_accuracy', mode = 'max', factor=0.5, patience=15, min_lr=0.000001, verbose=1),
         ModelCheckpoint(model_name, monitor='val_accuracy', mode = 'max', verbose=1, save_best_only=True, save_weights_only=True),
         tensorboard

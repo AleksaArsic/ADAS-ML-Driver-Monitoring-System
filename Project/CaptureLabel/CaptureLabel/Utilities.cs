@@ -583,7 +583,7 @@ namespace CaptureLabel
             {
                 foreach (List<int> l in faceModeSize.getCoordinates())
                 {
-                    l[0] = (int)(Math.Ceiling(l[0] / imageResizeFactor[i]));
+                    l[0] = (int)(Math.Round(l[0] / imageResizeFactor[i], MidpointRounding.AwayFromZero));
                     i++;
                 }
             }
@@ -594,7 +594,7 @@ namespace CaptureLabel
             {
                 int halfWidth = (reverse == false ? faceModeSize.getRow(i)[0] / 2 : -faceModeSize.getRow(i)[0] / 2);
                 l[0] = l[0] + halfWidth;
-                l[1] = l[1] + (int)(Math.Ceiling(halfWidth * scale));
+                l[1] = l[1] + (int)(Math.Round(halfWidth * scale, MidpointRounding.AwayFromZero));
                 i++;
             }
 
@@ -604,7 +604,7 @@ namespace CaptureLabel
             {
                 foreach (List<int> l in faceModeSize.getCoordinates())
                 {
-                    l[0] = (int)(Math.Ceiling(l[0] * imageResizeFactor[i]));
+                    l[0] = (int)(Math.Round(l[0] * imageResizeFactor[i], MidpointRounding.AwayFromZero));
                     i++;
                 }
             }
