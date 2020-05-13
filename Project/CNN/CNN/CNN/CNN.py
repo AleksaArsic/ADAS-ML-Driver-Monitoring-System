@@ -177,11 +177,11 @@ def drawPredictionOnImage(facePrediction, faceElementsPrediction, image):
     #print("(x, y, w): (" + str(faceX) + ", " + str(faceY) + ", " + str(faceW) + ")")
     #print("(x, y, w): (" + str(faceXDenom) + ", " + str(faceYDenom) + ", " + str(faceWDenom) + ")")
 
-    topLeftX = faceXDenom - math.ceil((faceWDenom / 2))
-    topLeftY = faceYDenom - math.ceil(((faceWDenom / 2) * 1.5))
+    topLeftX = faceXDenom - int((faceWDenom / 2) + 0.5)
+    topLeftY = faceYDenom - int(((faceWDenom / 2) * 1.5) + 0.5)
 
-    bottomRightX = faceXDenom + math.ceil((faceWDenom / 2))
-    bottomRightY = faceYDenom + math.ceil(((faceWDenom / 2) * 1.5))
+    bottomRightX = faceXDenom + int((faceWDenom / 2) + 0.5)
+    bottomRightY = faceYDenom + int(((faceWDenom / 2) * 1.5) + 0.5)
 
     faceElementsPredDenorm = denormalizeFaceElementsPrediction(faceElementsPrediction, faceWDenom)
 
@@ -224,11 +224,11 @@ def predictFromImages():
     for img in images:
         # calculate coordinates to crop from
 
-        topLeftX = int(denormPredictions[cnt][1] - math.ceil((denormPredictions[cnt][7] / 2)))
-        topLeftY = int(denormPredictions[cnt][2] - math.ceil(((denormPredictions[cnt][7] / 2) * 1.5)))
+        topLeftX = int(denormPredictions[cnt][1] - int((denormPredictions[cnt][7] / 2)) + 0.5)
+        topLeftY = int(denormPredictions[cnt][2] - int(((denormPredictions[cnt][7] / 2) * 1.5) + 0.5))
 
-        bottomRightX = int(denormPredictions[cnt][1] + math.ceil((denormPredictions[cnt][7] / 2)))
-        bottomRightY = int(denormPredictions[cnt][2] + math.ceil(((denormPredictions[cnt][7] / 2) * 1.5)))
+        bottomRightX = int(denormPredictions[cnt][1] + int((denormPredictions[cnt][7] / 2) + 0.5))
+        bottomRightY = int(denormPredictions[cnt][2] + int(((denormPredictions[cnt][7] / 2) * 1.5) + 0.5))
 
         croppedImage = img[topLeftY:bottomRightY, topLeftX:bottomRightX]
         croppedImage = cv2.cvtColor(croppedImage, cv2.COLOR_BGR2RGB)

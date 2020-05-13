@@ -136,11 +136,11 @@ def drawPredictionOnImage(prediction, image):
     rEyeXDenom = (rightEyeX * (minMaxValues[1][4] - minMaxValues[0][4]) + minMaxValues[0][4])
     rEyeYDenom = (rightEyeY * (minMaxValues[1][5] - minMaxValues[0][5]) + minMaxValues[0][5])
 
-    topLeftX = faceXDenom - Utilities.properRound((faceWDenom / 2))
-    topLeftY = faceYDenom - Utilities.properRound(((faceWDenom / 2) * 1.5))
+    topLeftX = faceXDenom - int((faceWDenom / 2) + 0.5)
+    topLeftY = faceYDenom - int(((faceWDenom / 2) * 1.5) + 0.5)
 
-    bottomRightX = faceXDenom + Utilities.properRound((faceWDenom / 2))
-    bottomRightY = faceYDenom + Utilities.properRound(((faceWDenom / 2) * 1.5))
+    bottomRightX = faceXDenom + int((faceWDenom / 2) + 0.5)
+    bottomRightY = faceYDenom + int(((faceWDenom / 2) * 1.5) + 0.5)
 
     cv2.rectangle(image, (int(topLeftX),int(topLeftY)), (int(bottomRightX),int(bottomRightY)) , (0,255,0), 2)
     cv2.rectangle(image, (int(lEyeXDenom),int(lEyeYDenom)), (int(lEyeXDenom + 3),int(lEyeYDenom + 3)) , (0,0,255), 2)
@@ -176,11 +176,11 @@ def predictFromImages():
     for img in images:
         # calculate coordinates to crop from
 
-        topLeftX = int(denormPredictions[cnt][1] - Utilities.properRound((denormPredictions[cnt][7] / 2)))
-        topLeftY = int(denormPredictions[cnt][2] - Utilities.properRound(((denormPredictions[cnt][7] / 2) * 1.5)))
+        topLeftX = int(denormPredictions[cnt][1] - int((denormPredictions[cnt][7] / 2) + 0.5))
+        topLeftY = int(denormPredictions[cnt][2] - int(((denormPredictions[cnt][7] / 2) * 1.5) + 0.5))
 
-        bottomRightX = int(denormPredictions[cnt][1] + Utilities.properRound((denormPredictions[cnt][7] / 2)))
-        bottomRightY = int(denormPredictions[cnt][2] + Utilities.properRound(((denormPredictions[cnt][7] / 2) * 1.5)))
+        bottomRightX = int(denormPredictions[cnt][1] + int((denormPredictions[cnt][7] / 2) + 0.5))
+        bottomRightY = int(denormPredictions[cnt][2] + int(((denormPredictions[cnt][7] / 2) * 1.5) + 0.5))
 
         croppedImage = img[topLeftY:bottomRightY, topLeftX:bottomRightX]
         croppedImage = cv2.cvtColor(croppedImage, cv2.COLOR_BGR2RGB)
