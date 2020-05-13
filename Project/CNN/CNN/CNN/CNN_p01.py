@@ -12,7 +12,6 @@ import tensorflow as tf
 from time import time
 from tensorflow import keras
 from PIL import Image, ImageDraw
-from decimal import localcontext, Decimal, ROUND_HALF_UP
 
 windowName = "Video source"
 

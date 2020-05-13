@@ -135,11 +135,11 @@ def drawPredictionOnImage(prediction, image):
     rEyeXDenom = (rightEyeX * (minMaxValues[1][4] - minMaxValues[0][4]) + minMaxValues[0][4])
     rEyeYDenom = (rightEyeY * (minMaxValues[1][5] - minMaxValues[0][5]) + minMaxValues[0][5])
 
-    topLeftX = faceXDenom - math.ceil((faceWDenom / 2))
-    topLeftY = faceYDenom - math.ceil(((faceWDenom / 2) * 1.5))
+    topLeftX = faceXDenom - int((faceWDenom / 2) + 0.5)
+    topLeftY = faceYDenom - int(((faceWDenom / 2) * 1.5) + 0.5)
 
-    bottomRightX = faceXDenom + math.ceil((faceWDenom / 2))
-    bottomRightY = faceYDenom + math.ceil(((faceWDenom / 2) * 1.5))
+    bottomRightX = faceXDenom + int((faceWDenom / 2) + 0.5)
+    bottomRightY = faceYDenom + int(((faceWDenom / 2) * 1.5) + 0.5)
 
     cv2.rectangle(image, (int(topLeftX),int(topLeftY)), (int(bottomRightX),int(bottomRightY)) , (0,255,0), 2)
     cv2.rectangle(image, (int(lEyeXDenom),int(lEyeYDenom)), (int(lEyeXDenom + 3),int(lEyeYDenom + 3)) , (0,0,255), 2)
@@ -181,20 +181,20 @@ def predictFromImages():
         brLeyeX = predictions[cnt][2] + 0.15
         brLeyeY = predictions[cnt][3] + 0.10
 
-        tlLeyeXdenorm = math.ceil(tlLeyeX * width)
-        tlLeyeYdenorm = math.ceil(tlLeyeY * (width * 1.5))
-        brLeyeXdenorm = math.ceil(brLeyeX * width)
-        brLeyeYdenorm = math.ceil(brLeyeY * (width * 1.5))
+        tlLeyeXdenorm = int((tlLeyeX * width) + 0.5)
+        tlLeyeYdenorm = int((tlLeyeY * (width * 1.5)) + 0.5)
+        brLeyeXdenorm = int((brLeyeX * width) + 0.5)
+        brLeyeYdenorm = int((brLeyeY * (width * 1.5)) + 0.5)
 
         tlReyeX = predictions[cnt][4] - 0.15
         tlReyeY = predictions[cnt][5] - 0.10
         brReyeX = predictions[cnt][4] + 0.15
         brReyeY = predictions[cnt][5] + 0.10
 
-        tlReyeXdenorm = math.ceil(tlReyeX * width)
-        tlReyeYdenorm = math.ceil(tlReyeY * (width * 1.5))
-        brReyeXdenorm = math.ceil(brReyeX * width)
-        brReyeYdenorm = math.ceil(brReyeY * (width * 1.5))
+        tlReyeXdenorm = int((tlReyeX * width) + 0.5)
+        tlReyeYdenorm = int((tlReyeY * (width * 1.5)) + 0.5)
+        brReyeXdenorm = int((brReyeX * width) + 0.5)
+        brReyeYdenorm = int((brReyeY * (width * 1.5)) + 0.5)
 
         croppedEyeLeft = img[tlLeyeYdenorm:brLeyeYdenorm, tlLeyeXdenorm:brLeyeXdenorm]
         croppedEyeLeft = cv2.cvtColor(croppedEyeLeft, cv2.COLOR_BGR2RGB)
