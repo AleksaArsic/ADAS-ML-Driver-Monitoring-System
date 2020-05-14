@@ -321,7 +321,7 @@ namespace CaptureLabel
                 eyesNotVisibleContainer.addRow(temp);
                 singleRow.Clear();
 
-                for (int i = 0; i < 10; i++)
+                for (int i = 2; i < 12; i++)
                 {
                     singleRow.Add(line[i]);
                 }
@@ -330,7 +330,7 @@ namespace CaptureLabel
                 realCoordinates.addRow(temp);
                 singleRow.Clear();
 
-                for (int i = 10; i < 14; i++)
+                for (int i = 12; i < 16; i++)
                 {
                     singleRow.Add(line[i]);
                 }
@@ -339,7 +339,7 @@ namespace CaptureLabel
                 lookAngleContainer.addRow(temp);
                 singleRow.Clear();
 
-                singleRow.Add(line[14]);
+                singleRow.Add(line[16]);
 
                 temp = new List<int>(singleRow);
                 faceModeSize.addRow(temp);
