@@ -230,7 +230,7 @@ def predictFace(vsource = 1, savePredictions = False):
         e_time = time()
         elapsed = e_time - s_time
 
-
+        print("Processing time of current frame: " + str(elapsed))
         print("FPS: " + str(1/elapsed))
 
     cap.release()
