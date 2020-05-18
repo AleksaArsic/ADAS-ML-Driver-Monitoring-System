@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace CaptureLabel
 {
@@ -60,6 +62,16 @@ namespace CaptureLabel
         public List<List<T>> getCoordinates()
         {
             return rowCoordinates;
+        }
+
+        public List<List<U>> ConvertTo<U>()
+        {
+            List<List<U>> result = new List<List<U>>();
+
+            foreach (List<T> row in rowCoordinates)
+                result.Add(row.Cast<object>().Select(x => (U)Convert.ChangeType(x, typeof(U))).ToList());
+
+            return result;
         }
     }
 }

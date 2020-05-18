@@ -135,6 +135,8 @@ def predictFace(vsource = 1, savePredictions = False):
     width = 0
     height = 0
 
+    s_t, e_t = 0, 0
+
     if(isinstance(vsource, int)):
         cap = cv2.VideoCapture(vsource + cv2.CAP_DSHOW)
         width  = cap.get(3)  # float
@@ -159,8 +161,9 @@ def predictFace(vsource = 1, savePredictions = False):
         s_time = time()
 
         ret, frame = cap.read()
-        
+       
         if(ret == True):
+
             #grayFrame = Utilities.grayConversion(frame)
             grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
@@ -179,7 +182,9 @@ def predictFace(vsource = 1, savePredictions = False):
             img = np.asarray(img)
             img1 = img/255
 
+            s_t = time()
             faceElementsPrediction = face_elements_model.predict(img1[np.newaxis, :, :, np.newaxis], verbose = 1)
+            e_t = time()
 
             leftEyeImg, rightEyeImg, topELeft, topERight = cropEyes(faceImg, faceElementsPrediction)
 
@@ -191,6 +196,7 @@ def predictFace(vsource = 1, savePredictions = False):
                 img1 = img/255
 
                 leftEyePrediction = attention_model.predict(img1[np.newaxis, :, :, np.newaxis], verbose = 1)
+
             if len(rightEyeImg):
                 img = cv2.resize(rightEyeImg, (inputWidth, inputHeight), Image.ANTIALIAS)
                 img = np.asarray(img)
@@ -224,12 +230,15 @@ def predictFace(vsource = 1, savePredictions = False):
 
             if(cv2.waitKey(1) & 0xFF == ord('q')):
                 break
+
         else:
             break
 
         e_time = time()
         elapsed = e_time - s_time
+        el_time = e_t - s_t
 
+        print("Processing time: " + str(el_time))
         print("Processing time of current frame: " + str(elapsed))
         print("FPS: " + str(1/elapsed))
 
@@ -353,6 +362,9 @@ def denormalizeAllPredictions(predictions, minMaxValues):
 
 if __name__ == "__main__":
     script_start = datetime.datetime.now()
+
+    #my_devices = tf.config.experimental.list_physical_devices(device_type='CPU')
+    #tf.config.set_visible_devices([], 'GPU')
 
     # Recreate the exact same model
     face_model_name = "model_phase01.h5"

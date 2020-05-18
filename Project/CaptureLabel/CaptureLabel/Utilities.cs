@@ -148,7 +148,7 @@ namespace CaptureLabel
             writer.Close();
         }
 
-        public static void writeMinMax<T, U>(char mode, CoordinatesContainer<T> minMax, CoordinatesContainer<U> faceModeMinMax)
+        public static void writeMinMax<T, U>(char mode, CoordinatesContainer<T> minMax, CoordinatesContainer<U> faceModeMinMax = null)
         {
             bool boolMode = (mode == Constants.faceMode ? true : false);
             TextWriter writer = new StreamWriter(CaptureLabel.exportMinMaxDirectory, false, Encoding.UTF8);
@@ -191,7 +191,7 @@ namespace CaptureLabel
                 for(int j = 0; j < minMaxT[i].Count; j++)
                     csv.WriteField(minMaxT[i][j]);
 
-                if(mode == Constants.faceMode)
+                if(mode == Constants.faceMode && faceModeMinMax != null)
                     csv.WriteField(faceModeMinMax.getRow(0)[i]);
 
                 csv.NextRecord();
@@ -481,24 +481,29 @@ namespace CaptureLabel
             return result;
         }
 */
-        public static Tuple<List<List<T>>, List<List<int>>> normalizeOutput<T, U>(CoordinatesContainer<U> realCoordinatesList, CoordinatesContainer<int> faceModeSize = null, char mode = 'f')
+        public static Tuple<List<List<T>>, List<List<U>>> normalizeOutput<T, U>(CoordinatesContainer<U> realCoordinatesList, CoordinatesContainer<int> faceModeSize = null, char mode = 'f')
         {
-            Tuple<List<List<T>>, List<List<int>>> normalized;
+            Tuple<List<List<T>>, List<List<U>>> normalized;                
 
             if (mode == Constants.faceMode)
-                normalized = normalizeOutputFaceMode<T, U>(realCoordinatesList);
+                normalized = normalizeOutputFaceMode<T, U>((object)realCoordinatesList);
             else
-                normalized = normalizeOutputFaceElements<T, U>(realCoordinatesList, faceModeSize);
-
+            {
+                normalized = outputToPercentage<T, U>(realCoordinatesList, faceModeSize);
+                normalized = normalizeOutputFaceMode<T, U>((object)normalized.Item1);
+            }
+            
             return normalized;
         }
 
-        public static Tuple<List<List<T>>, List<List<int>>> normalizeOutputFaceMode<T, U>(CoordinatesContainer<U> realCoordinatesList)
+        public static Tuple<List<List<T>>, List<List<U>>> normalizeOutputFaceMode<T, U>(object coordinatesList)
         {
-            //CoordinatesContainer<U> retCoordinates = realCoordinatesList;
+            CoordinatesContainer<U> realCoordinatesList = (coordinatesList is CoordinatesContainer<U>) ? 
+                                                          (CoordinatesContainer<U>)coordinatesList     :
+                                                          new CoordinatesContainer<U>((List<List<U>>)coordinatesList);
 
             List<List<U>> coordinates = new List<List<U>>(realCoordinatesList.getCoordinates());
-            List<List<int>> minMaxValues = new List<List<int>>();
+            List<List<U>> minMaxValues = new List<List<U>>();
             List<List<T>> result = new List<List<T>>();
 
             // transpose elements
@@ -508,16 +513,16 @@ namespace CaptureLabel
             // normalize elements
             foreach (List<U> l in coordinates)
             {
-                int min = Convert.ToInt32(l.Min());
-                int max = Convert.ToInt32(l.Max());
+                var min = l.Min();
+                var max = l.Max();
 
-                minMaxValues.Add(new List<int>() { min, max });
+                minMaxValues.Add(new List<U>() { min, max });
 
                 List<T> temp = new List<T>();
 
                 for (int i = 0; i < l.Count; i++)
                 {
-                    double val = (double)(Convert.ToInt32(l[i]) - min) / (max - min);
+                    double val = (double)((dynamic)l[i] - min) / ((dynamic)max - min);
 
                     if (Double.IsNaN(val))
                         val = 0;
@@ -536,15 +541,13 @@ namespace CaptureLabel
             return Tuple.Create(result, minMaxValues);
         }
 
-        public static Tuple<List<List<T>>, List<List<int>>> normalizeOutputFaceElements<T, U>(CoordinatesContainer<U> realCoordinatesList, CoordinatesContainer<int> faceModeSize)
+        public static Tuple<List<List<T>>, List<List<U>>> outputToPercentage<T, U>(CoordinatesContainer<U> realCoordinatesList, CoordinatesContainer<int> faceModeSize)
         {
 
             List<List<U>> coordinates = new List<List<U>>(realCoordinatesList.getCoordinates());
-            List<List<int>> minMaxValues = new List<List<int>>();
+            List<List<U>> minMaxValues = new List<List<U>>();
             List<List<T>> result = new List<List<T>>();
 
-
-            // normalize elements
             int i = 0;
             foreach (List<U> l in coordinates)
             {
