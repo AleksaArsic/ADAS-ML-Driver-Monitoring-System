@@ -70,6 +70,7 @@ namespace CaptureLabel
             Keys.D3
         };
 
+        public static readonly string imageCounterString = "Image: ";
         public static readonly string inFocusString = "Currently in focus: ";
 
         public static readonly string[] rectangleNameE =

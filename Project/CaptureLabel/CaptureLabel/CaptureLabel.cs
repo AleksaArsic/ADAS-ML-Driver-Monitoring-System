@@ -300,6 +300,8 @@ namespace CaptureLabel
             if(someoneIsInFocus)
                     inFocusLabel.Text = Constants.inFocusString + " " + rectangleFocusNames[rectangles.inFocusIndex()];
 
+            imageCounterLabel.Text = Constants.imageCounterString + " " + currentImageIndex.ToString() + "/" + imageLocation.Count.ToString();
+
             imagePanel.Focus();
         }
 
@@ -315,6 +317,8 @@ namespace CaptureLabel
 
         private void button1_Click(object sender, EventArgs e)
         {
+            Cursor.Current = Cursors.WaitCursor;
+
             cleanUp();
 
             initMode(mode);
@@ -401,6 +405,8 @@ namespace CaptureLabel
                 return;
             }
             imagePanel.Refresh();
+
+            Cursor.Current = Cursors.Default;
         }
 
         private void scrollDown()
@@ -1060,5 +1066,19 @@ namespace CaptureLabel
             }
         }
 
+        private void CaptureLabel_FormClosing(Object sender, FormClosingEventArgs e)
+        {
+            if (loaded)
+            {
+                if (MessageBox.Show(Constants.saveProgressString, "Caution!", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    // save logic
+                    if (!savedAs)
+                        saveAs();
+                    else
+                        save();
+                }
+            }
+        }
     }
 }

@@ -32,8 +32,8 @@ namespace CaptureLabel
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CaptureLabel));
+            this.FormClosing += CaptureLabel_FormClosing;
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.csvPathTB = new System.Windows.Forms.TextBox();
             this.imagePathTB = new System.Windows.Forms.TextBox();
@@ -57,11 +57,9 @@ namespace CaptureLabel
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.imagePanel = new System.Windows.Forms.Panel();
-            this.bindingSource1 = new System.Windows.Forms.BindingSource(this.components);
-            this.bindingSource2 = new System.Windows.Forms.BindingSource(this.components);
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.inFocusLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            this.imageCounterLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.lookAngleGB = new System.Windows.Forms.GroupBox();
             this.downCB = new System.Windows.Forms.CheckBox();
             this.upCB = new System.Windows.Forms.CheckBox();
@@ -77,8 +75,6 @@ namespace CaptureLabel
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.groupBox2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.bindingSource2)).BeginInit();
             this.statusStrip1.SuspendLayout();
             this.lookAngleGB.SuspendLayout();
             this.faceOptionsGB.SuspendLayout();
@@ -156,7 +152,7 @@ namespace CaptureLabel
             this.otherToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1576, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(1550, 24);
             this.menuStrip1.TabIndex = 1;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -305,17 +301,29 @@ namespace CaptureLabel
             // statusStrip1
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.inFocusLabel});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 944);
+            this.inFocusLabel,
+            this.imageCounterLabel});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 967);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(1576, 22);
+            this.statusStrip1.Size = new System.Drawing.Size(1550, 24);
             this.statusStrip1.TabIndex = 9;
             // 
             // inFocusLabel
             // 
+            this.inFocusLabel.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
+            this.inFocusLabel.BorderStyle = System.Windows.Forms.Border3DStyle.Etched;
             this.inFocusLabel.Name = "inFocusLabel";
-            this.inFocusLabel.Size = new System.Drawing.Size(107, 17);
+            this.inFocusLabel.Size = new System.Drawing.Size(1515, 19);
+            this.inFocusLabel.Spring = true;
             this.inFocusLabel.Text = "Currently in focus: ";
+            this.inFocusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // imageCounterLabel
+            // 
+            this.imageCounterLabel.Name = "imageCounterLabel";
+            this.imageCounterLabel.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.imageCounterLabel.Size = new System.Drawing.Size(0, 19);
+            this.imageCounterLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // lookAngleGB
             // 
@@ -453,7 +461,7 @@ namespace CaptureLabel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1576, 966);
+            this.ClientSize = new System.Drawing.Size(1550, 991);
             this.Controls.Add(this.eyePropertiesCGB);
             this.Controls.Add(this.eyePropertiesGB);
             this.Controls.Add(this.faceOptionsGB);
@@ -473,8 +481,6 @@ namespace CaptureLabel
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.bindingSource2)).EndInit();
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
             this.lookAngleGB.ResumeLayout(false);
@@ -508,11 +514,8 @@ namespace CaptureLabel
         private System.Windows.Forms.TextBox imagePathTB;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Panel imagePanel;
-        private BindingSource bindingSource1;
-        private BindingSource bindingSource2;
         private StatusStrip statusStrip1;
         private ToolStripStatusLabel inFocusLabel;
-        private System.ComponentModel.BackgroundWorker backgroundWorker1;
         private GroupBox lookAngleGB;
         private CheckBox upCB;
         private CheckBox rightCB;
@@ -532,6 +535,7 @@ namespace CaptureLabel
         private ToolStripMenuItem eyeContourDetectionToolStripMenuItem;
         private GroupBox eyePropertiesCGB;
         private CheckBox eyeClosedCB;
+        private ToolStripStatusLabel imageCounterLabel;
     }
 }
 
