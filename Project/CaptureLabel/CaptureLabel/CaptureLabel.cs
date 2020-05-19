@@ -993,18 +993,17 @@ namespace CaptureLabel
 
         private void exportNormalized()
         {
+            Tuple<List<List<double>>, List<List<int>>> normalized;
             Tuple<List<List<double>>, List<List<int>>> normalizedFS;
             CoordinatesContainer<double> normalizedCoordinates;
             CoordinatesContainer<double> normalizedFaceSize;
+            CoordinatesContainer<int> minMaxCoord;
             CoordinatesContainer<int> minMaxFS;
 
             saveCoordinates();
 
             if (mode == Constants.faceMode)
             {
-                Tuple<List<List<double>>, List<List<int>>> normalized;
-                CoordinatesContainer<int> minMaxCoord;
-
                 Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale);
 
                 normalized = Utilities.normalizeOutput<double, int>(realCoordinatesList);
@@ -1015,27 +1014,20 @@ namespace CaptureLabel
                 normalizedFaceSize = new CoordinatesContainer<double>(normalizedFS.Item1);
                 minMaxFS = new CoordinatesContainer<int>(normalizedFS.Item2);
 
-                Utilities.writeToCSV(mode, normalizedCoordinates, imageNames, lookAngleContainer, normalizedFaceSize, 
-                                     isFacePresent, normalized : true);
+                Utilities.writeToCSV(mode, normalizedCoordinates, imageNames, lookAngleContainer, normalizedFaceSize,
+                                     isFacePresent, normalized: true);
                 Utilities.writeMinMax(mode, minMaxCoord, minMaxFS);
 
                 Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale, true);
             }
             else
             {
-                Tuple<List<List<double>>, List<List<double>>> normalized;
-                CoordinatesContainer<double> minMaxCoord;
-
-                CoordinatesContainer<double> tempRealCoords = new CoordinatesContainer<double>(realCoordinatesList.ConvertTo<double>());
-                normalized = Utilities.normalizeOutput<double, double>(tempRealCoords, faceModeSize, Constants.faceElementsMode);
+                normalized = Utilities.normalizeOutput<double, int>(realCoordinatesList, faceModeSize, Constants.faceElementsMode);
 
                 normalizedCoordinates = new CoordinatesContainer<double>(normalized.Item1);
-                minMaxCoord = new CoordinatesContainer<double>(normalized.Item2);
 
-                Utilities.writeMinMax<double, int>(mode, minMaxCoord);
-
-                Utilities.writeToCSV(mode, normalizedCoordinates, imageNames, lookAngleContainer, 
-                    faceModeSize, eyesNotVisibleContainer : eyesNotVisibleContainer, elementState : eyeClosed, normalized : true);
+                Utilities.writeToCSV(mode, normalizedCoordinates, imageNames, lookAngleContainer,
+                    faceModeSize, eyesNotVisibleContainer: eyesNotVisibleContainer, elementState: eyeClosed, normalized: true);
             }
         }
 

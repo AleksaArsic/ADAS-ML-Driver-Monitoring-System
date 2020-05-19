@@ -353,157 +353,152 @@ namespace CaptureLabel
 
             return Tuple.Create(item1, item2);
         }
-/*
-        public static CoordinatesContainer<T> readFromCSV<T>(string path, char mode)
-        {
-
-            CoordinatesContainer<T> result = new CoordinatesContainer<T>();
-            List<T> singleRow = new List<T>();
-            T value;
-
-            int start = 1;
-
-            using (TextReader fileReader = File.OpenText(path))
-            {
-                var csv = new CsvReader(fileReader, System.Globalization.CultureInfo.CurrentCulture);
-                csv.Configuration.HasHeaderRecord = false;
-
-                csv.Read();
-                csv.Read();
-
-                if (mode == Constants.faceMode)
-                    start = 2;
-
-                while (csv.Read())
+        /*
+                public static CoordinatesContainer<T> readFromCSV<T>(string path, char mode)
                 {
-                    for (int i = start; csv.TryGetField<T>(i, out value); i++)
+
+                    CoordinatesContainer<T> result = new CoordinatesContainer<T>();
+                    List<T> singleRow = new List<T>();
+                    T value;
+
+                    int start = 1;
+
+                    using (TextReader fileReader = File.OpenText(path))
                     {
-                        if (mode == Constants.faceElementsMode && i == 11) break;
-                        if (mode == Constants.faceMode && i == 8) break;
+                        var csv = new CsvReader(fileReader, System.Globalization.CultureInfo.CurrentCulture);
+                        csv.Configuration.HasHeaderRecord = false;
 
-                        singleRow.Add(value);
+                        csv.Read();
+                        csv.Read();
+
+                        if (mode == Constants.faceMode)
+                            start = 2;
+
+                        while (csv.Read())
+                        {
+                            for (int i = start; csv.TryGetField<T>(i, out value); i++)
+                            {
+                                if (mode == Constants.faceElementsMode && i == 11) break;
+                                if (mode == Constants.faceMode && i == 8) break;
+
+                                singleRow.Add(value);
+                            }
+                            List<T> temp = new List<T>(singleRow);
+                            result.addRow(temp);
+                            singleRow.Clear();
+                        }
+
                     }
-                    List<T> temp = new List<T>(singleRow);
-                    result.addRow(temp);
-                    singleRow.Clear();
+                    return result;
                 }
 
-            }
-            return result;
-        }
-
-        public static CoordinatesContainer<T> readLookAngleFromCSV<T>(string path, char mode)
-        {
-            CoordinatesContainer<T> result = new CoordinatesContainer<T>();
-            List<T> singleRow = new List<T>();
-            T value;
-
-            int start = (mode == Constants.faceMode) ? 8 : 11;
-
-            using (TextReader fileReader = File.OpenText(path))
-            {
-                var csv = new CsvReader(fileReader, System.Globalization.CultureInfo.CurrentCulture);
-                csv.Configuration.HasHeaderRecord = false;
-
-                csv.Read();
-                csv.Read();
-
-                while (csv.Read())
+                public static CoordinatesContainer<T> readLookAngleFromCSV<T>(string path, char mode)
                 {
-                    // correct to read look angle from face element .csv too
-                    for (int i = start; csv.TryGetField<T>(i, out value) && i < start + 4; i++)
+                    CoordinatesContainer<T> result = new CoordinatesContainer<T>();
+                    List<T> singleRow = new List<T>();
+                    T value;
+
+                    int start = (mode == Constants.faceMode) ? 8 : 11;
+
+                    using (TextReader fileReader = File.OpenText(path))
                     {
-                        singleRow.Add(value);
+                        var csv = new CsvReader(fileReader, System.Globalization.CultureInfo.CurrentCulture);
+                        csv.Configuration.HasHeaderRecord = false;
+
+                        csv.Read();
+                        csv.Read();
+
+                        while (csv.Read())
+                        {
+                            // correct to read look angle from face element .csv too
+                            for (int i = start; csv.TryGetField<T>(i, out value) && i < start + 4; i++)
+                            {
+                                singleRow.Add(value);
+                            }
+                            List<T> temp = new List<T>(singleRow);
+                            result.addRow(temp);
+                            singleRow.Clear();
+                        }
+
                     }
-                    List<T> temp = new List<T>(singleRow);
-                    result.addRow(temp);
-                    singleRow.Clear();
+                    return result;
                 }
 
-            }
-            return result;
-        }
-
-        public static CoordinatesContainer<T> readFaceSizeFromCSV<T>(string path, char mode)
-        {
-
-            CoordinatesContainer<T> result = new CoordinatesContainer<T>();
-            List<T> singleRow = new List<T>();
-            T value;
-
-            int start = (mode == Constants.faceMode) ? 12 : 27;
-
-            using (TextReader fileReader = File.OpenText(path))
-            {
-                var csv = new CsvReader(fileReader, System.Globalization.CultureInfo.CurrentCulture);
-                csv.Configuration.HasHeaderRecord = false;
-
-                csv.Read();
-                csv.Read();
-
-                while (csv.Read())
+                public static CoordinatesContainer<T> readFaceSizeFromCSV<T>(string path, char mode)
                 {
-                    // correct to read face size from face element .csv too
-                    for (int i = start; csv.TryGetField<T>(i, out value); i++)
+
+                    CoordinatesContainer<T> result = new CoordinatesContainer<T>();
+                    List<T> singleRow = new List<T>();
+                    T value;
+
+                    int start = (mode == Constants.faceMode) ? 12 : 27;
+
+                    using (TextReader fileReader = File.OpenText(path))
                     {
-                        singleRow.Add(value);
+                        var csv = new CsvReader(fileReader, System.Globalization.CultureInfo.CurrentCulture);
+                        csv.Configuration.HasHeaderRecord = false;
+
+                        csv.Read();
+                        csv.Read();
+
+                        while (csv.Read())
+                        {
+                            // correct to read face size from face element .csv too
+                            for (int i = start; csv.TryGetField<T>(i, out value); i++)
+                            {
+                                singleRow.Add(value);
+                            }
+                            List<T> temp = new List<T>(singleRow);
+                            result.addRow(temp);
+                            singleRow.Clear();
+                        }
+
                     }
-                    List<T> temp = new List<T>(singleRow);
-                    result.addRow(temp);
-                    singleRow.Clear();
+                    return result;
                 }
 
-            }
-            return result;
-        }
-
-        public static List<int> readIsFacePresentFromCSV(string path)
-        {
-            List<int> result = new List<int>();
-            int value = 0;
-
-            using (TextReader fileReader = File.OpenText(path))
-            {
-                var csv = new CsvReader(fileReader, System.Globalization.CultureInfo.CurrentCulture);
-                csv.Configuration.HasHeaderRecord = false;
-
-                csv.Read();
-                csv.Read();
-
-                while (csv.Read())
+                public static List<int> readIsFacePresentFromCSV(string path)
                 {
+                    List<int> result = new List<int>();
+                    int value = 0;
 
-                    csv.TryGetField<int>(1, out value);
-                    result.Add(value);
+                    using (TextReader fileReader = File.OpenText(path))
+                    {
+                        var csv = new CsvReader(fileReader, System.Globalization.CultureInfo.CurrentCulture);
+                        csv.Configuration.HasHeaderRecord = false;
+
+                        csv.Read();
+                        csv.Read();
+
+                        while (csv.Read())
+                        {
+
+                            csv.TryGetField<int>(1, out value);
+                            result.Add(value);
+                        }
+
+                    }
+                    return result;
                 }
-
-            }
-            return result;
-        }
-*/
-        public static Tuple<List<List<T>>, List<List<U>>> normalizeOutput<T, U>(CoordinatesContainer<U> realCoordinatesList, CoordinatesContainer<int> faceModeSize = null, char mode = 'f')
+        */
+        public static Tuple<List<List<T>>, List<List<int>>> normalizeOutput<T, U>(CoordinatesContainer<U> realCoordinatesList, CoordinatesContainer<int> faceModeSize = null, char mode = 'f')
         {
-            Tuple<List<List<T>>, List<List<U>>> normalized;                
+            Tuple<List<List<T>>, List<List<int>>> normalized;
 
             if (mode == Constants.faceMode)
-                normalized = normalizeOutputFaceMode<T, U>((object)realCoordinatesList);
+                normalized = normalizeOutputFaceMode<T, U>(realCoordinatesList);
             else
-            {
-                normalized = outputToPercentage<T, U>(realCoordinatesList, faceModeSize);
-                normalized = normalizeOutputFaceMode<T, U>((object)normalized.Item1);
-            }
-            
+                normalized = normalizeOutputFaceElements<T, U>(realCoordinatesList, faceModeSize);
+
             return normalized;
         }
 
-        public static Tuple<List<List<T>>, List<List<U>>> normalizeOutputFaceMode<T, U>(object coordinatesList)
+        public static Tuple<List<List<T>>, List<List<int>>> normalizeOutputFaceMode<T, U>(CoordinatesContainer<U> realCoordinatesList)
         {
-            CoordinatesContainer<U> realCoordinatesList = (coordinatesList is CoordinatesContainer<U>) ? 
-                                                          (CoordinatesContainer<U>)coordinatesList     :
-                                                          new CoordinatesContainer<U>((List<List<U>>)coordinatesList);
+            //CoordinatesContainer<U> retCoordinates = realCoordinatesList;
 
             List<List<U>> coordinates = new List<List<U>>(realCoordinatesList.getCoordinates());
-            List<List<U>> minMaxValues = new List<List<U>>();
+            List<List<int>> minMaxValues = new List<List<int>>();
             List<List<T>> result = new List<List<T>>();
 
             // transpose elements
@@ -513,16 +508,16 @@ namespace CaptureLabel
             // normalize elements
             foreach (List<U> l in coordinates)
             {
-                var min = l.Min();
-                var max = l.Max();
+                int min = Convert.ToInt32(l.Min());
+                int max = Convert.ToInt32(l.Max());
 
-                minMaxValues.Add(new List<U>() { min, max });
+                minMaxValues.Add(new List<int>() { min, max });
 
                 List<T> temp = new List<T>();
 
                 for (int i = 0; i < l.Count; i++)
                 {
-                    double val = (double)((dynamic)l[i] - min) / ((dynamic)max - min);
+                    double val = (double)(Convert.ToInt32(l[i]) - min) / (max - min);
 
                     if (Double.IsNaN(val))
                         val = 0;
@@ -541,13 +536,15 @@ namespace CaptureLabel
             return Tuple.Create(result, minMaxValues);
         }
 
-        public static Tuple<List<List<T>>, List<List<U>>> outputToPercentage<T, U>(CoordinatesContainer<U> realCoordinatesList, CoordinatesContainer<int> faceModeSize)
+        public static Tuple<List<List<T>>, List<List<int>>> normalizeOutputFaceElements<T, U>(CoordinatesContainer<U> realCoordinatesList, CoordinatesContainer<int> faceModeSize)
         {
 
             List<List<U>> coordinates = new List<List<U>>(realCoordinatesList.getCoordinates());
-            List<List<U>> minMaxValues = new List<List<U>>();
+            List<List<int>> minMaxValues = new List<List<int>>();
             List<List<T>> result = new List<List<T>>();
 
+
+            // normalize elements
             int i = 0;
             foreach (List<U> l in coordinates)
             {

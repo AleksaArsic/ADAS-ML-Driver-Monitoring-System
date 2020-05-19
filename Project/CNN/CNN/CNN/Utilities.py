@@ -224,7 +224,7 @@ def readMinMaxFromCSV(filepath):
 			
 			cnt_cat = 0
 			for item in cat:
-				cat[cnt_cat] = int(item)
+				cat[cnt_cat] = float(item)
 				cnt_cat = cnt_cat + 1
 			cat = np.asarray(cat)
 			
