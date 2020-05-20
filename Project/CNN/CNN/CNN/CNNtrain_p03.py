@@ -116,7 +116,7 @@ if __name__ == "__main__":
     train_loss = history_dict['loss']
 
     #plot accuracy and loss
-    plotTrainingResults(val_acc, val_loss, train_acc, train_loss)
+    #plotTrainingResults(val_acc, val_loss, train_acc, train_loss)
 
 
     #debug

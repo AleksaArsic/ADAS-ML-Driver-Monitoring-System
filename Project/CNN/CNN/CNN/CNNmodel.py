@@ -14,6 +14,8 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dropout, Flatten, Dens
 #outputNo = 8
 
 def create_model(inputWidth, inputHeight, ch, outputNo):
+    
+    tf.keras.backend.set_floatx('float64')
 
     model = Sequential()
 

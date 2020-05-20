@@ -39,6 +39,10 @@ predictions = []
 faceLocation = ''
 faceLocationNorm = ''
 
+def change_res(cap, width, height):
+    cap.set(3, width)
+    cap.set(4, height)
+
 def denormalizeFacePrediction(facePrediction):
     facePredictionDenorm = []
 
@@ -150,7 +154,7 @@ def predictFace(vsource = 1, savePredictions = False):
 
     # frame number
     frameId = 0
-
+    
     cv2.namedWindow(windowName)
 
     #debug
@@ -161,7 +165,7 @@ def predictFace(vsource = 1, savePredictions = False):
         s_time = time()
 
         ret, frame = cap.read()
-       
+        
         if(ret == True):
 
             #grayFrame = Utilities.grayConversion(frame)
@@ -172,7 +176,9 @@ def predictFace(vsource = 1, savePredictions = False):
             img = np.asarray(img)
             img1 = img/255
 
-            facePrediction = face_model.predict(img1[np.newaxis, :, :, np.newaxis], verbose = 1)
+            s_t = time()
+            facePrediction = face_model(img1[np.newaxis, :, :, np.newaxis], training = False).numpy()
+            e_t = time()
 
             faceImg = cropFace(grayFrame, facePrediction)
             #cv2.imshow("face", faceImg)
@@ -182,9 +188,7 @@ def predictFace(vsource = 1, savePredictions = False):
             img = np.asarray(img)
             img1 = img/255
 
-            s_t = time()
-            faceElementsPrediction = face_elements_model.predict(img1[np.newaxis, :, :, np.newaxis], verbose = 1)
-            e_t = time()
+            faceElementsPrediction = face_elements_model(img1[np.newaxis, :, :, np.newaxis], training = False).numpy()
 
             leftEyeImg, rightEyeImg, topELeft, topERight = cropEyes(faceImg, faceElementsPrediction)
 
@@ -195,23 +199,23 @@ def predictFace(vsource = 1, savePredictions = False):
                 img = np.asarray(img)
                 img1 = img/255
 
-                leftEyePrediction = attention_model.predict(img1[np.newaxis, :, :, np.newaxis], verbose = 1)
+                leftEyePrediction = attention_model(img1[np.newaxis, :, :, np.newaxis], training = False).numpy()
 
             if len(rightEyeImg):
                 img = cv2.resize(rightEyeImg, (inputWidth, inputHeight), Image.ANTIALIAS)
                 img = np.asarray(img)
                 img1 = img/255
 
-                rightEyePrediction = attention_model.predict(img1[np.newaxis, :, :, np.newaxis], verbose = 1)
+                rightEyePrediction = attention_model(img1[np.newaxis, :, :, np.newaxis], training = False).numpy()
 
             if len(leftEyePrediction):
-                if(leftEyePrediction[0][0] < 0.1):
+                if(leftEyePrediction[0][0] < 0.5):
                     leftEyePrediction[0][0] = 0
                 else:
                     leftEyePrediction[0][0] = 1
 
             if len(rightEyePrediction):
-                if(rightEyePrediction[0][0] < 0.1):
+                if(rightEyePrediction[0][0] < 0.5):
                     rightEyePrediction[0][0] = 0
                 else:
                     rightEyePrediction[0][0] = 1
