@@ -201,12 +201,15 @@ def predictFace(vsource = 1, savePredictions = False):
     #cv2.namedWindow("le")
     #cv2.namedWindow("re")
 
+    consumptionTime = [[], [], [], [], [], [], []]
+
     while(cap.isOpened()):  
         s_time = time()
 
         ret, frame = cap.read()
         
         if(ret == True):
+            s_t = time()
 
             #grayFrame = Utilities.grayConversion(frame)
             grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -215,11 +218,19 @@ def predictFace(vsource = 1, savePredictions = False):
             img = cv2.resize(grayFrame, (inputWidth, inputHeight), Image.ANTIALIAS)
             img = np.asarray(img)
             img1 = img/255
+            e_t = time()
+
+            # frame preprocessing TIME
+            consumptionTime[0].append(e_t - s_t)
 
             s_t = time()
             facePrediction = face_model(img1[np.newaxis, :, :, np.newaxis], training = False).numpy()
             e_t = time()
 
+            # face prediction TIME
+            consumptionTime[1].append(e_t - s_t)
+
+            s_t = time()
             faceImg = cropFace(grayFrame, facePrediction)
             #cv2.imshow("face", faceImg)
 
@@ -227,9 +238,19 @@ def predictFace(vsource = 1, savePredictions = False):
             img = cv2.resize(faceImg, (inputWidth, inputHeight), Image.ANTIALIAS)
             img = np.asarray(img)
             img1 = img/255
+            e_t = time()
 
+            # face preprocessing TIME
+            consumptionTime[2].append(e_t - s_t)
+
+            s_t = time()
             faceElementsPrediction = face_elements_model(img1[np.newaxis, :, :, np.newaxis], training = False).numpy()
+            e_t = time()
 
+            # face elements prediction TIME
+            consumptionTime[3].append(e_t - s_t)
+
+            s_t = time()
             leftEyeImg, rightEyeImg, topELeft, topERight = cropEyes(faceImg, faceElementsPrediction)
 
             #leftEyePrediction = []
@@ -252,9 +273,19 @@ def predictFace(vsource = 1, savePredictions = False):
 
             df_im = np.asarray(eyesData)
             df_im = df_im.reshape(df_im.shape[0], inputWidth, inputHeight, 1)
+            e_t = time()
+
+            # face elements preprocessing TIME
+            consumptionTime[4].append(e_t - s_t)
+
+            s_t = time()
             eyesPrediction = attention_model(df_im, training = False).numpy()
+            e_t = time()
 
+            # eyes prediction TIME
+            consumptionTime[5].append(e_t - s_t)
 
+            s_t = time()
             if(len(eyesPrediction[0])):
                 eyesPrediction[0] = correctEyesPrediction(eyesPrediction[0])
             if(len(eyesPrediction[1])):
@@ -267,7 +298,11 @@ def predictFace(vsource = 1, savePredictions = False):
             #cv2.imshow("re", rightEyeImg)
 
             frameId += 1
-            
+            e_t = time()
+          
+            # visual notification TIME
+            consumptionTime[6].append(e_t - s_t)
+
             if(savePredictions):
                 predictions.append(facePrediction)
 
@@ -285,6 +320,7 @@ def predictFace(vsource = 1, savePredictions = False):
         print("Processing time of current frame: " + str(elapsed))
         print("FPS: " + str(1/elapsed))
 
+    print(consumptionTime)
     cap.release()
     cv2.destroyAllWindows()
 
