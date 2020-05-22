@@ -68,7 +68,10 @@ def denormalizeFacePrediction(facePrediction):
 
 def denormalizeFaceElementsPrediction(faceElementsPrediction, elementWidth, start = 0, end = -1):
 
-    predictions = faceElementsPrediction[0]
+    if(faceElementsPrediction.ndim > 1):
+        predictions = faceElementsPrediction[0]
+    else:
+        predictions = faceElementsPrediction
 
     if(end == -1):
         end = len(predictions)
@@ -135,6 +138,43 @@ def cropPoints(x, y, faceImg):
 
     return [(tlEyeXdenorm, tlEyeYdenorm), (brEyeXdenorm, brEyeYdenorm)]
 
+def correctEyesPrediction(eyePrediction = []):
+    # left and right eye open prediction correct
+    if len(eyePrediction):
+        if(eyePrediction[0] < 0.5):
+            eyePrediction[0] = 0
+        else:
+            eyePrediction[0] = 1
+
+        for i in range(11, len(eyePrediction)):
+            if(eyePrediction[i] < 0.5):
+                eyePrediction[i] = 0
+            else:
+                eyePrediction[i] = 1
+
+    return eyePrediction
+
+def determineLookAngleRay(eyePrediction = []):
+
+    x, y = 0, 0
+
+    if len(eyePrediction):
+        if(eyePrediction[11] or eyePrediction[12] or eyePrediction[13] or eyePrediction[14]):
+
+            tempL = -1 if eyePrediction[11] else 0
+            tempR = 1 if eyePrediction[12] else 0
+            tempU = -1 if eyePrediction[13] else 0
+            tempD = 1 if eyePrediction[14] else 0
+
+            x = eyePrediction[3] + 50 * tempL + 50 * tempR
+            y = eyePrediction[4] + 50 * tempU + 50 * tempD
+
+        else:
+            x = eyePrediction[3]
+            y = eyePrediction[4]
+
+    return (x, y)
+
 def predictFace(vsource = 1, savePredictions = False):
     width = 0
     height = 0
@@ -192,37 +232,36 @@ def predictFace(vsource = 1, savePredictions = False):
 
             leftEyeImg, rightEyeImg, topELeft, topERight = cropEyes(faceImg, faceElementsPrediction)
 
-            leftEyePrediction = []
-            rightEyePrediction = []
+            #leftEyePrediction = []
+            #rightEyePrediction = []
+
+            eyesData = []
             if len(leftEyeImg):
                 img = cv2.resize(leftEyeImg, (inputWidth, inputHeight), Image.ANTIALIAS)
                 img = np.asarray(img)
                 img1 = img/255
 
-                leftEyePrediction = attention_model(img1[np.newaxis, :, :, np.newaxis], training = False).numpy()
+                eyesData.append(img1)
 
             if len(rightEyeImg):
                 img = cv2.resize(rightEyeImg, (inputWidth, inputHeight), Image.ANTIALIAS)
                 img = np.asarray(img)
                 img1 = img/255
+                                
+                eyesData.append(img1)
 
-                rightEyePrediction = attention_model(img1[np.newaxis, :, :, np.newaxis], training = False).numpy()
+            df_im = np.asarray(eyesData)
+            df_im = df_im.reshape(df_im.shape[0], inputWidth, inputHeight, 1)
+            eyesPrediction = attention_model(df_im, training = False).numpy()
 
-            if len(leftEyePrediction):
-                if(leftEyePrediction[0][0] < 0.5):
-                    leftEyePrediction[0][0] = 0
-                else:
-                    leftEyePrediction[0][0] = 1
 
-            if len(rightEyePrediction):
-                if(rightEyePrediction[0][0] < 0.5):
-                    rightEyePrediction[0][0] = 0
-                else:
-                    rightEyePrediction[0][0] = 1
-
+            if(len(eyesPrediction[0])):
+                eyesPrediction[0] = correctEyesPrediction(eyesPrediction[0])
+            if(len(eyesPrediction[1])):
+                eyesPrediction[1] = correctEyesPrediction(eyesPrediction[1])
 
             # draw face bounding box and face elements on live stream
-            drawPredictionOnImage(facePrediction, faceElementsPrediction, frame, leftEyePrediction, rightEyePrediction, topELeft, topERight)
+            drawPredictionOnImage(facePrediction, faceElementsPrediction, frame, eyesPrediction, topELeft, topERight)
             cv2.imshow(windowName, frame)
             #cv2.imshow("le", leftEyeImg)
             #cv2.imshow("re", rightEyeImg)
@@ -249,7 +288,7 @@ def predictFace(vsource = 1, savePredictions = False):
     cap.release()
     cv2.destroyAllWindows()
 
-def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, leftEyePrediction, rightEyePrediction, topELeft, topERight):
+def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, eyesPrediction, topELeft, topERight):
     #debug
     global faceLocation
     global faceLocationNorm
@@ -262,12 +301,6 @@ def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, leftEye
     faceYDenom = (facePrediction[0][2] * (minMaxValues[1][1] - minMaxValues[0][1]) + minMaxValues[0][1])
     faceWDenom = (facePrediction[0][7] * (minMaxValues[1][6] - minMaxValues[0][6]) + minMaxValues[0][6])
 
-    #debug
-    #faceLocationNorm = "(x, y, w): (" + str(faceX) + ", " + str(faceY) + ", " + str(faceW) + ")"
-    #faceLocation = "(x, y, w): (" + str(faceXDenom) + ", " + str(faceYDenom) + ", " + str(faceWDenom) + ")"
-    #print("(x, y, w): (" + str(faceX) + ", " + str(faceY) + ", " + str(faceW) + ")")
-    #print("(x, y, w): (" + str(faceXDenom) + ", " + str(faceYDenom) + ", " + str(faceWDenom) + ")")
-
     topLeftX = faceXDenom - int((faceWDenom / 2) + 0.5)
     topLeftY = faceYDenom - int(((faceWDenom / 2) * 1.5) + 0.5)
 
@@ -276,22 +309,18 @@ def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, leftEye
 
     faceElementsPredDenorm = denormalizeFaceElementsPrediction(faceElementsPrediction, faceWDenom)
 
-    leftEyePredDenorm = denormalizeFaceElementsPrediction(leftEyePrediction, faceWDenom * 0.3, 1, 11)
-    rightEyePredDenorm = denormalizeFaceElementsPrediction(rightEyePrediction, faceWDenom * 0.3, 1, 11)
-
-    #leftEyePredDenorm = denormalizeFaceElementsPrediction(leftEyePrediction, faceWDenom, 2, 11)
-
-    #leftEyePredDenorm = denormalizeFaceElementsPrediction(leftEyePredDenorm, faceWDenom * 0.3)
+    leftEyePredDenorm = denormalizeFaceElementsPrediction(eyesPrediction[0], faceWDenom * 0.3, 1, 11)
+    rightEyePredDenorm = denormalizeFaceElementsPrediction(eyesPrediction[1], faceWDenom * 0.3, 1, 11)
 
     for i in range(0, len(faceElementsPredDenorm), 2):
         faceElementsPredDenorm[i] += topLeftX
         faceElementsPredDenorm[i + 1] += topLeftY
 
-    for i in range(1, len(leftEyePredDenorm), 2):
+    for i in range(1, len(leftEyePredDenorm) - 5, 2):
         leftEyePredDenorm[i] += (faceElementsPredDenorm[0] + topELeft[0])
         leftEyePredDenorm[i + 1] += (faceElementsPredDenorm[1] + topELeft[1])
 
-    for i in range(1, len(rightEyePredDenorm), 2):
+    for i in range(1, len(rightEyePredDenorm) - 5, 2):
         rightEyePredDenorm[i] += (faceElementsPredDenorm[0] + topERight[0])
         rightEyePredDenorm[i + 1] += (faceElementsPredDenorm[1] + topERight[1])
 
@@ -299,7 +328,8 @@ def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, leftEye
 
     color = (0, 255, 0)
 
-    if(leftEyePrediction[0][0] or rightEyePrediction[0][0]):
+    #check to se if eyes are open 
+    if(eyesPrediction[0][0] or eyesPrediction[0][0]):
         color = (0, 0, 255)
 
     for i in range(1, len(leftEyePredDenorm) - 4, 2):
@@ -307,10 +337,12 @@ def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, leftEye
 
     for i in range(1, len(rightEyePredDenorm) - 4, 2):
         cv2.circle(image, (int(rightEyePredDenorm[i]), int(rightEyePredDenorm[i + 1])), 1, color, 2)
-    #for i in range(0, len(faceElementsPredDenorm), 2):
-    #    cv2.circle(image, (int(faceElementsPredDenorm[i]), int(faceElementsPredDenorm[i + 1])), 1, color, 2)
 
-    #print("Face on: (" + str(facePrediction[0][1]) + ", " + str(facePrediction[0][2]) + ")")
+    leftRayX, leftRayY = determineLookAngleRay(leftEyePredDenorm)
+    rightRayX, rightRayY = determineLookAngleRay(rightEyePredDenorm)
+
+    cv2.line(image, (int(leftEyePredDenorm[3]), int(leftEyePredDenorm[4])), (int(leftRayX), int(leftRayY)), (0, 255, 0), thickness=2)
+    cv2.line(image, (int(rightEyePredDenorm[3]), int(rightEyePredDenorm[4])), (int(rightRayX), int(rightRayY)), (0, 255, 0), thickness=2)
 
     return image
 
