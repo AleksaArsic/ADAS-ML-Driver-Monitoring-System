@@ -13,6 +13,10 @@ start = 0
 max = 8000
 r = 1
 
+timeConsumptionLabels = ['Frame preprocessing', 'Face prediction', 'Face preprocessing', \
+                        'Face elements prediction', 'Face elements preprocessing', \
+                        'Eyes prediction', 'Visual notification']
+
 def grayConversion(image):
     grayValue = 0.07 * image[:,:,2] + 0.72 * image[:,:,1] + 0.21 * image[:,:,0]
     gray_img = grayValue.astype(np.uint8)
@@ -301,3 +305,40 @@ def drawExpected(grayImg, fname, faceX, faceY, faceW, minMaxValues):
     cv2.imwrite('phase01_greyscale\\' + fname + '.jpg', grayImg)
 
 
+def showAverageTimeConsumption(timeConsumptionArr, timestamp):
+    avgResult = []
+
+    for l in timeConsumptionArr:
+        avgResult.append(np.average(l))
+
+    avgString = ''
+    timeStringArr = []
+
+    for avg in avgResult:
+        avgString += str(avg) + ','
+
+    timeCons = np.array(timeConsumptionArr).T.tolist()
+
+    for l in timeCons:
+        timeString = ''
+
+        for t in l:
+            timeString += str(t) + ','
+
+        timeStringArr.append(timeString)
+
+    with open('averageTimeConsumption_' + str(timestamp) + '.csv', 'w') as f:
+        for s in timeConsumptionLabels:
+            f.write(s + ',')
+
+        f.write('\n')
+        f.write(avgString)
+
+    with open('timeConsumption_' + str(timestamp) + '.csv', 'w') as f:
+        for s in timeConsumptionLabels:
+            f.write(s + ',')
+        
+        f.write('\n')
+
+        for item in timeStringArr:
+            f.write(item + '\n')

@@ -39,6 +39,9 @@ predictions = []
 faceLocation = ''
 faceLocationNorm = ''
 
+# time consumption break time
+breakTime = 60
+
 def change_res(cap, width, height):
     cap.set(3, width)
     cap.set(4, height)
@@ -201,9 +204,11 @@ def predictFace(vsource = 1, savePredictions = False):
     #cv2.namedWindow("le")
     #cv2.namedWindow("re")
 
-    consumptionTime = [[], [], [], [], [], [], []]
 
-    while(cap.isOpened()):  
+    consumptionTime = [[], [], [], [], [], [], []]
+    startTime = time()
+
+    while(cap.isOpened() and (time() - startTime < breakTime)):  
         s_time = time()
 
         ret, frame = cap.read()
@@ -320,7 +325,7 @@ def predictFace(vsource = 1, savePredictions = False):
         print("Processing time of current frame: " + str(elapsed))
         print("FPS: " + str(1/elapsed))
 
-    print(consumptionTime)
+    Utilities.showAverageTimeConsumption(consumptionTime, breakTime)
     cap.release()
     cv2.destroyAllWindows()
 
