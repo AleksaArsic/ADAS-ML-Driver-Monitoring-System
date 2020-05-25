@@ -40,7 +40,7 @@ faceLocation = ''
 faceLocationNorm = ''
 
 # time consumption break time
-breakTime = 60
+breakTime = 0
 
 def change_res(cap, width, height):
     cap.set(3, width)
@@ -208,7 +208,7 @@ def predictFace(vsource = 1, savePredictions = False):
     consumptionTime = [[], [], [], [], [], [], []]
     startTime = time()
 
-    while(cap.isOpened() and (time() - startTime < breakTime)):  
+    while(cap.isOpened()): # and (time() - startTime < breakTime)):  
         s_time = time()
 
         ret, frame = cap.read()

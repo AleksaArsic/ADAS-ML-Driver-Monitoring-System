@@ -300,7 +300,7 @@ namespace CaptureLabel
             if(someoneIsInFocus)
                     inFocusLabel.Text = Constants.inFocusString + " " + rectangleFocusNames[rectangles.inFocusIndex()];
 
-            imageCounterLabel.Text = Constants.imageCounterString + " " + currentImageIndex.ToString() + "/" + imageLocation.Count.ToString();
+            imageCounterLabel.Text = Constants.imageCounterString + " " + (currentImageIndex + 1).ToString() + "/" + imageLocation.Count.ToString();
 
             imagePanel.Focus();
         }
