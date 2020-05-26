@@ -237,8 +237,7 @@ namespace CaptureLabel
                 rectangles.addToFocused(x, y);
 
                 imagePanel.Refresh();
-            }
-            
+            }         
         }
 
 
@@ -259,7 +258,6 @@ namespace CaptureLabel
                 return;
             }
 
-
             saveCoordinates();
 
             if(e.Delta > 0)
@@ -275,6 +273,7 @@ namespace CaptureLabel
 
             if (!isLoaded)
                 rectangles.resetCoordinates(rectSPostion[mode - Constants.faceElementsMode]);
+
             rectangles.resetFocusList();
             someoneIsInFocus = false;
             imagePanel.Refresh();
@@ -324,8 +323,7 @@ namespace CaptureLabel
             initMode(mode);
 
             try
-            {
-                
+            {            
                 // get list of everything in folder passed to imageFolder
                 imageLocation = new List<string>(Directory.GetFiles(imageFolder));
                 //csvFileName = Path.GetFileName(Path.GetDirectoryName(imageFolder));
@@ -385,7 +383,6 @@ namespace CaptureLabel
                             singleRow = realCoordinatesList.getRow(i);
                             coordinatesList.addRow(new List<int>(calculateRectangleCoordinates(singleRow, i)));
                         }
-
 
                         imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
 

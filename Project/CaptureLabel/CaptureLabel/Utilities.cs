@@ -598,9 +598,9 @@ namespace CaptureLabel
                 i++;
             }
 
-            // scale faceModeSize (face width) to get relative coordinates (rectangleCoordinates) of face right
             i = 0;
-            if(reverse)
+            // scale faceModeSize (face width) to get relative coordinates (rectangleCoordinates) of face right
+            if (reverse)
             {
                 foreach (List<int> l in faceModeSize.getCoordinates())
                 {
@@ -608,6 +608,7 @@ namespace CaptureLabel
                     i++;
                 }
             }
+        
         }
     }
 }
