@@ -14,6 +14,13 @@ from time import time
 from tensorflow import keras
 from PIL import Image, ImageDraw
 
+
+import keyboard
+
+
+workingDirPath = os.path.dirname(os.path.realpath(__file__))
+outputImageNamebase = "capture_"
+
 windowName = "Video source"
 
 inputHeight = 100
@@ -25,7 +32,7 @@ attentionOutputNo = 15
 phase = 1
 
 imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\"
-minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
+minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
 
 start = 0
 max = 8000
@@ -178,7 +185,20 @@ def determineLookAngleRay(eyePrediction = []):
 
     return (x, y)
 
+def createNewOutputDir(dateTimeNow):
+
+    outputDirName = "false_" + dateTimeNow
+    if not os.path.exists(outputDirName):
+        os.makedirs(outputDirName)
+
+    return outputDirName
+
 def predictFace(vsource = 1, savePredictions = False):
+
+
+    # save frames that are not good 
+    saving = False
+
     width = 0
     height = 0
 
@@ -188,7 +208,7 @@ def predictFace(vsource = 1, savePredictions = False):
         cap = cv2.VideoCapture(vsource + cv2.CAP_DSHOW)
         width  = cap.get(3)  # float
         height = cap.get(4) # float
-        #change_res(cap, 1280, 720)
+        change_res(cap, 640, 480)
     else:
         cap = cv2.VideoCapture(vsource)
 
@@ -208,13 +228,30 @@ def predictFace(vsource = 1, savePredictions = False):
     consumptionTime = [[], [], [], [], [], [], []]
     startTime = time()
 
+    dirCreated = False
+
     while(cap.isOpened()): # and (time() - startTime < breakTime)):  
         s_time = time()
 
         ret, frame = cap.read()
         
+
         if(ret == True):
             s_t = time()
+
+            print(frame.shape)
+            
+            if (saving):
+
+                if not dirCreated:
+                    dateTimeNow = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+                    outputImageName = outputImageNamebase + dateTimeNow
+                    outputDirName = createNewOutputDir(dateTimeNow)
+
+                    dirCreated = True
+
+                cv2.imwrite(os.path.join(workingDirPath, outputDirName, outputImageName + "_{:d}.jpg").format(frameId), frame)
+
 
             #grayFrame = Utilities.grayConversion(frame)
             grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -313,6 +350,9 @@ def predictFace(vsource = 1, savePredictions = False):
 
             if(cv2.waitKey(1) & 0xFF == ord('q')):
                 break
+
+            if(keyboard.is_pressed('s')):
+                saving = not saving
 
         else:
             break
@@ -460,7 +500,7 @@ if __name__ == "__main__":
     minMaxValues = Utilities.readMinMaxFromCSV(minMaxCSVpath)
 
     # predict face from live video source
-    predictFace(1)
+    predictFace(0)
 
     # predict face from image source
     #predictFromImages()
