@@ -14,9 +14,7 @@ from time import time
 from tensorflow import keras
 from PIL import Image, ImageDraw
 
-
 import keyboard
-
 
 workingDirPath = os.path.dirname(os.path.realpath(__file__))
 outputImageNamebase = "capture_"
@@ -102,7 +100,9 @@ def cropFace(img, facePrediction):
     bottomRightX = int(facePredictionDenormalized[0] + int((facePredictionDenormalized[2] / 2) + 0.5))
     bottomRightY = int(facePredictionDenormalized[1] + int(((facePredictionDenormalized[2] / 2) * 1.5) + 0.5))
 
-    croppedImage = img[topLeftY:bottomRightY, topLeftX:bottomRightX]
+    clippedValues = np.clip([topLeftX, topLeftY, bottomRightX, bottomRightY], a_min = 0, a_max = None)
+
+    croppedImage = img[clippedValues[1]:clippedValues[3], clippedValues[0]:clippedValues[2]]
     #croppedImage = cv2.cvtColor(croppedImage, cv2.COLOR_BGR2RGB)
 
     return croppedImage
@@ -241,6 +241,7 @@ def predictFace(vsource = 1, savePredictions = False):
 
             print(frame.shape)
             
+            # save bad frames
             if (saving):
 
                 if not dirCreated:
