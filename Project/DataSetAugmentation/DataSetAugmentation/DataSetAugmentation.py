@@ -243,6 +243,9 @@ if __name__ == "__main__":
             separated = line.split(",")
             parsed.append(separated)
 
+        for i in range(2, len(parsed)):
+            parsed[i][0] = newImageNames[i - 2]
+
         #augment coordinates
         cnt = 0
         for line in parsed:
@@ -277,10 +280,6 @@ if __name__ == "__main__":
         newCsv.pop(0)
         for line in newCsv:
             newCSVfile.write("%s" % line)
-
-
-
-
 
     e_t = time()
 
