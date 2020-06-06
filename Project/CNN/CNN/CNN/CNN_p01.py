@@ -212,10 +212,10 @@ if __name__ == "__main__":
     minMaxValues = Utilities.readMinMaxFromCSV(minMaxCSVpath)
 
     # predict face from live video source
-    #predictFace(1)
+    predictFace(1)
 
     # predict face from image source
-    predictFromImages()
+    #predictFromImages()
 
     Utilities.showStat(filenames, predictions)
     Utilities.drawPredictionsToDisk(predictions, filenames, imgsDir, minMaxValues)

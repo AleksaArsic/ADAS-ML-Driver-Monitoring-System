@@ -188,7 +188,7 @@ def predictFace(vsource = 1, savePredictions = False):
         cap = cv2.VideoCapture(vsource + cv2.CAP_DSHOW)
         width  = cap.get(3)  # float
         height = cap.get(4) # float
-        #change_res(cap, 1280, 720)
+        change_res(cap, 640, 480)
     else:
         cap = cv2.VideoCapture(vsource)
 
@@ -216,6 +216,7 @@ def predictFace(vsource = 1, savePredictions = False):
         if(ret == True):
             s_t = time()
 
+            #print(frame.shape)
             #grayFrame = Utilities.grayConversion(frame)
             grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
@@ -398,7 +399,7 @@ def predictFromImages():
     df_im = np.asarray(images)
     df_im = df_im.reshape(df_im.shape[0], inputWidth, inputHeight, 1)
 
-    predictions = model.predict(df_im, verbose = 1)
+    predictions = face_model.predict(df_im, verbose = 1)
 
     # denormalize all predictions
     denormPredictions = denormalizeAllPredictions(predictions, minMaxValues)
