@@ -36,9 +36,9 @@ phase = 1
 start = 0
 max = 8000
 
-imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\"
-normalizedDataPath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized.csv"
-minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
+imgsDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\"
+normalizedDataPath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized.csv"
+minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
 
 images=[]
 categories = []
@@ -88,6 +88,7 @@ if __name__ == "__main__":
     #config.gpu_options.allow_growth = True
     #session = tf.compat.v1.Session(config=config)
 
+
     tensorboard = TensorBoard(log_dir=imgsDir + "logs_img1" + "\{}".format(time()))
 
     model_name = "model_phase01.h5"
@@ -100,11 +101,12 @@ if __name__ == "__main__":
 
     #network training
     model_history = model.fit(df_im, df_cat, # df_im - input ; df_cat - output
-                batch_size=2,
+                batch_size=32,
                 #batch_size=64,
                 epochs=350,
                 validation_data=(val_im, val_cat),
-                callbacks=callbacks
+                callbacks=callbacks,
+                verbose=2
     )
 
     #Visualizing accuracy and loss of training the model

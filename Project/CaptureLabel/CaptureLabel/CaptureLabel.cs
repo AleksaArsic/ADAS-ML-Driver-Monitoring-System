@@ -328,9 +328,11 @@ namespace CaptureLabel
                 imageLocation = new List<string>(Directory.GetFiles(imageFolder));
                 //csvFileName = Path.GetFileName(Path.GetDirectoryName(imageFolder));
                 csvFileName = new DirectoryInfo(imageFolder).Name;
-                
+
+                var sortedFiles = Directory.GetFiles(@"C:\", "*").OrderByDescending(d => new FileInfo(d).CreationTime);
+
                 // Parse list of image locations to contain only image locations
-                imageLocation = Utilities.parseImagesToList(imageLocation);
+                imageLocation = Utilities.parseImagesToList(sortedFiles.ToList<string>());
 
                 if (imageLocation.Count > 0)
                 {
