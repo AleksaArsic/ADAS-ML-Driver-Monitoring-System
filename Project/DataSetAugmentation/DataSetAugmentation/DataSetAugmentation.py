@@ -32,7 +32,7 @@ def shiftImage(image, lr, ud):
 
     return img
 
-def gaussian_noise(img):
+def gaussianNoise(img):
 
     gauss = np.random.normal(0, 0.3, img.size)
     gauss = gauss.reshape(img.shape[0], img.shape[1], img.shape[2]).astype("uint8")
@@ -41,6 +41,14 @@ def gaussian_noise(img):
     img_gauss = cv2.cvtColor(img_gauss, cv2.COLOR_RGB2BGR)
 
     return img_gauss
+
+def horizontalFlip(img):
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    h_flipped = cv2.flip(img, 1)
+
+    return h_flipped
+
+
 
 def argParser():
 
@@ -88,10 +96,14 @@ def argParser():
                 argsOK = False
         elif(args["mode"] == "gaussian_noise"):
             retVal = "gaussian_noise"
+        elif(args["mode"] == "horizontal_flip"):
+            retVal = "h_flip"
         else:
             argsOK = False;
 
-        if(len(args["no_of_imgs"])):
+        count = len(args["no_of_imgs"]) if args["no_of_imgs"] else 0
+
+        if(count):
             noOfImages = int(args["no_of_imgs"])
         if not argsOK:
             print("Usage: DataSetAugmentation.py -i <input_folder> -o <output_folder> -icsv <input_csv> -m <mode> [-lr <left_right>, -ud <up_down>]")
@@ -182,7 +194,10 @@ if __name__ == "__main__":
     if noOfImages != 0:
         end = noOfImages
 
+    parsed = parsed[:end + 2]
+
     if mode == "shift":
+        print("Shifting images.")
         for i in range(end):
             img = Image.open(imagePath[i])
             img = shiftImage(img, lr, ud)
@@ -191,8 +206,9 @@ if __name__ == "__main__":
             newImageNames.append(outputName)
 
 
-        for i in range(2, len(newImageNames)):
+        for i in range(2, len(newImageNames) + 2):
             parsed[i][0] = newImageNames[i - 2]
+
         #augment coordinates
         cnt = 0
         for line in parsed:
@@ -207,16 +223,54 @@ if __name__ == "__main__":
                     line[i] = str(int(line[i]) - ud)
 
     elif mode == "gaussian_noise":
+        print("Adding Gaussian noise to images.")
+
         for i in range(end):
             img = Image.open(imagePath[i])
             img = np.asarray(img)
-            img = gaussian_noise(img)
+            img = gaussianNoise(img)
             outputName = os.path.join("", outputImageName + "_{0:0=6d}.jpg").format(i)
             cv2.imwrite(os.path.join(outputFolder, outputName), img) 
             newImageNames.append(outputName)
 
-        for i in range(2, len(newImageNames)):
+        for i in range(2, len(newImageNames) + 2):
             parsed[i][0] = newImageNames[i - 2]
+
+    elif mode == "h_flip":
+        print("Horizontal flipping images.")
+
+        for i in range(end):
+            img = Image.open(imagePath[i])
+            img = np.asarray(img)
+            img = horizontalFlip(img)
+            outputName = os.path.join("", outputImageName + "_{0:0=6d}.jpg").format(i)
+            cv2.imwrite(os.path.join(outputFolder, outputName), img) 
+            newImageNames.append(outputName)
+
+        #augment coordinates
+        cnt = 0
+        for line in parsed:
+            if cnt < 2:
+                cnt += 1
+                continue
+
+            for i in range(2, 8):
+                #cast to string at end
+                if(i % 2 == 0):
+                    line[i] = str(int(((1 - (int(line[i]) / img.shape[1])) * img.shape[1]) + 0.5))
+
+        #img = Image.open("C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\DataSetAugmentation\\DataSetAugmentation\\capture_2020_04_17_11_39_49_7213.jpg")
+        #img = np.array(img)
+        
+        #h_flip_img = horizontalFlip(img)
+
+        #cv2.imwrite(os.path.join("", "h_flipped.jpg"), h_flip_img) 
+
+        #cv2.imshow('Flipped horizontal image', h_flip_img)
+
+        #cv2.waitKey(0)
+        #cv2.destroyAllWindows()
+
 
     #construct and save new .csv file
     newCsv = []
@@ -239,4 +293,4 @@ if __name__ == "__main__":
 
     print("Done.")
     print("Time used: " + str(e_t - s_t))
-    print("Images processed: " + str(len(images) * 2))
+    print("Images processed: " + str(len(images)))
