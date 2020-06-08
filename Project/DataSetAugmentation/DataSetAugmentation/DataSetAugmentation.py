@@ -13,6 +13,8 @@ outputFolder = ""
 inputCSV = ""
 outputImageNamebase = "capture_"
 
+noOfImages = 0
+
 lr = 0
 ud = 0
 
@@ -45,6 +47,7 @@ def argParser():
     global inputFolder
     global outputFolder
     global inputCSV
+    global noOfImages
     global lr
     global ud
 
@@ -57,6 +60,7 @@ def argParser():
     parser.add_argument("-o", "--output", help = "Output folder", required = True)
     parser.add_argument("-icsv","--input_csv", help = "Input csv", required = True)
     parser.add_argument("-m", "--mode", help = "Mode: shift", required = True)
+    parser.add_argument("-n", "--no_of_imgs", help = "Number of input images", required = False)
     parser.add_argument("-lr", "--left_right", help = "left/right (5/-5)", required = False)
     parser.add_argument("-ud", "--up_down", help = "up/down (5/-5)", required = False)
 
@@ -87,6 +91,8 @@ def argParser():
         else:
             argsOK = False;
 
+        if(len(args["no_of_imgs"])):
+            noOfImages = int(args["no_of_imgs"])
         if not argsOK:
             print("Usage: DataSetAugmentation.py -i <input_folder> -o <output_folder> -icsv <input_csv> -m <mode> [-lr <left_right>, -ud <up_down>]")
             sys.exit(ARG_ERR)
@@ -106,6 +112,7 @@ def loadImages(inputFolder):
             images.remove(fichier)
 
     imagePath = []
+
     for i in range(len(images)):
         imagePath.append(os.path.join(inputFolder, images[i]))
 
@@ -171,8 +178,12 @@ if __name__ == "__main__":
 
     csvFile.close()
 
+    end = len(images)
+    if noOfImages != 0:
+        end = noOfImages
+
     if mode == "shift":
-        for i in range(len(imagePath)):
+        for i in range(end):
             img = Image.open(imagePath[i])
             img = shiftImage(img, lr, ud)
             outputName = os.path.join("", outputImageName + "_{0:0=6d}.jpg").format(i)
@@ -180,7 +191,7 @@ if __name__ == "__main__":
             newImageNames.append(outputName)
 
 
-        for i in range(2, len(parsed)):
+        for i in range(2, len(newImageNames)):
             parsed[i][0] = newImageNames[i - 2]
         #augment coordinates
         cnt = 0
@@ -196,8 +207,7 @@ if __name__ == "__main__":
                     line[i] = str(int(line[i]) - ud)
 
     elif mode == "gaussian_noise":
-        #img = cv2.imread("C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\DataSetAugmentation\\DataSetAugmentation\\capture_2020_04_17_11_39_49_7213.jpg")
-        for i in range(len(imagePath)):
+        for i in range(end):
             img = Image.open(imagePath[i])
             img = np.asarray(img)
             img = gaussian_noise(img)
@@ -205,12 +215,8 @@ if __name__ == "__main__":
             cv2.imwrite(os.path.join(outputFolder, outputName), img) 
             newImageNames.append(outputName)
 
-        for i in range(2, len(parsed)):
+        for i in range(2, len(newImageNames)):
             parsed[i][0] = newImageNames[i - 2]
-        #img_gauss = gaussian_noise(img)
-
-        #cv2.imshow("a", img_gauss)
-        #cv2.waitKey(0)
 
     #construct and save new .csv file
     newCsv = []
