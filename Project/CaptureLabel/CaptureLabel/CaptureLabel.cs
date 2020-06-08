@@ -332,7 +332,7 @@ namespace CaptureLabel
                 var sortedFiles = Directory.GetFiles(@"C:\", "*").OrderByDescending(d => new FileInfo(d).CreationTime);
 
                 // Parse list of image locations to contain only image locations
-                imageLocation = Utilities.parseImagesToList(sortedFiles.ToList<string>());
+                imageLocation = Utilities.parseImagesToList(imageLocation);
 
                 if (imageLocation.Count > 0)
                 {

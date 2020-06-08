@@ -16,84 +16,6 @@ outputImageNamebase = "capture_"
 lr = 0
 ud = 0
 
-def randomNoise(image):
-    row, col, ch = image.shape
-
-    noise = np.random.randint(5, size = (row, col, ch), dtype = 'uint32')
-    noise = noise.reshape(row, col, ch)
-
-    noisy = image + noise
-    noisy_img_clipped = np.clip(noisy, 0, 255)
-
-    return noisy_img_clipped
-
-def noisy(noise_typ,image):
-    if noise_typ == "gauss":
-        row,col,ch= image.shape
-        mean = 0
-        var = 0.1
-        sigma = var**0.5
-        gauss = np.random.normal(mean,sigma,(row,col,ch))
-        gauss = gauss.reshape(row,col,ch)
-        noisy = image + gauss
-        return noisy
-    elif noise_typ == "s&p":
-        row,col,ch = image.shape
-        s_vs_p = 0.5
-        amount = 0.004
-        out = np.copy(image)
-        # Salt mode
-        num_salt = np.ceil(amount * image.size * s_vs_p)
-        coords = [np.random.randint(0, i - 1, int(num_salt))
-                for i in image.shape]
-        out[coords] = 1
-
-        # Pepper mode
-        num_pepper = np.ceil(amount* image.size * (1. - s_vs_p))
-        coords = [np.random.randint(0, i - 1, int(num_pepper))
-                for i in image.shape]
-        out[coords] = 0
-        return out
-    elif noise_typ == "poisson":
-        vals = len(np.unique(image))
-        vals = 2 ** np.ceil(np.log2(vals))
-        noisy = np.random.poisson(image * vals) / float(vals)
-        return noisy
-    elif noise_typ =="speckle":
-        row,col,ch = image.shape
-        gauss = np.random.randn(row,col,ch)
-        gauss = gauss.reshape(row,col,ch)        
-        noisy = image + image * gauss
-    return noisy
-
-def add_gaussian_noise(image_in, noise_sigma):
-    temp_image = np.float64(np.copy(image_in))
-
-    h = temp_image.shape[0]
-    w = temp_image.shape[1]
-    noise = np.random.randn(h, w) * noise_sigma
-
-    noisy_image = np.zeros(temp_image.shape, np.float64)
-    if len(temp_image.shape) == 2:
-        noisy_image = temp_image + noise
-    else:
-        noisy_image[:,:,0] = temp_image[:,:,0] + noise
-        noisy_image[:,:,1] = temp_image[:,:,1] + noise
-        noisy_image[:,:,2] = temp_image[:,:,2] + noise
-
-    """
-    print('min,max = ', np.min(noisy_image), np.max(noisy_image))
-    print('type = ', type(noisy_image[0][0][0]))
-    """
-
-    return noisy_image
-
-def convert_to_uint8(image_in):
-    temp_image = np.float64(np.copy(image_in))
-    cv2.normalize(temp_image, temp_image, 0, 255, cv2.NORM_MINMAX, dtype=-1)
-
-    return temp_image.astype(np.uint8)
-
 def shiftImage(image, lr, ud):
     a = 1
     b = 0
@@ -108,6 +30,15 @@ def shiftImage(image, lr, ud):
 
     return img
 
+def gaussian_noise(img):
+
+    gauss = np.random.normal(0, 0.3, img.size)
+    gauss = gauss.reshape(img.shape[0], img.shape[1], img.shape[2]).astype("uint8")
+
+    img_gauss = cv2.add(img, gauss)
+    img_gauss = cv2.cvtColor(img_gauss, cv2.COLOR_RGB2BGR)
+
+    return img_gauss
 
 def argParser():
 
@@ -151,6 +82,8 @@ def argParser():
                     ud = int(args["up_down"])
             else:
                 argsOK = False
+        elif(args["mode"] == "gaussian_noise"):
+            retVal = "gaussian_noise"
         else:
             argsOK = False;
 
@@ -178,6 +111,8 @@ def loadImages(inputFolder):
 
     return images, imagePath
 
+
+
 if __name__ == "__main__":
 
     #load image
@@ -203,7 +138,7 @@ if __name__ == "__main__":
 
     print("Processing images...")
 
-    s_t = time()
+    s_t = datetime.datetime.now()
 
     #load images
     images, imagePath = loadImages(inputFolder)
@@ -213,39 +148,40 @@ if __name__ == "__main__":
     if not os.path.exists(outputFolder):
         os.makedirs(outputFolder)
     else:
-        sys.exit()
+        os._exit(1)
     #copy old images
     for i in range(len(imagePath)):
         copyfile(imagePath[i], os.path.join(outputFolder, images[i]))
-
 
     #augment images
     dateTimeNow = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     outputImageName = outputImageNamebase + dateTimeNow
     newImageNames = []
 
+    #parse input .csv file
+    csvFile = open(inputCSV, "r")
+
+    parsed = []
+    parsed_old = []
+
+    for line in csvFile:
+        parsed_old.append(line)
+        separated = line.split(",")
+        parsed.append(separated)
+
+    csvFile.close()
+
     if mode == "shift":
         for i in range(len(imagePath)):
             img = Image.open(imagePath[i])
             img = shiftImage(img, lr, ud)
-            outputName = os.path.join("", outputImageName + "_{:d}.jpg").format(i)
+            outputName = os.path.join("", outputImageName + "_{0:0=6d}.jpg").format(i)
             cv2.imwrite(os.path.join(outputFolder, outputName), img) 
             newImageNames.append(outputName)
 
-        #copy content of old csv file to new one 
-        csvFile = open(inputCSV, "r")
-
-        parsed = []
-        parsed_old = []
-
-        for line in csvFile:
-            parsed_old.append(line)
-            separated = line.split(",")
-            parsed.append(separated)
 
         for i in range(2, len(parsed)):
             parsed[i][0] = newImageNames[i - 2]
-
         #augment coordinates
         cnt = 0
         for line in parsed:
@@ -258,31 +194,43 @@ if __name__ == "__main__":
                     line[i] = str(int(line[i]) - lr)
                 else:
                     line[i] = str(int(line[i]) - ud)
-    
-        newCsv = []
-        for line in parsed:
-            l = ','.join(line)
-            newCsv.append(l)
+
+    elif mode == "gaussian_noise":
+        #img = cv2.imread("C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\DataSetAugmentation\\DataSetAugmentation\\capture_2020_04_17_11_39_49_7213.jpg")
+        for i in range(len(imagePath)):
+            img = Image.open(imagePath[i])
+            img = np.asarray(img)
+            img = gaussian_noise(img)
+            outputName = os.path.join("", outputImageName + "_{0:0=6d}.jpg").format(i)
+            cv2.imwrite(os.path.join(outputFolder, outputName), img) 
+            newImageNames.append(outputName)
+
+        for i in range(2, len(parsed)):
+            parsed[i][0] = newImageNames[i - 2]
+        #img_gauss = gaussian_noise(img)
+
+        #cv2.imshow("a", img_gauss)
+        #cv2.waitKey(0)
+
+    #construct and save new .csv file
+    newCsv = []
+    for line in parsed:
+        l = ','.join(line)
+        newCsv.append(l)
+
+    newCSVfile = open(outputFolder + ".csv", "w+")
+
+    for line in parsed_old:
+        newCSVfile.write("%s" % line)
+
+    newCsv.pop(0)
+    newCsv.pop(0)
+    for line in newCsv:
+        newCSVfile.write("%s" % line)
 
 
-    
-        #print(newCsv)
-
-        csvFile.close()
-
-        #save new csv
-        newCSVfile = open(outputFolder + ".csv", "w+")
-
-        for line in parsed_old:
-            newCSVfile.write("%s" % line)
-
-        newCsv.pop(0)
-        newCsv.pop(0)
-        for line in newCsv:
-            newCSVfile.write("%s" % line)
-
-    e_t = time()
+    e_t = datetime.datetime.now()
 
     print("Done.")
     print("Time used: " + str(e_t - s_t))
-    print("Images processed: " + str(len(images)))
+    print("Images processed: " + str(len(images) * 2))

@@ -12,7 +12,7 @@
     <Name>DataSetAugmentation</Name>
     <RootNamespace>DataSetAugmentation</RootNamespace>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>-i C:\Users\arsic\Desktop\Diplomski\DriverMonitoringSystem\Dataset\trainingSet_phase01 -o C:\Users\arsic\Desktop\Diplomski\DriverMonitoringSystem\Project\DataSetAugmentation\DataSetAugmentation\augmented -icsv C:\Users\arsic\Desktop\Diplomski\DriverMonitoringSystem\Dataset\trainingSet_phase01_csv\trainingSet_phase01.csv -m shift -lr 10 -ud -10</CommandLineArguments>
+    <CommandLineArguments>-i C:\Users\arsic\Desktop\Diplomski\DriverMonitoringSystem\Project\DataSetAugmentation\DataSetAugmentation\augmented -o C:\Users\arsic\Desktop\Diplomski\DriverMonitoringSystem\Project\DataSetAugmentation\DataSetAugmentation\augmented2 -icsv C:\Users\arsic\Desktop\Diplomski\DriverMonitoringSystem\Project\DataSetAugmentation\DataSetAugmentation\augmented.csv -m shift -lr 10 -ud -10</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
