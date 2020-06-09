@@ -12,7 +12,7 @@
     <Name>ImageCapture</Name>
     <RootNamespace>ImageCapture</RootNamespace>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>-v 1</CommandLineArguments>
+    <CommandLineArguments>-v 0</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

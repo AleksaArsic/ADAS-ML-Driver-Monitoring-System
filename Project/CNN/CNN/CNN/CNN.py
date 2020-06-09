@@ -14,6 +14,11 @@ from time import time
 from tensorflow import keras
 from PIL import Image, ImageDraw
 
+import keyboard
+
+workingDirPath = os.path.dirname(os.path.realpath(__file__))
+outputImageNamebase = "capture_"
+
 windowName = "Video source"
 
 inputHeight = 100
@@ -24,8 +29,8 @@ attentionOutputNo = 15
 
 phase = 1
 
-imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\"
-minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
+imgsDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01"
+minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
 
 start = 0
 max = 8000
@@ -95,7 +100,9 @@ def cropFace(img, facePrediction):
     bottomRightX = int(facePredictionDenormalized[0] + int((facePredictionDenormalized[2] / 2) + 0.5))
     bottomRightY = int(facePredictionDenormalized[1] + int(((facePredictionDenormalized[2] / 2) * 1.5) + 0.5))
 
-    croppedImage = img[topLeftY:bottomRightY, topLeftX:bottomRightX]
+    clippedValues = np.clip([topLeftX, topLeftY, bottomRightX, bottomRightY], a_min = 0, a_max = None)
+
+    croppedImage = img[clippedValues[1]:clippedValues[3], clippedValues[0]:clippedValues[2]]
     #croppedImage = cv2.cvtColor(croppedImage, cv2.COLOR_BGR2RGB)
 
     return croppedImage
@@ -178,7 +185,19 @@ def determineLookAngleRay(eyePrediction = []):
 
     return (x, y)
 
+def createNewOutputDir(dateTimeNow):
+
+    outputDirName = "false_" + dateTimeNow
+    if not os.path.exists(outputDirName):
+        os.makedirs(outputDirName)
+
+    return outputDirName
+
 def predictFace(vsource = 1, savePredictions = False):
+
+    # save frames that are not good 
+    saving = False
+
     width = 0
     height = 0
 
@@ -208,6 +227,9 @@ def predictFace(vsource = 1, savePredictions = False):
     consumptionTime = [[], [], [], [], [], [], []]
     startTime = time()
 
+    dirCreated = False
+
+
     while(cap.isOpened()): # and (time() - startTime < breakTime)):  
         s_time = time()
 
@@ -217,6 +239,19 @@ def predictFace(vsource = 1, savePredictions = False):
             s_t = time()
 
             #print(frame.shape)
+
+            # save bad frames
+            if (saving):
+                if not dirCreated:
+                    dateTimeNow = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+                    outputImageName = outputImageNamebase + dateTimeNow
+                    outputDirName = createNewOutputDir(dateTimeNow)
+
+                    dirCreated = True
+
+                cv2.imwrite(os.path.join(workingDirPath, outputDirName, outputImageName + "_{0:0=6d}.jpg").format(frameId), frame)
+
+
             #grayFrame = Utilities.grayConversion(frame)
             grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
@@ -233,72 +268,77 @@ def predictFace(vsource = 1, savePredictions = False):
             facePrediction = face_model(img1[np.newaxis, :, :, np.newaxis], training = False).numpy()
             e_t = time()
 
-            # face prediction TIME
-            consumptionTime[1].append(e_t - s_t)
+            #check if there is face in frame
+            if(facePrediction[0][0] < 0.5):
 
-            s_t = time()
-            faceImg = cropFace(grayFrame, facePrediction)
-            #cv2.imshow("face", faceImg)
+                # face prediction TIME
+                consumptionTime[1].append(e_t - s_t)
 
-            # predict face elements
-            img = cv2.resize(faceImg, (inputWidth, inputHeight), Image.ANTIALIAS)
-            img = np.asarray(img)
-            img1 = img/255
-            e_t = time()
+                s_t = time()
+                faceImg = cropFace(grayFrame, facePrediction)
+                #cv2.imshow("face", faceImg)
 
-            # face preprocessing TIME
-            consumptionTime[2].append(e_t - s_t)
-
-            s_t = time()
-            faceElementsPrediction = face_elements_model(img1[np.newaxis, :, :, np.newaxis], training = False).numpy()
-            e_t = time()
-
-            # face elements prediction TIME
-            consumptionTime[3].append(e_t - s_t)
-
-            s_t = time()
-            leftEyeImg, rightEyeImg, topELeft, topERight = cropEyes(faceImg, faceElementsPrediction)
-
-            #leftEyePrediction = []
-            #rightEyePrediction = []
-
-            eyesData = []
-            if len(leftEyeImg):
-                img = cv2.resize(leftEyeImg, (inputWidth, inputHeight), Image.ANTIALIAS)
+                # predict face elements
+                img = cv2.resize(faceImg, (inputWidth, inputHeight), Image.ANTIALIAS)
                 img = np.asarray(img)
                 img1 = img/255
+                e_t = time()
 
-                eyesData.append(img1)
+                # face preprocessing TIME
+                consumptionTime[2].append(e_t - s_t)
 
-            if len(rightEyeImg):
-                img = cv2.resize(rightEyeImg, (inputWidth, inputHeight), Image.ANTIALIAS)
-                img = np.asarray(img)
-                img1 = img/255
+                s_t = time()
+                faceElementsPrediction = face_elements_model(img1[np.newaxis, :, :, np.newaxis], training = False).numpy()
+                e_t = time()
+
+                # face elements prediction TIME
+                consumptionTime[3].append(e_t - s_t)
+
+                s_t = time()
+                leftEyeImg, rightEyeImg, topELeft, topERight = cropEyes(faceImg, faceElementsPrediction)
+
+                #leftEyePrediction = []
+                #rightEyePrediction = []
+
+                eyesData = []
+                if len(leftEyeImg):
+                    img = cv2.resize(leftEyeImg, (inputWidth, inputHeight), Image.ANTIALIAS)
+                    img = np.asarray(img)
+                    img1 = img/255
+
+                    eyesData.append(img1)
+
+                if len(rightEyeImg):
+                    img = cv2.resize(rightEyeImg, (inputWidth, inputHeight), Image.ANTIALIAS)
+                    img = np.asarray(img)
+                    img1 = img/255
                                 
-                eyesData.append(img1)
+                    eyesData.append(img1)
 
-            df_im = np.asarray(eyesData)
-            df_im = df_im.reshape(df_im.shape[0], inputWidth, inputHeight, 1)
-            e_t = time()
+                df_im = np.asarray(eyesData)
+                df_im = df_im.reshape(df_im.shape[0], inputWidth, inputHeight, 1)
+                e_t = time()
 
-            # face elements preprocessing TIME
-            consumptionTime[4].append(e_t - s_t)
+                # face elements preprocessing TIME
+                consumptionTime[4].append(e_t - s_t)
 
-            s_t = time()
-            eyesPrediction = attention_model(df_im, training = False).numpy()
-            e_t = time()
+                s_t = time()
+                eyesPrediction = attention_model(df_im, training = False).numpy()
+                e_t = time()
 
-            # eyes prediction TIME
-            consumptionTime[5].append(e_t - s_t)
+                # eyes prediction TIME
+                consumptionTime[5].append(e_t - s_t)
 
-            s_t = time()
-            if(len(eyesPrediction[0])):
-                eyesPrediction[0] = correctEyesPrediction(eyesPrediction[0])
-            if(len(eyesPrediction[1])):
-                eyesPrediction[1] = correctEyesPrediction(eyesPrediction[1])
+                s_t = time()
+                if(len(eyesPrediction[0])):
+                    eyesPrediction[0] = correctEyesPrediction(eyesPrediction[0])
+                if(len(eyesPrediction[1])):
+                    eyesPrediction[1] = correctEyesPrediction(eyesPrediction[1])
 
-            # draw face bounding box and face elements on live stream
-            drawPredictionOnImage(facePrediction, faceElementsPrediction, frame, eyesPrediction, topELeft, topERight)
+                # draw face bounding box and face elements on live stream
+                drawPredictionOnImage(facePrediction, faceElementsPrediction, frame, eyesPrediction, topELeft, topERight)
+
+
             cv2.imshow(windowName, frame)
             #cv2.imshow("le", leftEyeImg)
             #cv2.imshow("re", rightEyeImg)
@@ -312,9 +352,13 @@ def predictFace(vsource = 1, savePredictions = False):
             if(savePredictions):
                 predictions.append(facePrediction)
 
+            if(keyboard.is_pressed('s')):
+                saving = not saving
+                while keyboard.is_pressed("s"):
+                    pass
+
             if(cv2.waitKey(1) & 0xFF == ord('q')):
                 break
-
         else:
             break
 
@@ -461,7 +505,7 @@ if __name__ == "__main__":
     minMaxValues = Utilities.readMinMaxFromCSV(minMaxCSVpath)
 
     # predict face from live video source
-    predictFace(1)
+    predictFace(0)
 
     # predict face from image source
     #predictFromImages()
