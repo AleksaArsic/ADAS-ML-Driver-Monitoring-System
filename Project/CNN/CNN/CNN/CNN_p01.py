@@ -22,7 +22,8 @@ outputNo = 8
 phase = 1
 
 #imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\"
-imgsDir = "C:\\Users\\arsic\\Desktop\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\false_2020_06_10_10_00_57\\"
+#imgsDir = "C:\\Users\\arsic\\Desktop\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\false_2020_06_10_10_00_57\\"
+imgsDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\"
 minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
 
 start = 0
@@ -182,13 +183,16 @@ def predictFromImages():
         bottomRightX = int(denormPredictions[cnt][1] + int((denormPredictions[cnt][7] / 2) + 0.5))
         bottomRightY = int(denormPredictions[cnt][2] + int(((denormPredictions[cnt][7] / 2) * 1.5) + 0.5))
 
-        croppedImage = img[topLeftY:bottomRightY, topLeftX:bottomRightX]
+        clippedValues = np.clip([topLeftX, topLeftY, bottomRightX, bottomRightY], a_min = 0, a_max = None)
+        croppedImage = img[clippedValues[1]:clippedValues[3], clippedValues[0]:clippedValues[2]]
+
+        #croppedImage = img[topLeftY:bottomRightY, topLeftX:bottomRightX]
         croppedImage = cv2.cvtColor(croppedImage, cv2.COLOR_BGR2RGB)
 
         img = drawPredictionOnImage([predictions[cnt]], img)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-        cv2.imwrite('C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces\\' + filenames[cnt], img)
+        cv2.imwrite('C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces\\' + filenames[cnt], croppedImage)
 
         cnt = cnt + 1
 
