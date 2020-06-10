@@ -21,8 +21,9 @@ outputNo = 8
 
 phase = 1
 
-imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\"
-minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
+#imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\"
+imgsDir = "C:\\Users\\arsic\\Desktop\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\false_2020_06_10_10_00_57\\"
+minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
 
 start = 0
 max = 8000
@@ -184,7 +185,10 @@ def predictFromImages():
         croppedImage = img[topLeftY:bottomRightY, topLeftX:bottomRightX]
         croppedImage = cv2.cvtColor(croppedImage, cv2.COLOR_BGR2RGB)
 
-        cv2.imwrite('D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces\\' + filenames[cnt], croppedImage)
+        img = drawPredictionOnImage([predictions[cnt]], img)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+        cv2.imwrite('C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces\\' + filenames[cnt], img)
 
         cnt = cnt + 1
 
@@ -212,10 +216,10 @@ if __name__ == "__main__":
     minMaxValues = Utilities.readMinMaxFromCSV(minMaxCSVpath)
 
     # predict face from live video source
-    predictFace(1)
+    #predictFace(1)
 
     # predict face from image source
-    #predictFromImages()
+    predictFromImages()
 
     Utilities.showStat(filenames, predictions)
     Utilities.drawPredictionsToDisk(predictions, filenames, imgsDir, minMaxValues)
