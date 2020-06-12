@@ -17,6 +17,7 @@ noOfImages = 0
 
 lr = 0
 ud = 0
+gamma = 1
 
 def shiftImage(image, lr, ud):
     a = 1
@@ -48,7 +49,14 @@ def horizontalFlip(img):
 
     return h_flipped
 
+def adjustGamma(image, gamma=1.0):
+   image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
+   invGamma = 1.0 / gamma
+   table = np.array([((i / 255.0) ** invGamma) * 255
+      for i in np.arange(0, 256)]).astype("uint8")
+
+   return cv2.LUT(image, table)
 
 def argParser():
 
@@ -58,6 +66,7 @@ def argParser():
     global noOfImages
     global lr
     global ud
+    global gamma
 
     retVal = ""
 
@@ -67,10 +76,11 @@ def argParser():
     parser.add_argument("-i", "--input", help = "Input folder", required = True)
     parser.add_argument("-o", "--output", help = "Output folder", required = True)
     parser.add_argument("-icsv","--input_csv", help = "Input csv", required = True)
-    parser.add_argument("-m", "--mode", help = "Mode: shift", required = True)
+    parser.add_argument("-m", "--mode", help = "Mode: shift; gaussian_noise; h_flip; gamma", required = True)
     parser.add_argument("-n", "--no_of_imgs", help = "Number of input images", required = False)
     parser.add_argument("-lr", "--left_right", help = "left/right (5/-5)", required = False)
     parser.add_argument("-ud", "--up_down", help = "up/down (5/-5)", required = False)
+    parser.add_argument("-g", "--gamma", help = "gamma factor", required = False)
 
     args = vars(parser.parse_args())
 
@@ -98,6 +108,11 @@ def argParser():
             retVal = "gaussian_noise"
         elif(args["mode"] == "horizontal_flip"):
             retVal = "h_flip"
+        elif(args["mode"] == "gamma"):
+            retVal = "gamma"
+
+            if(len(args["gamma"])):
+                gamma = float(args["gamma"])
         else:
             argsOK = False;
 
@@ -133,24 +148,6 @@ def loadImages(inputFolder):
 
 
 if __name__ == "__main__":
-
-    #load image
-    #img = cv2.imread('capture_2020_06_04_11_10_49_2109.jpg')
-    #img = np.array(img)
-
-    #noise = noisy("gauss", img)
-
-
-    #noisy_sigma = 100
-    #noisy_image = add_gaussian_noise(img, noisy_sigma)
-
-    #shiftRight(img)
-
-
-    #m = (25,25,25) 
-    #s = (25,25,25)
-    #cv2.randn(img,m,s);
-
 
     # parse arguments
     mode = argParser()
@@ -259,17 +256,31 @@ if __name__ == "__main__":
                 if(i % 2 == 0):
                     line[i] = str(int(((1 - (int(line[i]) / img.shape[1])) * img.shape[1]) + 0.5))
 
+    elif mode == "gamma":
+
+        print("Correcting gamma with factor: " + str(gamma))
+
+        for i in range(end):
+            img = Image.open(imagePath[i])
+            img = np.asarray(img)
+            img = adjustGamma(img, gamma=gamma)
+            outputName = os.path.join("", outputImageName + "_{0:0=6d}.jpg").format(i)
+            cv2.imwrite(os.path.join(outputFolder, outputName), img) 
+            newImageNames.append(outputName)
+
+        for i in range(2, len(newImageNames) + 2):
+            parsed[i][0] = newImageNames[i - 2]
         #img = Image.open("C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\DataSetAugmentation\\DataSetAugmentation\\capture_2020_04_17_11_39_49_7213.jpg")
         #img = np.array(img)
-        
-        #h_flip_img = horizontalFlip(img)
+        #img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+        #cv2.imshow('original', img)
 
-        #cv2.imwrite(os.path.join("", "h_flipped.jpg"), h_flip_img) 
-
-        #cv2.imshow('Flipped horizontal image', h_flip_img)
-
-        #cv2.waitKey(0)
-        #cv2.destroyAllWindows()
+        #gamma = 0.5                                   # change the value here to get different result
+        #adjusted = adjustGamma(img, gamma=gamma)
+        #cv2.putText(adjusted, "g={}".format(gamma), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 3)
+        #adjusted = cv2.cvtColor(adjusted, cv2.COLOR_RGB2BGR)
+        #cv2.imshow("gammam image 1", adjusted)
+        #cv2.waitKey(1)
 
 
     #construct and save new .csv file
