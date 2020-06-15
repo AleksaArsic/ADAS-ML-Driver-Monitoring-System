@@ -177,6 +177,9 @@ def predictFromImages():
     for img in images:
         # calculate coordinates to crop from
 
+        #if (denormPredictions[cnt][0] > 0.5):
+        #    continue
+
         topLeftX = int(denormPredictions[cnt][1] - int((denormPredictions[cnt][7] / 2) + 0.5))
         topLeftY = int(denormPredictions[cnt][2] - int(((denormPredictions[cnt][7] / 2) * 1.5) + 0.5))
 
@@ -189,10 +192,26 @@ def predictFromImages():
         #croppedImage = img[topLeftY:bottomRightY, topLeftX:bottomRightX]
         croppedImage = cv2.cvtColor(croppedImage, cv2.COLOR_BGR2RGB)
 
+        height = croppedImage.shape[0]
+        width = croppedImage.shape[1]
+
+        ratio = 1.5
+
+        padX = 0
+        padY = 0
+
+        if(height / width + 0.02 < ratio or height / width > ratio + 0.2):
+            if(width < (height / ratio)):
+                padX = int(height / ratio) - width
+            if(height < (width * ratio)):
+                padY = int(width * ratio) - height
+
+            croppedImage = cv2.copyMakeBorder(croppedImage, int(padY / 2 + 0.5), int(padY / 2 + 0.5), int(padX / 2 + 0.5), int(padX / 2 + 0.5), cv2.BORDER_CONSTANT, value=0)
+        #croppedImage = np.pad(croppedImage, ((0,height), (0, width)), constant_values = 0)
         img = drawPredictionOnImage([predictions[cnt]], img)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-        cv2.imwrite('C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces\\' + filenames[cnt], croppedImage)
+        cv2.imwrite('C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces_02\\' + filenames[cnt], croppedImage)
 
         cnt = cnt + 1
 
