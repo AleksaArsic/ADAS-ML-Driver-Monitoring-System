@@ -24,6 +24,7 @@ phase = 1
 #imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\"
 #imgsDir = "C:\\Users\\arsic\\Desktop\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\false_2020_06_10_10_00_57\\"
 imgsDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\"
+#imgsDir = "C:\\Users\\arsic\\Desktop\\face\\"
 minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
 
 start = 0
@@ -126,10 +127,10 @@ def drawPredictionOnImage(prediction, image):
     faceYDenom = (faceY * (minMaxValues[1][1] - minMaxValues[0][1]) + minMaxValues[0][1])
     faceWDenom = (faceW * (minMaxValues[1][6] - minMaxValues[0][6]) + minMaxValues[0][6])
 
-    faceLocationNorm = "(x, y, w): (" + str(faceX) + ", " + str(faceY) + ", " + str(faceW) + ")"
-    faceLocation = "(x, y, w): (" + str(faceXDenom) + ", " + str(faceYDenom) + ", " + str(faceWDenom) + ")"
-    print("(x, y, w): (" + str(faceX) + ", " + str(faceY) + ", " + str(faceW) + ")")
-    print("(x, y, w): (" + str(faceXDenom) + ", " + str(faceYDenom) + ", " + str(faceWDenom) + ")")
+    #faceLocationNorm = "(x, y, w): (" + str(faceX) + ", " + str(faceY) + ", " + str(faceW) + ")"
+    #faceLocation = "(x, y, w): (" + str(faceXDenom) + ", " + str(faceYDenom) + ", " + str(faceWDenom) + ")"
+    #print("(x, y, w): (" + str(faceX) + ", " + str(faceY) + ", " + str(faceW) + ")")
+    #print("(x, y, w): (" + str(faceXDenom) + ", " + str(faceYDenom) + ", " + str(faceWDenom) + ")")
 
 
     lEyeXDenom = (leftEyeX * (minMaxValues[1][2] - minMaxValues[0][2]) + minMaxValues[0][2])
@@ -177,9 +178,6 @@ def predictFromImages():
     for img in images:
         # calculate coordinates to crop from
 
-        #if (denormPredictions[cnt][0] > 0.5):
-        #    continue
-
         topLeftX = int(denormPredictions[cnt][1] - int((denormPredictions[cnt][7] / 2) + 0.5))
         topLeftY = int(denormPredictions[cnt][2] - int(((denormPredictions[cnt][7] / 2) * 1.5) + 0.5))
 
@@ -189,27 +187,32 @@ def predictFromImages():
         clippedValues = np.clip([topLeftX, topLeftY, bottomRightX, bottomRightY], a_min = 0, a_max = None)
         croppedImage = img[clippedValues[1]:clippedValues[3], clippedValues[0]:clippedValues[2]]
 
-        #croppedImage = img[topLeftY:bottomRightY, topLeftX:bottomRightX]
+        height = img.shape[0]
+        width = img.shape[1]
+
+        dimX = abs(bottomRightX - topLeftX)
+        dimY = abs(bottomRightY - topLeftY)
+
+        negX = 0
+        negY = 0
+
+        posX = 0
+        posY = 0
+
+        if(topLeftX < 0):
+            negX = abs(topLeftX)
+        if(topLeftY < 0):
+            negY = abs(topLeftY)
+
+        if(bottomRightX > width):
+            posX = bottomRightX - width
+        if(bottomRightY > height):
+            posY = bottomRightY - height
+
+        croppedImage = np.pad(croppedImage, ((negY, posY), (negX, posX), (0,0)), constant_values = 0)
+        #img = drawPredictionOnImage([predictions[cnt]], img)
+        #img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         croppedImage = cv2.cvtColor(croppedImage, cv2.COLOR_BGR2RGB)
-
-        height = croppedImage.shape[0]
-        width = croppedImage.shape[1]
-
-        ratio = 1.5
-
-        padX = 0
-        padY = 0
-
-        if(height / width + 0.02 < ratio or height / width > ratio + 0.2):
-            if(width < (height / ratio)):
-                padX = int(height / ratio) - width
-            if(height < (width * ratio)):
-                padY = int(width * ratio) - height
-
-            croppedImage = cv2.copyMakeBorder(croppedImage, int(padY / 2 + 0.5), int(padY / 2 + 0.5), int(padX / 2 + 0.5), int(padX / 2 + 0.5), cv2.BORDER_CONSTANT, value=0)
-        #croppedImage = np.pad(croppedImage, ((0,height), (0, width)), constant_values = 0)
-        img = drawPredictionOnImage([predictions[cnt]], img)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         cv2.imwrite('C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces_02\\' + filenames[cnt], croppedImage)
 

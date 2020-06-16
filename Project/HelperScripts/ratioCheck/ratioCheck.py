@@ -34,13 +34,16 @@ if __name__ == "__main__":
     
     ratios = []
     
+    print(len(images))
+    
     for img in images:
         width = img.shape[1]
         height = img.shape[0]
         
         ratios.append(height / width)
         
-        
+    print(len(ratios))    
+    
     with open('ratioCheck.csv', 'w') as f:
         for item in ratios:
-            f.write("%s\n" % ratios)
+            f.write("%s\n" % item)
