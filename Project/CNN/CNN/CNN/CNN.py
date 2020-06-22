@@ -120,14 +120,16 @@ def cropEyes(faceImg, faceElementsPrediction):
         tlX, tlY = tl
         brX, brY = br
 
-        leftEye = faceImg[tlY:brY, tlX:brX]
+        clippedValues = np.clip([tlX, tlY, brX, brY], a_min = 0, a_max = None)
+        leftEye = faceImg[clippedValues[1]:clippedValues[3], clippedValues[0]:clippedValues[2]]
         topLeft = tl
     if faceElementsPrediction[0][1] < 0.1:
         tl, br = cropPoints(faceElementsPrediction[0][4], faceElementsPrediction[0][5], faceImg)
         tlX, tlY = tl
         brX, brY = br
         
-        rightEye = faceImg[tlY:brY, tlX:brX]
+        clippedValues = np.clip([tlX, tlY, brX, brY], a_min = 0, a_max = None)
+        rightEye = faceImg[clippedValues[1]:clippedValues[3], clippedValues[0]:clippedValues[2]]
         topRight = tl
 
     return [leftEye, rightEye, topLeft, topRight]
@@ -301,20 +303,22 @@ def predictFace(vsource = 1, savePredictions = False):
                 #rightEyePrediction = []
 
                 eyesData = []
+                lEyePresent = False
+                rEyePresent = False
                 if len(leftEyeImg):
                     img = cv2.resize(leftEyeImg, (inputWidth, inputHeight), Image.ANTIALIAS)
                     img = np.asarray(img)
                     img1 = img/255
 
                     eyesData.append(img1)
-
+                    lEyePresent = True
                 if len(rightEyeImg):
                     img = cv2.resize(rightEyeImg, (inputWidth, inputHeight), Image.ANTIALIAS)
                     img = np.asarray(img)
                     img1 = img/255
                                 
                     eyesData.append(img1)
-
+                    rEyePresent = True
                 df_im = np.asarray(eyesData)
                 df_im = df_im.reshape(df_im.shape[0], inputWidth, inputHeight, 1)
                 e_t = time()
@@ -330,9 +334,9 @@ def predictFace(vsource = 1, savePredictions = False):
                 consumptionTime[5].append(e_t - s_t)
 
                 s_t = time()
-                if(len(eyesPrediction[0])):
+                if(len(eyesPrediction[0]) and lEyePresent):
                     eyesPrediction[0] = correctEyesPrediction(eyesPrediction[0])
-                if(len(eyesPrediction[1])):
+                if(len(eyesPrediction[1]) and rEyePresent):
                     eyesPrediction[1] = correctEyesPrediction(eyesPrediction[1])
 
                 # draw face bounding box and face elements on live stream
