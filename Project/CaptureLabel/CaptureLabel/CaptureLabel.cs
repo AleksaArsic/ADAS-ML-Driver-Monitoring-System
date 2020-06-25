@@ -1022,11 +1022,17 @@ namespace CaptureLabel
             else
             {
                 normalized = Utilities.normalizeOutput<double, int>(realCoordinatesList, faceModeSize, Constants.faceElementsMode);
+                normalizedFS = Utilities.normalizeOutput<double, int>(faceModeSize);
 
                 normalizedCoordinates = new CoordinatesContainer<double>(normalized.Item1);
+                minMaxCoord = new CoordinatesContainer<int>(normalized.Item2);
+                normalizedFaceSize = new CoordinatesContainer<double>(normalizedFS.Item1);
+                minMaxFS = new CoordinatesContainer<int>(normalizedFS.Item2);
 
                 Utilities.writeToCSV(mode, normalizedCoordinates, imageNames, lookAngleContainer,
                     faceModeSize, eyesNotVisibleContainer: eyesNotVisibleContainer, elementState: eyeClosed, normalized: true);
+                Utilities.writeMinMax(mode, minMaxCoord, minMaxFS);
+
             }
         }
 

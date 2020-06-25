@@ -12,6 +12,9 @@ import tensorflow as tf
 from time import time
 from tensorflow import keras
 from PIL import Image, ImageDraw
+import os.path
+from os import path
+import shutil
 
 windowName = "Video source"
 
@@ -21,8 +24,12 @@ outputNo = 12
 
 phase = 1
 
-imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02\\"
-#minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
+#imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02\\"
+imgsDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces_out\\"
+minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
+outputDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase02_face_elements_out\\"
+drawOutputDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase02_face_elements_out_draw\\"
+
 
 start = 0
 max = 8000
@@ -163,54 +170,69 @@ def predictFromImages():
     predictions = model.predict(df_im, verbose = 1)
 
     # denormalize all predictions
-    #denormPredictions = denormalizeFaceElements(predictions)
+    denormPredictions = denormalizeAllPredictions(predictions, minMaxValues)
 
     # first load images again because we at this point have only gray images
     images = []
     [images, filenames] = Utilities.loadImages(imgsDir, images)
 
-    # crop images
+    if path.exists(outputDir):
+        shutil.rmtree(outputDir)
+    #if path.exists(drawOutputDir):
+    #    shutil.rmtree(drawOutputDir)
 
+    os.mkdir(outputDir)
+    #os.mkdir(drawOutputDir)
+
+
+    # crop images
     cnt = 0    
     for img in images:
         # calculate coordinates to crop from
         height, width, channels = img.shape
 
-        tlLeyeX = predictions[cnt][2] - 0.15
-        tlLeyeY = predictions[cnt][3] - 0.10
-        brLeyeX = predictions[cnt][2] + 0.15
-        brLeyeY = predictions[cnt][3] + 0.10
+        tlLeyeX = int(denormPredictions[cnt][2] - int(0.15 * width))
+        tlLeyeY = int(denormPredictions[cnt][3] - int(0.1 * height))
+        brLeyeX = int(denormPredictions[cnt][2] + int(0.15 * width))
+        brLeyeY = int(denormPredictions[cnt][3] + int(0.1 * height))
 
-        tlLeyeXdenorm = int((tlLeyeX * width) + 0.5)
-        tlLeyeYdenorm = int((tlLeyeY * (width * 1.5)) + 0.5)
-        brLeyeXdenorm = int((brLeyeX * width) + 0.5)
-        brLeyeYdenorm = int((brLeyeY * (width * 1.5)) + 0.5)
+        tlReyeX = int(denormPredictions[cnt][4] - int(0.15 * width))
+        tlReyeY = int(denormPredictions[cnt][5] - int(0.1 * height))
+        brReyeX = int(denormPredictions[cnt][4] + int(0.15 * width))
+        brReyeY = int(denormPredictions[cnt][5] + int(0.1 * height))
 
-        tlReyeX = predictions[cnt][4] - 0.15
-        tlReyeY = predictions[cnt][5] - 0.10
-        brReyeX = predictions[cnt][4] + 0.15
-        brReyeY = predictions[cnt][5] + 0.10
+        clippedValuesX = np.clip([tlLeyeX, brLeyeX, tlReyeX, brReyeX], a_min = 0, a_max = width)
+        clippedValuesY = np.clip([tlLeyeY, brLeyeY, tlReyeY, brReyeY], a_min = 0, a_max = height)
 
-        tlReyeXdenorm = int((tlReyeX * width) + 0.5)
-        tlReyeYdenorm = int((tlReyeY * (width * 1.5)) + 0.5)
-        brReyeXdenorm = int((brReyeX * width) + 0.5)
-        brReyeYdenorm = int((brReyeY * (width * 1.5)) + 0.5)
 
-        croppedEyeLeft = img[tlLeyeYdenorm:brLeyeYdenorm, tlLeyeXdenorm:brLeyeXdenorm]
-        croppedEyeLeft = cv2.cvtColor(croppedEyeLeft, cv2.COLOR_BGR2RGB)
+        #croppedEyeLeft = img[clippedValuesY[0]:clippedValuesY[1], clippedValuesX[0]:clippedValuesX[1]]
+        #croppedEyeLeft = cv2.cvtColor(croppedEyeLeft, cv2.COLOR_BGR2RGB)
 
         filename = os.path.splitext(filenames[cnt])[0]
 
-        cv2.imwrite('D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase02_face_elements\\' + filename + '_left.jpg', croppedEyeLeft)
+        #cv2.imwrite(outputDir + filename + '_left.jpg', croppedEyeLeft)
 
-        croppedEyeRight = img[tlReyeYdenorm:brReyeYdenorm, tlReyeXdenorm:brReyeXdenorm]
-        croppedEyeRight = cv2.cvtColor(croppedEyeRight, cv2.COLOR_BGR2RGB)
+        #croppedEyeRight = img[clippedValuesY[2]:clippedValuesY[3], clippedValuesX[2]:clippedValuesX[3]]
+        #croppedEyeRight = cv2.cvtColor(croppedEyeRight, cv2.COLOR_BGR2RGB)
 
-        cv2.imwrite('D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase02_face_elements\\' + filename + '_right.jpg', croppedEyeRight)
+        #cv2.imwrite(outputDir + filename + '_right.jpg', croppedEyeRight)
 
+        #tempImg = drawPredictionOnImage([predictions[cnt]], img)
+        
+        #tempImg = cv2.cvtColor(tempImg, cv2.COLOR_BGR2RGB)
+        #cv2.imwrite(drawOutputDir + filenames[cnt], tempImg)
 
         cnt = cnt + 1
 
+def denormalizeAllPredictions(predictions, minMaxValues):
+    denormPredictions = predictions.copy()
+
+    for pred in denormPredictions:
+        for i in range(2, len(pred)):
+            pred[i] = int((pred[i] * (minMaxValues[1][i - 2] - minMaxValues[0][i - 2]) + minMaxValues[0][i - 2]) + 0.5)
+
+
+    return denormPredictions
 
 def denormalizeFaceElements(elements):
 	result = []
@@ -240,7 +262,7 @@ if __name__ == "__main__":
     model.load_weights(model_name)
 
     # load minimal and maximal values for denormalization
-    #minMaxValues = Utilities.readMinMaxFromCSV(minMaxCSVpath)
+    minMaxValues = Utilities.readMinMaxFromCSV(minMaxCSVpath)
 
     # predict face from live video source
     #predictFace(1)
@@ -248,7 +270,7 @@ if __name__ == "__main__":
     # predict face from image source
     predictFromImages()
 
-    #Utilities.showStat(filenames, predictions)
+    Utilities.showStat(filenames, predictions, 2)
     #Utilities.drawPredictionsToDisk(predictions, filenames, imgsDir, minMaxValues)
 
     script_end = datetime.datetime.now()

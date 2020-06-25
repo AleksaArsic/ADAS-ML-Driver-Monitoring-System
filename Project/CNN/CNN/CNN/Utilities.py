@@ -160,7 +160,7 @@ def loadImagesAndCategories(images, imgsDir, categories, catPath, phase = 1, inp
     
     return [images, categories, filenames]
 
-def showStat(filenames, predictions):
+def showStat(filenames, predictions, ph):
     cnt = 0
     ok_cnt = 0
     c1 = 0
@@ -194,16 +194,16 @@ def showStat(filenames, predictions):
         compare.append(s)
         cnt = cnt+1
 
-    with open('img' + str(r)+'_results_'+'_'+str(start)+'_'+str(start+max)+'.csv', 'w') as f:
+    with open('phase' + str(ph)+'_results_'+str(len(filenames))+'.csv', 'w') as f:
         for item in compare:
             f.write("%s\n" % item)
 
-    with open('Accuracy_img' + str(r)+'_results_'+'_'+str(start)+'_'+str(start+max)+'.csv', 'w') as f:
-        f.write("Accuracy = %s\n" % str(ok_cnt/cnt))
+    #with open('Accuracy_img' + str(r)+'_results_'+'_'+str(start)+'_'+str(start+max)+'.csv', 'w') as f:
+    #    f.write("Accuracy = %s\n" % str(ok_cnt/cnt))
 
-    with open('errors.csv', 'w') as f:
-        for item in errors:
-            f.write("%s\n" % item)
+    #with open('errors.csv', 'w') as f:
+    #    for item in errors:
+    #        f.write("%s\n" % item)
 
 def readMinMaxFromCSV(filepath):
 	

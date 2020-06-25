@@ -488,7 +488,7 @@ namespace CaptureLabel
             if (mode == Constants.faceMode)
                 normalized = normalizeOutputFaceMode<T, U>(realCoordinatesList);
             else
-                normalized = normalizeOutputFaceElements<T, U>(realCoordinatesList, faceModeSize);
+                normalized = normalizeOutputFaceMode<T, U>(realCoordinatesList);
 
             return normalized;
         }

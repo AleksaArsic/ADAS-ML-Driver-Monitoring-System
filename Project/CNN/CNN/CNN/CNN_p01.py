@@ -12,6 +12,9 @@ import tensorflow as tf
 from time import time
 from tensorflow import keras
 from PIL import Image, ImageDraw
+import os.path
+from os import path
+import shutil
 
 windowName = "Video source"
 
@@ -23,9 +26,11 @@ phase = 1
 
 #imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\"
 #imgsDir = "C:\\Users\\arsic\\Desktop\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\false_2020_06_10_10_00_57\\"
-imgsDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\"
-#imgsDir = "C:\\Users\\arsic\\Desktop\\face\\"
+#imgsDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\"
+imgsDir = "C:\\Users\\arsic\\Desktop\\1\\"
 minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
+outputDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces_out\\"
+drawOutputDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces_out_draw\\"
 
 start = 0
 max = 8000
@@ -148,7 +153,7 @@ def drawPredictionOnImage(prediction, image):
     cv2.rectangle(image, (int(lEyeXDenom),int(lEyeYDenom)), (int(lEyeXDenom + 3),int(lEyeYDenom + 3)) , (0,0,255), 2)
     cv2.rectangle(image, (int(rEyeXDenom),int(rEyeYDenom)), (int(rEyeXDenom + 3),int(rEyeYDenom + 3)) , (0,0,255), 2)
 
-    print("Face on: (" + str(prediction[0][1]) + ", " + str(prediction[0][2]) + ")")
+    #print("Face on: (" + str(prediction[0][1]) + ", " + str(prediction[0][2]) + ")")
 
     return image
 
@@ -172,11 +177,21 @@ def predictFromImages():
     images = []
     [images, filenames] = Utilities.loadImages(imgsDir, images)
 
-    # crop images
+    if path.exists(outputDir):
+        shutil.rmtree(outputDir)
+    if path.exists(drawOutputDir):
+        shutil.rmtree(drawOutputDir)
 
+    os.mkdir(outputDir)
+    os.mkdir(drawOutputDir)
+
+    # crop images
     cnt = 0    
     for img in images:
         # calculate coordinates to crop from
+
+        if(denormPredictions[cnt][0] > 0.75):
+            continue
 
         topLeftX = int(denormPredictions[cnt][1] - int((denormPredictions[cnt][7] / 2) + 0.5))
         topLeftY = int(denormPredictions[cnt][2] - int(((denormPredictions[cnt][7] / 2) * 1.5) + 0.5))
@@ -213,8 +228,12 @@ def predictFromImages():
         #img = drawPredictionOnImage([predictions[cnt]], img)
         #img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         croppedImage = cv2.cvtColor(croppedImage, cv2.COLOR_BGR2RGB)
+        cv2.imwrite(outputDir + filenames[cnt], croppedImage)
 
-        cv2.imwrite('C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces_02\\' + filenames[cnt], croppedImage)
+        tempImg = drawPredictionOnImage([predictions[cnt]], img)
+        
+        tempImg = cv2.cvtColor(tempImg, cv2.COLOR_BGR2RGB)
+        cv2.imwrite(drawOutputDir + filenames[cnt], tempImg)
 
         cnt = cnt + 1
 
@@ -223,9 +242,9 @@ def denormalizeAllPredictions(predictions, minMaxValues):
     denormPredictions = predictions.copy()
 
     for pred in denormPredictions:
-        pred[1] = (pred[1] * (minMaxValues[1][0] - minMaxValues[0][0]) + minMaxValues[0][0])
-        pred[2] = (pred[2] * (minMaxValues[1][1] - minMaxValues[0][1]) + minMaxValues[0][1])
-        pred[7] = (pred[7] * (minMaxValues[1][6] - minMaxValues[0][6]) + minMaxValues[0][6])
+        pred[1] = int((pred[1] * (minMaxValues[1][0] - minMaxValues[0][0]) + minMaxValues[0][0]) + 0.5)
+        pred[2] = int((pred[2] * (minMaxValues[1][1] - minMaxValues[0][1]) + minMaxValues[0][1]) + 0.5)
+        pred[7] = int((pred[7] * (minMaxValues[1][6] - minMaxValues[0][6]) + minMaxValues[0][6]) + 0.5)
 
     return denormPredictions
 
@@ -247,7 +266,7 @@ if __name__ == "__main__":
     # predict face from image source
     predictFromImages()
 
-    Utilities.showStat(filenames, predictions)
+    Utilities.showStat(filenames, predictions, 1)
     Utilities.drawPredictionsToDisk(predictions, filenames, imgsDir, minMaxValues)
 
     script_end = datetime.datetime.now()

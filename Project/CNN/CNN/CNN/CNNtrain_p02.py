@@ -39,7 +39,7 @@ max = 8000
 
 imgsDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02\\"
 normalizedDataPath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized.csv"
-#minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
+#minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
 
 images=[]
 categories = []
@@ -93,7 +93,7 @@ if __name__ == "__main__":
 
     model_name = "model_phase02.h5"
     callbacks = [
-        EarlyStopping(monitor='val_accuracy', mode = 'max', patience=35, verbose=1),
+        EarlyStopping(monitor='val_accuracy', mode = 'max', patience=350, verbose=1),
         keras.callbacks.ReduceLROnPlateau(monitor='val_accuracy', mode = 'max', factor=0.5, patience=15, min_lr=0.000001, verbose=1),
         ModelCheckpoint(model_name, monitor='val_accuracy', mode = 'max', verbose=1, save_best_only=True, save_weights_only=True),
         tensorboard
