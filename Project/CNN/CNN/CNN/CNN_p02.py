@@ -25,7 +25,8 @@ outputNo = 12
 phase = 1
 
 #imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02\\"
-imgsDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces_out\\"
+#imgsDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces_out\\"
+imgsDir = "C:\\Users\\arsic\\Desktop\\2_test\\"
 minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
 outputDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase02_face_elements_out\\"
 drawOutputDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase02_face_elements_out_draw\\"

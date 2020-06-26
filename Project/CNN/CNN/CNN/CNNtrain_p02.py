@@ -121,11 +121,11 @@ if __name__ == "__main__":
 
 
     #debug
-    model.load_weights(model_name)
+    #model.load_weights(model_name)
     #predict
-    predictions = model.predict(df_im, verbose=0)
+    #predictions = model.predict(df_im, verbose=0)
     #write predictions to .csv
-    Utilities.showStat(filenames, predictions)
+    #Utilities.showStat(filenames, predictions)
 
     script_end = datetime.datetime.now()
     print (script_end-script_start)

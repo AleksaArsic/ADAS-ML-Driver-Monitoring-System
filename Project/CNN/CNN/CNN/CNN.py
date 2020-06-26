@@ -114,6 +114,41 @@ def cropFace(img, facePrediction):
     croppedImage = img[clippedValues[1]:clippedValues[3], clippedValues[0]:clippedValues[2]]
     #croppedImage = cv2.cvtColor(croppedImage, cv2.COLOR_BGR2RGB)
 
+    # TO - DO : ADD PADDING IF RATIO IS NOT 3:4
+    crocroppedImage = addFacePadding(croppedImage)
+
+    #img = drawPredictionOnImage([predictions[cnt]], img)
+    #img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    #croppedImage = cv2.cvtColor(croppedImage, cv2.COLOR_BGR2RGB)
+
+    return croppedImage
+
+def addFacePadding(img):
+    croppedImage = []
+    height = img.shape[0]
+    width = img.shape[1]
+
+    dimX = abs(bottomRightX - topLeftX)
+    dimY = abs(bottomRightY - topLeftY)
+
+    negX = 0
+    negY = 0
+
+    posX = 0
+    posY = 0
+
+    if(topLeftX < 0):
+        negX = abs(topLeftX)
+    if(topLeftY < 0):
+        negY = abs(topLeftY)
+
+    if(bottomRightX > width):
+        posX = bottomRightX - width
+    if(bottomRightY > height):
+        posY = bottomRightY - height
+
+    croppedImage = np.pad(croppedImage, ((negY, posY), (negX, posX), (0,0)), constant_values = 0)
+
     return croppedImage
 
 def cropEyes(faceImg, faceElementsPrediction):

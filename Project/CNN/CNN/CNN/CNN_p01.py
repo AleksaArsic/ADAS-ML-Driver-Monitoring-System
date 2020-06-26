@@ -202,6 +202,8 @@ def predictFromImages():
         clippedValues = np.clip([topLeftX, topLeftY, bottomRightX, bottomRightY], a_min = 0, a_max = None)
         croppedImage = img[clippedValues[1]:clippedValues[3], clippedValues[0]:clippedValues[2]]
 
+
+        # add padding if ratio is not 3:4
         height = img.shape[0]
         width = img.shape[1]
 
