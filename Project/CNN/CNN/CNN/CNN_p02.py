@@ -24,12 +24,13 @@ outputNo = 12
 
 phase = 1
 
-#imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02\\"
+imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02\\"
 #imgsDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces_out\\"
-imgsDir = "C:\\Users\\arsic\\Desktop\\2_test\\"
-minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
-outputDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase02_face_elements_out\\"
-drawOutputDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase02_face_elements_out_draw\\"
+#imgsDir = "C:\\Users\\arsic\\Desktop\\2_test\\"
+#imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces_out\\"
+minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
+outputDir = "D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase02_face_elements_out\\"
+drawOutputDir = "D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase02_face_elements_out_draw\\"
 
 
 start = 0
@@ -167,6 +168,13 @@ def predictFromImages():
 
     df_im = np.asarray(images)
     df_im = df_im.reshape(df_im.shape[0], inputWidth, inputHeight, 1)
+    cv2.namedWindow("face")
+
+    # debug
+    #for img in df_im:
+    #    cv2.imshow("face", img)
+    #    if(cv2.waitKey(20) & 0xFF == ord('q')):
+    #        break
 
     predictions = model.predict(df_im, verbose = 1)
 
@@ -206,17 +214,17 @@ def predictFromImages():
         clippedValuesY = np.clip([tlLeyeY, brLeyeY, tlReyeY, brReyeY], a_min = 0, a_max = height)
 
 
-        #croppedEyeLeft = img[clippedValuesY[0]:clippedValuesY[1], clippedValuesX[0]:clippedValuesX[1]]
-        #croppedEyeLeft = cv2.cvtColor(croppedEyeLeft, cv2.COLOR_BGR2RGB)
+        croppedEyeLeft = img[clippedValuesY[0]:clippedValuesY[1], clippedValuesX[0]:clippedValuesX[1]]
+        croppedEyeLeft = cv2.cvtColor(croppedEyeLeft, cv2.COLOR_BGR2RGB)
 
         filename = os.path.splitext(filenames[cnt])[0]
 
-        #cv2.imwrite(outputDir + filename + '_left.jpg', croppedEyeLeft)
+        cv2.imwrite(outputDir + filename + '_left.jpg', croppedEyeLeft)
 
-        #croppedEyeRight = img[clippedValuesY[2]:clippedValuesY[3], clippedValuesX[2]:clippedValuesX[3]]
-        #croppedEyeRight = cv2.cvtColor(croppedEyeRight, cv2.COLOR_BGR2RGB)
+        croppedEyeRight = img[clippedValuesY[2]:clippedValuesY[3], clippedValuesX[2]:clippedValuesX[3]]
+        croppedEyeRight = cv2.cvtColor(croppedEyeRight, cv2.COLOR_BGR2RGB)
 
-        #cv2.imwrite(outputDir + filename + '_right.jpg', croppedEyeRight)
+        cv2.imwrite(outputDir + filename + '_right.jpg', croppedEyeRight)
 
         #tempImg = drawPredictionOnImage([predictions[cnt]], img)
         

@@ -30,9 +30,10 @@ attentionOutputNo = 15
 phase = 1
 
 imgsDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01"
-minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
-minMaxPhase02 = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
-
+#minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
+#minMaxPhase02 = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
+minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
+minMaxPhase02 = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
 start = 0
 max = 8000
 
@@ -109,13 +110,15 @@ def cropFace(img, facePrediction):
     bottomRightX = int(facePredictionDenormalized[0] + int((facePredictionDenormalized[2] / 2) + 0.5))
     bottomRightY = int(facePredictionDenormalized[1] + int(((facePredictionDenormalized[2] / 2) * 1.5) + 0.5))
 
+    faceCoords = [topLeftX, topLeftY, bottomRightX, bottomRightY]
+
     clippedValues = np.clip([topLeftX, topLeftY, bottomRightX, bottomRightY], a_min = 0, a_max = None)
 
     croppedImage = img[clippedValues[1]:clippedValues[3], clippedValues[0]:clippedValues[2]]
     #croppedImage = cv2.cvtColor(croppedImage, cv2.COLOR_BGR2RGB)
 
     # TO - DO : ADD PADDING IF RATIO IS NOT 3:4
-    crocroppedImage = addFacePadding(croppedImage)
+    crocroppedImage = addFacePadding(croppedImage, faceCoords)
 
     #img = drawPredictionOnImage([predictions[cnt]], img)
     #img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -123,13 +126,13 @@ def cropFace(img, facePrediction):
 
     return croppedImage
 
-def addFacePadding(img):
+def addFacePadding(img, faceCoords = []):
     croppedImage = []
     height = img.shape[0]
     width = img.shape[1]
 
-    dimX = abs(bottomRightX - topLeftX)
-    dimY = abs(bottomRightY - topLeftY)
+    dimX = abs(faceCoords[2] - faceCoords[0])
+    dimY = abs(faceCoords[3] - faceCoords[1])
 
     negX = 0
     negY = 0
@@ -137,17 +140,17 @@ def addFacePadding(img):
     posX = 0
     posY = 0
 
-    if(topLeftX < 0):
-        negX = abs(topLeftX)
-    if(topLeftY < 0):
-        negY = abs(topLeftY)
+    if(faceCoords[0] < 0):
+        negX = abs(faceCoords[0])
+    if(faceCoords[1] < 0):
+        negY = abs(faceCoords[1])
 
-    if(bottomRightX > width):
-        posX = bottomRightX - width
-    if(bottomRightY > height):
-        posY = bottomRightY - height
+    if(faceCoords[2] > width):
+        posX = faceCoords[2] - width
+    if(faceCoords[3] > height):
+        posY = faceCoords[3] - height
 
-    croppedImage = np.pad(croppedImage, ((negY, posY), (negX, posX), (0,0)), constant_values = 0)
+    croppedImage = np.pad(img, ((negY, posY), (negX, posX)), constant_values = 0)
 
     return croppedImage
 
@@ -157,7 +160,14 @@ def cropEyes(faceImg, faceElementsPrediction):
 
     topLeft = (0, 0)
     topRight = (0, 0)
+
+    print(faceElementsPrediction)
+
     faceElementsPrediction = denormalizeFaceElements(faceElementsPrediction)
+
+    print(faceElementsPrediction)
+
+
     if faceElementsPrediction[0][0] < 0.5:
         tl, br = cropPoints(faceElementsPrediction[0][2], faceElementsPrediction[0][3], faceImg)
         
@@ -269,7 +279,7 @@ def predictFace(vsource = 1, savePredictions = False):
     #debug
     cv2.namedWindow("le")
     cv2.namedWindow("re")
-
+    cv2.namedWindow("face")
 
     consumptionTime = [[], [], [], [], [], [], []]
     startTime = time()
@@ -324,7 +334,7 @@ def predictFace(vsource = 1, savePredictions = False):
 
                 s_t = time()
                 faceImg = cropFace(grayFrame, facePrediction)
-                #cv2.imshow("face", faceImg)
+                cv2.imshow("face", faceImg)
 
                 # predict face elements
                 img = cv2.resize(faceImg, (inputWidth, inputHeight), Image.ANTIALIAS)
@@ -580,7 +590,7 @@ if __name__ == "__main__":
     minMaxValuesPh02 = Utilities.readMinMaxFromCSV(minMaxPhase02)
 
     # predict face from live video source
-    predictFace(0)
+    predictFace(1)
 
     # predict face from image source
     #predictFromImages()
