@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29709.97
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "rescaleLabel", "rescaleLabel\rescaleLabel.pyproj", "{E4DC7F64-6D67-4551-9B7C-E63603E38CBE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E4DC7F64-6D67-4551-9B7C-E63603E38CBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4DC7F64-6D67-4551-9B7C-E63603E38CBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F0E04007-17C4-400E-A2A7-4A0B2EFE2C87}
+	EndGlobalSection
+EndGlobal

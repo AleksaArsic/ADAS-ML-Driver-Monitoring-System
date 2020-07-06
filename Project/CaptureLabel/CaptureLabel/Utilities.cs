@@ -70,6 +70,7 @@ namespace CaptureLabel
             // should be embedded in try-catch
             string csvPath = (normalized == true ? CaptureLabel.exportDirectory : CaptureLabel.saveDirectory);
             TextWriter writer = new StreamWriter(@csvPath, false, Encoding.UTF8);
+            //TextWriter writer = new StreamWriter(@"D:\Diplomski\DriverMonitoringSystem\Dataset\new.csv", false, Encoding.UTF8);
             CsvSerializer serializer = new CsvSerializer(writer, System.Globalization.CultureInfo.CurrentCulture);
             CsvWriter csv = new CsvWriter(serializer);
 

@@ -29,13 +29,26 @@ attentionOutputNo = 15
 
 phase = 1
 
-imgsDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01"
+#imgsDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01"
+imgsDir = "C:\\Users\\Cisra\\Desktop\\draw_test\\"
 #minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
 #minMaxPhase02 = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
 minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
 minMaxPhase02 = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
 start = 0
 max = 8000
+
+predFace = [[0,0.58245083207261728,0.58613445378151263,0.54088050314465408,0.59322033898305082,0.629570747217806,0.62406015037593987,0.17120622568093386]]
+
+predFaceElements = [
+    [0,0,0.17560975609756097,0.55172413793103448,0.50438596491228072,0.55072463768115942,0.35231316725978645,0.54545454545454541,0.31660231660231658,0.550314465408805,0.31020408163265306,0.55727554179566563],
+    [0,1,0.89756097560975612,0.69950738916256161,0.92982456140350878,0.67632850241545894,0.97864768683274017,0.63636363636363635,0.93436293436293438,0.72641509433962259,0.93061224489795913,0.7554179566563467],
+    [0,0,0.21951219512195122,0.75369458128078815,0.64912280701754388,0.69565217391304346,0.42704626334519574,0.81818181818181823,0.43243243243243246,0.76100628930817615,0.44489795918367347,0.75851393188854488],
+    [0,0,0.28292682926829266,0.84729064039408863,0.57894736842105265,0.44927536231884058,0.54448398576512458,0.61188811188811187,0.64478764478764483,0.62264150943396224,0.726530612244898,0.6346749226006192],
+    [0,0,0.14146341463414633,0.25123152709359609,0.29385964912280704,0.2318840579710145,0.23487544483985764,0.25524475524475526,0.22779922779922779,0.24213836477987422,0.23265306122448978,0.24767801857585139]
+    ]
+imgIndex = 4
+
 
 images = []
 filenames = []
@@ -110,15 +123,20 @@ def cropFace(img, facePrediction):
     bottomRightX = int(facePredictionDenormalized[0] + int((facePredictionDenormalized[2] / 2) + 0.5))
     bottomRightY = int(facePredictionDenormalized[1] + int(((facePredictionDenormalized[2] / 2) * 1.5) + 0.5))
 
-    faceCoords = [topLeftX, topLeftY, bottomRightX, bottomRightY]
+    #topLeftX = int(denormPredictions[cnt][1] - int((denormPredictions[cnt][7] / 2) + 0.5))
+    #topLeftY = int(denormPredictions[cnt][2] - int(((denormPredictions[cnt][7] / 2) * 1.5) + 0.5))
 
+    #bottomRightX = int(denormPredictions[cnt][1] + int((denormPredictions[cnt][7] / 2) + 0.5))
+    #bottomRightY = int(denormPredictions[cnt][2] + int(((denormPredictions[cnt][7] / 2) * 1.5) + 0.5))
+
+    faceCoords = [topLeftX, topLeftY, bottomRightX, bottomRightY]
     clippedValues = np.clip([topLeftX, topLeftY, bottomRightX, bottomRightY], a_min = 0, a_max = None)
 
     croppedImage = img[clippedValues[1]:clippedValues[3], clippedValues[0]:clippedValues[2]]
     #croppedImage = cv2.cvtColor(croppedImage, cv2.COLOR_BGR2RGB)
 
     # TO - DO : ADD PADDING IF RATIO IS NOT 3:4
-    crocroppedImage = addFacePadding(croppedImage, faceCoords)
+    croppedImage = addFacePadding(croppedImage, faceCoords, img.shape)
 
     #img = drawPredictionOnImage([predictions[cnt]], img)
     #img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -126,10 +144,11 @@ def cropFace(img, facePrediction):
 
     return croppedImage
 
-def addFacePadding(img, faceCoords = []):
+def addFacePadding(img, faceCoords = [], fullImgDim = (0,0)):
     croppedImage = []
-    height = img.shape[0]
-    width = img.shape[1]
+
+    height = fullImgDim[0]
+    width = fullImgDim[1]
 
     dimX = abs(faceCoords[2] - faceCoords[0])
     dimY = abs(faceCoords[3] - faceCoords[1])
@@ -163,7 +182,9 @@ def cropEyes(faceImg, faceElementsPrediction):
 
     print(faceElementsPrediction)
 
-    faceElementsPrediction = denormalizeFaceElements(faceElementsPrediction)
+    #faceElementsPrediction = denormalizeFaceElements(faceElementsPrediction)
+    #debug
+    faceElementsPrediction = denormalizeFaceElements([faceElementsPrediction])
 
     print(faceElementsPrediction)
 
@@ -252,6 +273,8 @@ def createNewOutputDir(dateTimeNow):
 
 def predictFace(vsource = 1, savePredictions = False):
 
+    global imgIndex
+
     # save frames that are not good 
     saving = False
 
@@ -321,21 +344,40 @@ def predictFace(vsource = 1, savePredictions = False):
             consumptionTime[0].append(e_t - s_t)
 
             s_t = time()
-            facePrediction = face_model(img1[np.newaxis, :, :, np.newaxis], training = False).numpy()
+            #facePrediction = face_model(img1[np.newaxis, :, :, np.newaxis], training = False).numpy()
             e_t = time()
 
             #leftEyeImg, rightEyeImg = [], [] 
 
-            #check if there is face in frame
-            if(facePrediction[0][0] < 0.5):
+            ###### DEBUG
+            images = []
+            filenames = []
+            [images, filenames] = Utilities.loadImages(imgsDir, images)
+            #leftEyeImg, rightEyeImg, topELeft, topERight = cropEyes(faceImg, predictions)
 
+            grayFrame = cv2.cvtColor(images[imgIndex], cv2.COLOR_BGR2GRAY)
+
+            #predict face
+            img = cv2.resize(grayFrame, (inputWidth, inputHeight), Image.ANTIALIAS)
+            img = np.asarray(img)
+            img1 = img/255
+            e_t = time()
+
+            facePrediction = face_model(img1[np.newaxis, :, :, np.newaxis], training = False).numpy()
+
+            #check if there is face in frame
+            #if(facePrediction[0][0] < 1 ):#0.5):
+            #debug
+            if(predFace[0][0] < 0.5):
                 # face prediction TIME
                 consumptionTime[1].append(e_t - s_t)
 
                 s_t = time()
-                faceImg = cropFace(grayFrame, facePrediction)
-                cv2.imshow("face", faceImg)
+                #faceImg = cropFace(grayFrame, facePrediction)
+                #debug
+                faceImg = cropFace(grayFrame, predFace)
 
+                #cv2.imshow("face", images[0])
                 # predict face elements
                 img = cv2.resize(faceImg, (inputWidth, inputHeight), Image.ANTIALIAS)
                 img = np.asarray(img)
@@ -361,8 +403,8 @@ def predictFace(vsource = 1, savePredictions = False):
                 #topELeft, topERight = 0, 0
                 
                 if faceElementsPrediction[0][0] < 0.4 or faceElementsPrediction[0][1] < 0.4:
-                    leftEyeImg, rightEyeImg, topELeft, topERight = cropEyes(faceImg, faceElementsPrediction)
-
+                    #leftEyeImg, rightEyeImg, topELeft, topERight = cropEyes(faceImg, faceElementsPrediction)
+                    leftEyeImg, rightEyeImg, topELeft, topERight = cropEyes(faceImg, predFaceElements[imgIndex].copy())
                     
                     #eyesData = []
 
@@ -411,7 +453,12 @@ def predictFace(vsource = 1, savePredictions = False):
                     eyesPrediction[-1] = correctEyesPrediction(eyesPrediction[-1])
 
                 # draw face bounding box and face elements on live stream
-                drawPredictionOnImage(facePrediction, faceElementsPrediction, frame, eyesPrediction, topELeft, topERight) #, [lEyePresent, rEyePresent])
+                #drawPredictionOnImage(facePrediction, faceElementsPrediction, frame, eyesPrediction, topELeft, topERight) #, [lEyePresent, rEyePresent])
+                drawPredictionOnImage(predFace, predFaceElements, images[imgIndex], eyesPrediction, topELeft, topERight) #, [lEyePresent, rEyePresent])
+                drawEyesOnFace(predFace, predFaceElements, faceImg, eyesPrediction, topELeft, topERight)
+
+                #debug
+                cv2.imshow("face", faceImg)
 
 
                 leftEyeImg = np.array(leftEyeImg)
@@ -421,7 +468,11 @@ def predictFace(vsource = 1, savePredictions = False):
                 if rEyePresent:
                     cv2.imshow("re", rightEyeImg)
 
-            cv2.imshow(windowName, frame)
+            # bgr to rgb only for debug
+            images[imgIndex] = cv2.cvtColor(images[imgIndex], cv2.COLOR_BGR2RGB)
+            #cv2.imshow(windowName, frame)
+            cv2.imshow(windowName, images[imgIndex])
+
             frameId += 1
             e_t = time()
           
@@ -436,7 +487,7 @@ def predictFace(vsource = 1, savePredictions = False):
                 while keyboard.is_pressed("s"):
                     pass
 
-            if(cv2.waitKey(1) & 0xFF == ord('q')):
+            if(cv2.waitKey(10000) & 0xFF == ord('q')):
                 break
         else:
             break
@@ -449,9 +500,53 @@ def predictFace(vsource = 1, savePredictions = False):
         print("Processing time of current frame: " + str(elapsed))
         print("FPS: " + str(1/elapsed))
 
+        #debug
+        #imgIndex += 1
+        #if(imgIndex > 4):
+        #    imgIndex = 0
+
     Utilities.showAverageTimeConsumption(consumptionTime, breakTime)
     cap.release()
     cv2.destroyAllWindows()
+
+def drawEyesOnFace(facePrediction, faceElementsPrediction, image, eyesPrediction, topELeft, topERight):
+    faceElementsPredDenorm = []
+    leftEyePredDenorm = []
+    rightEyePredDenorm = []
+
+    faceWDenom = (facePrediction[0][7] * (minMaxValues[1][6] - minMaxValues[0][6]) + minMaxValues[0][6])
+
+    #faceElementsPredDenorm = denormalizeFaceElementsPrediction(faceElementsPrediction, faceWDenom, start = 2)
+    faceElementsPredDenorm = faceElementsPrediction[0]
+
+    # faceWDenom * 0.3 because eye dimension is 30% of faceWDenom
+    if faceElementsPrediction[0][0] < 0.5:
+        leftEyePredDenorm = denormalizeFaceElementsPrediction(eyesPrediction[0], faceWDenom * 0.3, 1, 11)
+    if faceElementsPrediction[0][1] < 0.5:
+        rightEyePredDenorm = denormalizeFaceElementsPrediction(eyesPrediction[-1], faceWDenom * 0.3, 1, 11)
+
+    #for i in range(0, len(faceElementsPredDenorm), 2):
+    #    faceElementsPredDenorm[i] += topLeftX
+    #    faceElementsPredDenorm[i + 1] += topLeftY
+
+    for i in range(1, len(leftEyePredDenorm) - 5, 2):
+        leftEyePredDenorm[i] += (faceElementsPredDenorm[0] + topELeft[0])
+        leftEyePredDenorm[i + 1] += (faceElementsPredDenorm[1] + topELeft[1])
+
+    for i in range(1, len(rightEyePredDenorm) - 5, 2):
+        rightEyePredDenorm[i] += (faceElementsPredDenorm[0] + topERight[0])
+        rightEyePredDenorm[i + 1] += (faceElementsPredDenorm[1] + topERight[1])
+
+    #if(eyesPrediction[0][0] or eyesPrediction[0][0]):
+    #    color = (0, 0, 255)
+    color = (0, 0, 0)
+    for i in range(1, len(leftEyePredDenorm) - 4, 2):
+        cv2.circle(image, (int(leftEyePredDenorm[i]), int(leftEyePredDenorm[i + 1])), 1, color, 2)
+
+    for i in range(1, len(rightEyePredDenorm) - 4, 2):
+        cv2.circle(image, (int(rightEyePredDenorm[i]), int(rightEyePredDenorm[i + 1])), 1, color, 2)
+
+    return image
 
 def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, eyesPrediction, topELeft, topERight):
     #debug
@@ -473,7 +568,7 @@ def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, eyesPre
     bottomRightY = faceYDenom + int(((faceWDenom / 2) * 1.5) + 0.5)
 
     #faceElementsPredDenorm = denormalizeFaceElementsPrediction(faceElementsPrediction, faceWDenom, start = 2)
-    faceElementsPredDenorm = faceElementsPrediction[0]
+    faceElementsPredDenorm = faceElementsPrediction[0].copy()
 
     # faceWDenom * 0.3 because eye dimension is 30% of faceWDenom
     if faceElementsPrediction[0][0] < 0.5:
