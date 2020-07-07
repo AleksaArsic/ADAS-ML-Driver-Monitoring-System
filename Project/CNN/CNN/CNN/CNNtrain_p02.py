@@ -27,7 +27,7 @@ import CNNmodel as cnn
 # zoom in, zoom out
 
 
-inputHeight = 150
+inputHeight = 100
 inputWidth = 100
 outputNo = 12
 

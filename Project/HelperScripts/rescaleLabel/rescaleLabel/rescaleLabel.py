@@ -87,7 +87,6 @@ if __name__ == "__main__":
     newCategories = []
     [newImages, newCategories, filenames] = loadImagesAndCategories(newImages, newImgsDir, newCategories, oldCSVPath)
 
-    cnt = 0
     for i in range(len(oldImages)):
         heightOld = oldImages[i].shape[0]
         widthOld = oldImages[i].shape[1]
@@ -102,10 +101,9 @@ if __name__ == "__main__":
         padX = (widthNew - (widthFactor * widthOld)) / 2;
 
         for j in range(start, end, 2):
-            newCategories[cnt][j] = int(((newCategories[cnt][j] * widthFactor) + padX) + 0.5)
-            newCategories[cnt][j + 1] = int(((newCategories[cnt][j + 1] * heightFactor) + padY) + 0.5)
+            newCategories[i][j] = int(((newCategories[i][j] * widthFactor) + padX) + 0.5)
+            newCategories[i][j + 1] = int(((newCategories[i][j + 1] * heightFactor) + padY) + 0.5)
 
-        cnt += 1
 
 
     newCsv = []
