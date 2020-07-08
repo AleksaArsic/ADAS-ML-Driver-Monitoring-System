@@ -45,7 +45,8 @@ predFaceElements = [
     [0,1,0.89756097560975612,0.69950738916256161,0.92982456140350878,0.67632850241545894,0.97864768683274017,0.63636363636363635,0.93436293436293438,0.72641509433962259,0.93061224489795913,0.7554179566563467],
     [0,0,0.21951219512195122,0.75369458128078815,0.64912280701754388,0.69565217391304346,0.42704626334519574,0.81818181818181823,0.43243243243243246,0.76100628930817615,0.44489795918367347,0.75851393188854488],
     [0,0,0.28292682926829266,0.84729064039408863,0.57894736842105265,0.44927536231884058,0.54448398576512458,0.61188811188811187,0.64478764478764483,0.62264150943396224,0.726530612244898,0.6346749226006192],
-    [0,0,0.14146341463414633,0.25123152709359609,0.29385964912280704,0.2318840579710145,0.23487544483985764,0.25524475524475526,0.22779922779922779,0.24213836477987422,0.23265306122448978,0.24767801857585139]
+    [0,0,0.312056738, 0.565217391, 0.666666667, 0.670454545, 0.469387755, 0.718120805, 0.480874317, 0.72027972, 0.462427746, 0.755395683
+]
     ]
 imgIndex = 4
 
@@ -90,10 +91,10 @@ def denormalizeFacePrediction(facePrediction):
   
     return facePredictionDenorm
 
-def denormalizeFaceElements(faceElementsPrediction):
+def denormalizeFaceElements(faceElementsPrediction, resizeFactor):
 
     for i in range(2, len(faceElementsPrediction[0])):
-        faceElementsPrediction[0][i] = int((faceElementsPrediction[0][i] * (minMaxValuesPh02[1][i - 2] - minMaxValuesPh02[0][i - 2]) + minMaxValuesPh02[0][i - 2]) + 0.5)
+        faceElementsPrediction[0][i] = int(((faceElementsPrediction[0][i] * (minMaxValuesPh02[1][i - 2] - minMaxValuesPh02[0][i - 2]) + minMaxValuesPh02[0][i - 2]) / resizeFactor) + 0.5)
 
     return faceElementsPrediction
 
@@ -182,9 +183,12 @@ def cropEyes(faceImg, faceElementsPrediction):
 
     print(faceElementsPrediction)
 
-    #faceElementsPrediction = denormalizeFaceElements(faceElementsPrediction)
+    resizeFactor = 300 / faceImg.shape[0]
+    #widthFactor = 200 / faceImg.shape[1]
+
+    faceElementsPrediction = denormalizeFaceElements(faceElementsPrediction, resizeFactor)
     #debug
-    faceElementsPrediction = denormalizeFaceElements([faceElementsPrediction])
+    #faceElementsPrediction = denormalizeFaceElements([faceElementsPrediction], resizeFactor)
 
     print(faceElementsPrediction)
 
@@ -373,9 +377,9 @@ def predictFace(vsource = 1, savePredictions = False):
                 consumptionTime[1].append(e_t - s_t)
 
                 s_t = time()
-                #faceImg = cropFace(grayFrame, facePrediction)
+                faceImg = cropFace(grayFrame, facePrediction)
                 #debug
-                faceImg = cropFace(grayFrame, predFace)
+                #faceImg = cropFace(grayFrame, predFace)
 
                 #cv2.imshow("face", images[0])
                 # predict face elements
@@ -403,8 +407,8 @@ def predictFace(vsource = 1, savePredictions = False):
                 #topELeft, topERight = 0, 0
                 
                 if faceElementsPrediction[0][0] < 0.4 or faceElementsPrediction[0][1] < 0.4:
-                    #leftEyeImg, rightEyeImg, topELeft, topERight = cropEyes(faceImg, faceElementsPrediction)
-                    leftEyeImg, rightEyeImg, topELeft, topERight = cropEyes(faceImg, predFaceElements[imgIndex].copy())
+                    leftEyeImg, rightEyeImg, topELeft, topERight = cropEyes(faceImg, faceElementsPrediction)
+                    #leftEyeImg, rightEyeImg, topELeft, topERight = cropEyes(faceImg, predFaceElements[imgIndex].copy())
                     
                     #eyesData = []
 
@@ -454,8 +458,12 @@ def predictFace(vsource = 1, savePredictions = False):
 
                 # draw face bounding box and face elements on live stream
                 #drawPredictionOnImage(facePrediction, faceElementsPrediction, frame, eyesPrediction, topELeft, topERight) #, [lEyePresent, rEyePresent])
-                drawPredictionOnImage(predFace, predFaceElements, images[imgIndex], eyesPrediction, topELeft, topERight) #, [lEyePresent, rEyePresent])
-                drawEyesOnFace(predFace, predFaceElements, faceImg, eyesPrediction, topELeft, topERight)
+                #drawPredictionOnImage(predFace, predFaceElements, images[imgIndex], eyesPrediction, topELeft, topERight) #, [lEyePresent, rEyePresent])
+                drawPredictionOnImage(facePrediction, faceElementsPrediction, images[imgIndex], eyesPrediction, topELeft, topERight) #, [lEyePresent, rEyePresent])
+
+                drawEyesOnFace(facePrediction, faceElementsPrediction, faceImg, eyesPrediction, topELeft, topERight)
+                # debug
+                #drawEyesOnFace(predFace, predFaceElements, faceImg, eyesPrediction, topELeft, topERight)
 
                 #debug
                 cv2.imshow("face", faceImg)
@@ -501,9 +509,9 @@ def predictFace(vsource = 1, savePredictions = False):
         print("FPS: " + str(1/elapsed))
 
         #debug
-        #imgIndex += 1
-        #if(imgIndex > 4):
-        #    imgIndex = 0
+        imgIndex += 1
+        if(imgIndex > 4):
+            imgIndex = 0
 
     Utilities.showAverageTimeConsumption(consumptionTime, breakTime)
     cap.release()
