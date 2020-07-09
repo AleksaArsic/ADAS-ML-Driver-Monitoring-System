@@ -8,14 +8,14 @@ from os import path
 import shutil
 import numpy as np
 
-oldCSVPath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02.csv"
-newCSVPath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\new_trainingSet_phase02"
+oldCSVPath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase03_csv\\trainingSet_phase03.csv"
+oldImgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase03\\"
 
-oldImgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02\\"
-newImgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\newPhase02\\"
+newCSVPath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\"
+newImgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\newPhase03\\"
 
-start = 2
-end = 11
+start = 1
+end = 10
 
 def readCSV(filepath):
     result = []

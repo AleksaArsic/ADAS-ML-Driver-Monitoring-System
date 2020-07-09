@@ -8,11 +8,12 @@ from os import path
 import shutil
 import numpy as np
 
-imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02\\"
-outputDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\newPhase02\\"
-
-width = 200
-height = 300
+imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase03\\"
+#imgsDir = "C:\\Users\\Cisra\\Desktop\\Diplomski_all\\phase02_test\\"
+outputDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\newPhase03\\"
+#outputDir = "C:\\Users\\Cisra\\Desktop\\Diplomski_all\\test_ph02\\"
+width = 100
+height = 100
 
 def loadAndResize(imgsDir, images):
 	print ('loading  images...')

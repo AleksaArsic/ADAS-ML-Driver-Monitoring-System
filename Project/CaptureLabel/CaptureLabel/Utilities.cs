@@ -162,7 +162,7 @@ namespace CaptureLabel
 
             csv.WriteField("");
 
-            string[] rectNames = (boolMode) ? Constants.rectangleNameF : Constants.rectangleNameE;
+            string[] rectNames = (boolMode) ? Constants.rectangleNameF : (mode == Constants.faceElementsMode ? Constants.rectangleNameE : Constants.rectangleNameG);
 
             
             foreach (string s in rectNames)

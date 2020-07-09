@@ -22,9 +22,13 @@ inputHeight = 100
 inputWidth = 100
 outputNo = 8
 
+saveWidth = 200
+saveHeight = 300
+
 phase = 1
 
-imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\false_2020_06_30_15_47_49\\"
+imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\"
+#imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\false_2020_06_30_15_47_49\\"
 #imgsDir = "C:\\Users\\arsic\\Desktop\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\false_2020_06_10_10_00_57\\"
 #imgsDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\"
 #imgsDir = "C:\\Users\\arsic\\Desktop\\1\\"
@@ -233,12 +237,14 @@ def predictFromImages():
         #img = drawPredictionOnImage([predictions[cnt]], img)
         #img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         croppedImage = cv2.cvtColor(croppedImage, cv2.COLOR_BGR2RGB)
+        croppedImage = cv2.resize(croppedImage, (saveWidth, saveHeight), Image.ANTIALIAS)
+
         cv2.imwrite(outputDir + filenames[cnt], croppedImage)
 
-        tempImg = drawPredictionOnImage([predictions[cnt]], img)
+        #tempImg = drawPredictionOnImage([predictions[cnt]], img)
         
-        tempImg = cv2.cvtColor(tempImg, cv2.COLOR_BGR2RGB)
-        cv2.imwrite(drawOutputDir + filenames[cnt], tempImg)
+        #tempImg = cv2.cvtColor(tempImg, cv2.COLOR_BGR2RGB)
+        #cv2.imwrite(drawOutputDir + filenames[cnt], tempImg)
 
         cnt = cnt + 1
 

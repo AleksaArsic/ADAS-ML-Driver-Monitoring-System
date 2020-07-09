@@ -99,21 +99,21 @@ if __name__ == "__main__":
     ]
 
     #network training
-    model_history = model.fit(df_im, df_cat, # df_im - input ; df_cat - output
-                batch_size=2,
-                #batch_size=64,
-                epochs=350,
-                validation_data=(val_im, val_cat),
-                callbacks=callbacks
-    )
+    #model_history = model.fit(df_im, df_cat, # df_im - input ; df_cat - output
+    #            batch_size=2,
+    #            #batch_size=64,
+    #            epochs=350,
+    #            validation_data=(val_im, val_cat),
+    #            callbacks=callbacks
+    #)
 
     #Visualizing accuracy and loss of training the model
-    history_dict=model_history.history
-    print(history_dict.keys())
-    val_acc = history_dict['val_accuracy']
-    val_loss = history_dict['val_loss']
-    train_acc = history_dict['accuracy']
-    train_loss = history_dict['loss']
+    #history_dict=model_history.history
+    #print(history_dict.keys())
+    #val_acc = history_dict['val_accuracy']
+    #val_loss = history_dict['val_loss']
+    #train_acc = history_dict['accuracy']
+    #train_loss = history_dict['loss']
 
     #plot accuracy and loss
     #plotTrainingResults(val_acc, val_loss, train_acc, train_loss)
@@ -124,7 +124,7 @@ if __name__ == "__main__":
     #predict
     predictions = model.predict(df_im, verbose=0)
     #write predictions to .csv
-    Utilities.showStat(filenames, predictions)
+    Utilities.showStat(filenames, predictions, 3)
 
     script_end = datetime.datetime.now()
     print (script_end-script_start)
