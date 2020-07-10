@@ -35,6 +35,7 @@ imgsDir = "C:\\Users\\Cisra\\Desktop\\draw_test\\"
 #minMaxPhase02 = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
 minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
 minMaxPhase02 = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
+minMaxPhase03 = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase03_csv\\trainingSet_phase03_normalized_min_max.csv"
 start = 0
 max = 8000
 
@@ -55,6 +56,7 @@ images = []
 filenames = []
 minMaxValues = []
 minMaxValuesPh02 = []
+minMaxValuesPh03 = []
 predictions = []
 
 # debug
@@ -108,9 +110,18 @@ def denormalizeFaceElementsPrediction(faceElementsPrediction, elementWidth, star
     if(end == -1):
         end = len(predictions)
 
-    for i in range(start, end, 2):
-        predictions[i] *= elementWidth
-        predictions[i + 1] *= (elementWidth * 1.5)
+    widthFactor = (100 / elementWidth)
+    heightFactor = (100 / (elementWidth / 0.3 * 1.5 * 0.2))
+
+    for i in range(start, end):
+        if(i % 2 == 0):
+            resizeFactor = heightFactor
+        else:
+            resizeFactor = widthFactor
+
+        predictions[i] = int(((predictions[i] * (minMaxValuesPh03[1][i - 1] - minMaxValuesPh03[0][i - 1]) + minMaxValuesPh03[0][i - 1]) / resizeFactor) + 0.5)
+
+        #predictions[i + 1] *= (elementWidth * 1.5 / heightFactor)
     
     return predictions
 
@@ -181,7 +192,7 @@ def cropEyes(faceImg, faceElementsPrediction):
     topLeft = (0, 0)
     topRight = (0, 0)
 
-    print(faceElementsPrediction)
+    #print(faceElementsPrediction)
 
     resizeFactor = 300 / faceImg.shape[0]
     #widthFactor = 200 / faceImg.shape[1]
@@ -190,7 +201,7 @@ def cropEyes(faceImg, faceElementsPrediction):
     #debug
     #faceElementsPrediction = denormalizeFaceElements([faceElementsPrediction], resizeFactor)
 
-    print(faceElementsPrediction)
+    #print(faceElementsPrediction)
 
 
     if faceElementsPrediction[0][0] < 0.5:
@@ -348,26 +359,26 @@ def predictFace(vsource = 1, savePredictions = False):
             consumptionTime[0].append(e_t - s_t)
 
             s_t = time()
-            #facePrediction = face_model(img1[np.newaxis, :, :, np.newaxis], training = False).numpy()
+            facePrediction = face_model(img1[np.newaxis, :, :, np.newaxis], training = False).numpy()
             e_t = time()
 
             #leftEyeImg, rightEyeImg = [], [] 
 
             ###### DEBUG
-            images = []
-            filenames = []
-            [images, filenames] = Utilities.loadImages(imgsDir, images)
+            #images = []
+            #filenames = []
+            #[images, filenames] = Utilities.loadImages(imgsDir, images)
             #leftEyeImg, rightEyeImg, topELeft, topERight = cropEyes(faceImg, predictions)
 
-            grayFrame = cv2.cvtColor(images[imgIndex], cv2.COLOR_BGR2GRAY)
+            #grayFrame = cv2.cvtColor(images[imgIndex], cv2.COLOR_BGR2GRAY)
 
             #predict face
-            img = cv2.resize(grayFrame, (inputWidth, inputHeight), Image.ANTIALIAS)
-            img = np.asarray(img)
-            img1 = img/255
-            e_t = time()
+            #img = cv2.resize(grayFrame, (inputWidth, inputHeight), Image.ANTIALIAS)
+            #img = np.asarray(img)
+            #img1 = img/255
+            #e_t = time()
 
-            facePrediction = face_model(img1[np.newaxis, :, :, np.newaxis], training = False).numpy()
+            #facePrediction = face_model(img1[np.newaxis, :, :, np.newaxis], training = False).numpy()
 
             #check if there is face in frame
             #if(facePrediction[0][0] < 1 ):#0.5):
@@ -457,9 +468,14 @@ def predictFace(vsource = 1, savePredictions = False):
                     eyesPrediction[-1] = correctEyesPrediction(eyesPrediction[-1])
 
                 # draw face bounding box and face elements on live stream
-                #drawPredictionOnImage(facePrediction, faceElementsPrediction, frame, eyesPrediction, topELeft, topERight) #, [lEyePresent, rEyePresent])
+                drawPredictionOnImage(facePrediction, faceElementsPrediction, frame, eyesPrediction, topELeft, topERight) #, [lEyePresent, rEyePresent])
                 #drawPredictionOnImage(predFace, predFaceElements, images[imgIndex], eyesPrediction, topELeft, topERight) #, [lEyePresent, rEyePresent])
-                drawPredictionOnImage(facePrediction, faceElementsPrediction, images[imgIndex], eyesPrediction, topELeft, topERight) #, [lEyePresent, rEyePresent])
+                #eyesPrediction = [[0, 0.548387097, 0.176470588, 0.684210526, 0.470588235, 0.625, 0.566666667, 0.307692308, 0.166666667, 0.666666667, 0.242424242, 0, 0, 0, 0],
+                #                  [0, 0.64516129, 0.274509804, 0.605263158, 0.529411765, 0.541666667, 0.566666667, 0.269230769, 0.472222222, 0.533333333, 0.515151515, 0, 0, 0, 0]
+                #                  ]
+
+                #eyesPrediction = np.asarray(eyesPrediction)
+                #drawPredictionOnImage(facePrediction, faceElementsPrediction, images[imgIndex], eyesPrediction, topELeft, topERight) #, [lEyePresent, rEyePresent])
 
                 drawEyesOnFace(facePrediction, faceElementsPrediction, faceImg, eyesPrediction, topELeft, topERight)
                 # debug
@@ -477,9 +493,9 @@ def predictFace(vsource = 1, savePredictions = False):
                     cv2.imshow("re", rightEyeImg)
 
             # bgr to rgb only for debug
-            images[imgIndex] = cv2.cvtColor(images[imgIndex], cv2.COLOR_BGR2RGB)
-            #cv2.imshow(windowName, frame)
-            cv2.imshow(windowName, images[imgIndex])
+            #images[imgIndex] = cv2.cvtColor(images[imgIndex], cv2.COLOR_BGR2RGB)
+            cv2.imshow(windowName, frame)
+            #cv2.imshow(windowName, images[imgIndex])
 
             frameId += 1
             e_t = time()
@@ -495,7 +511,7 @@ def predictFace(vsource = 1, savePredictions = False):
                 while keyboard.is_pressed("s"):
                     pass
 
-            if(cv2.waitKey(10000) & 0xFF == ord('q')):
+            if(cv2.waitKey(1) & 0xFF == ord('q')):
                 break
         else:
             break
@@ -691,7 +707,7 @@ if __name__ == "__main__":
     # load minimal and maximal values for denormalization
     minMaxValues = Utilities.readMinMaxFromCSV(minMaxCSVpath)
     minMaxValuesPh02 = Utilities.readMinMaxFromCSV(minMaxPhase02)
-
+    minMaxValuesPh03 = Utilities.readMinMaxFromCSV(minMaxPhase03)
     # predict face from live video source
     predictFace(1)
 
