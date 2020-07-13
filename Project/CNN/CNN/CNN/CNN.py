@@ -383,7 +383,7 @@ def predictFace(vsource = 1, savePredictions = False):
             #check if there is face in frame
             #if(facePrediction[0][0] < 1 ):#0.5):
             #debug
-            if(predFace[0][0] < 0.5):
+            if(facePrediction[0][0] < 0.5):
                 # face prediction TIME
                 consumptionTime[1].append(e_t - s_t)
 
