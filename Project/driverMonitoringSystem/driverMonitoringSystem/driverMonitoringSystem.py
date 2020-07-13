@@ -451,21 +451,26 @@ def predictFace(vsource = 1):
     cap.release()
     cv2.destroyAllWindows()
 
+# draws eyes predictions on face image
 def drawEyesOnFace(facePrediction, faceElementsPrediction, image, eyesPrediction, topELeft, topERight):
     faceElementsPredDenorm = []
     leftEyePredDenorm = []
     rightEyePredDenorm = []
 
-    faceWDenom = (facePrediction[0][7] * (minMaxValuesPh01[1][6] - minMaxValuesPh01[0][6]) + minMaxValuesPh01[0][6])
+    # denormalize face width 
+    faceWDenom = (facePrediction[0][cFaceW] * (minMaxValuesPh01[cMax][cFaceW - 1] - minMaxValuesPh01[cMin][cFaceW - 1]) + minMaxValuesPh01[cMin][cFaceW - 1])
 
-    faceElementsPredDenorm = faceElementsPrediction[0]
+    # copy denormalized face elements to a new array
+    faceElementsPredDenorm = faceElementsPrediction[0].copy()
 
+    # denormalize eyes points of interest
     # faceWDenom * cEyeWidthPerc because eye dimension is 30% of faceWDenom
     if faceElementsPrediction[0][cNoLeftEye] < cNoEyeThreshold:
         leftEyePredDenorm = denormalizeEyesPrediction(eyesPrediction[cEyesDataLeft], faceWDenom * cEyeWidthPerc, 1, 11)
     if faceElementsPrediction[0][cNoRightEye] < cNoEyeThreshold:
         rightEyePredDenorm = denormalizeEyesPrediction(eyesPrediction[cEyesDataRight], faceWDenom * cEyeWidthPerc, 1, 11)
 
+    # calculate eyes points of interest on face image
     topELeftX, topELeftY = topELeft
     for i in range(1, len(leftEyePredDenorm) - 5, 2):
         leftEyePredDenorm[i] += (faceElementsPredDenorm[0] + topELeftX)
@@ -478,6 +483,7 @@ def drawEyesOnFace(facePrediction, faceElementsPrediction, image, eyesPrediction
 
     color = (0, 0, 0)
 
+    # draw circular points from predicted eyes points of interest on face image
     for i in range(1, len(leftEyePredDenorm) - 4, 2):
         cv2.circle(image, (int(leftEyePredDenorm[i]), int(leftEyePredDenorm[i + 1])), 1, color, 2)
 
@@ -486,32 +492,39 @@ def drawEyesOnFace(facePrediction, faceElementsPrediction, image, eyesPrediction
 
     return image
 
+# draws all predictions on original image
 def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, eyesPrediction, topELeft, topERight):
 
     faceElementsPredDenorm = []
     leftEyePredDenorm = []
     rightEyePredDenorm = []
 
+    # denormalize face predictions
     [faceXDenom, faceYDenom, faceWDenom] = denormalizeFacePrediction(facePrediction)
 
+    # calculate points for face bounding rectangle to be drawn
     topLeftX = faceXDenom - int((faceWDenom / 2) + 0.5)
     topLeftY = faceYDenom - int(((faceWDenom / 2) * cFaceWidthHeightRatio) + 0.5)
 
     bottomRightX = faceXDenom + int((faceWDenom / 2) + 0.5)
     bottomRightY = faceYDenom + int(((faceWDenom / 2) * cFaceWidthHeightRatio) + 0.5)
 
+    # copy denormalized face elements to a new array
     faceElementsPredDenorm = faceElementsPrediction[0].copy()
 
+    # denormalize eyes points of interest
     # faceWDenom * cEyeWidthPerc because eye dimension is 30% of faceWDenom
     if faceElementsPrediction[0][cNoLeftEye] < cNoEyeThreshold:
         leftEyePredDenorm = denormalizeEyesPrediction(eyesPrediction[cEyesDataLeft], faceWDenom * cEyeWidthPerc, 1, 11)
     if faceElementsPrediction[0][cNoRightEye] < cNoEyeThreshold:
         rightEyePredDenorm = denormalizeEyesPrediction(eyesPrediction[cEyesDataRight], faceWDenom * cEyeWidthPerc, 1, 11)
 
+    # calculate face elements coordinates on original frame
     for i in range(0, len(faceElementsPredDenorm), 2):
         faceElementsPredDenorm[i] += topLeftX
         faceElementsPredDenorm[i + 1] += topLeftY
 
+    # calculate eyes points of interest on original frame
     topELeftX, topELeftY = topELeft
     for i in range(1, len(leftEyePredDenorm) - 5, 2):
         leftEyePredDenorm[i] += (faceElementsPredDenorm[0] + topELeftX)
@@ -522,21 +535,25 @@ def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, eyesPre
         rightEyePredDenorm[i] += (faceElementsPredDenorm[0] + topERightX)
         rightEyePredDenorm[i + 1] += (faceElementsPredDenorm[1] + topERightY)
 
+    # draw face bounding rectangle on original frame
     cv2.rectangle(image, (int(topLeftX),int(topLeftY)), (int(bottomRightX),int(bottomRightY)), (0,255,0), 2)
 
     color = (0, 255, 0)
 
     # check to see if eyes are open 
     # needs work
+    # set color to red if eyes are closed
     if(eyesPrediction[cEyesDataLeft][cEyeClosed] or eyesPrediction[cEyesDataRight][cEyeClosed]):
         color = (0, 0, 255)
 
+    # draw circular points from predicted eyes points of interest on original image
     for i in range(1, len(leftEyePredDenorm) - 4, 2):
         cv2.circle(image, (int(leftEyePredDenorm[i]), int(leftEyePredDenorm[i + 1])), 1, color, 2)
 
     for i in range(1, len(rightEyePredDenorm) - 4, 2):
         cv2.circle(image, (int(rightEyePredDenorm[i]), int(rightEyePredDenorm[i + 1])), 1, color, 2)
 
+    # looking angle ray, to be determined if it will be kept
     leftRayX, leftRayY = determineLookAngleRay(leftEyePredDenorm)
     rightRayX, rightRayY = determineLookAngleRay(rightEyePredDenorm)
 
@@ -548,7 +565,7 @@ def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, eyesPre
 if __name__ == "__main__":
     script_start = datetime.datetime.now()
 
-    # debug and time measurment
+    # debug and time measurement
     # disable GPU and work with CPU only
     #my_devices = tf.config.experimental.list_physical_devices(device_type='CPU')
     #tf.config.set_visible_devices([], 'GPU')
