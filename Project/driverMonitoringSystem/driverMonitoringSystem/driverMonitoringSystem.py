@@ -103,6 +103,9 @@ cEyePupilDirectionThreshold = 0.5
 cTrue = 1
 cFalse = 0
 
+# on how many fps to average predictions
+cAverageFps = 2
+
 ###############################
 
 # set desired resolution for video source
@@ -130,10 +133,15 @@ def denormalizeFacePrediction(facePrediction):
 # changes are made directly to original prediction array
 def denormalizeFaceElementsPrediction(faceElementsPrediction, resizeFactor):
 
-    for i in range(2, len(faceElementsPrediction[0])):
-        faceElementsPrediction[0][i] = int(((faceElementsPrediction[0][i] * (minMaxValuesPh02[1][i - 2] - minMaxValuesPh02[0][i - 2]) + minMaxValuesPh02[0][i - 2]) / resizeFactor) + 0.5)
+    faceElementsPredDenorm = []
 
-    return faceElementsPrediction
+    faceElementsPredDenorm.append(faceElementsPrediction[0][0])
+    faceElementsPredDenorm.append(faceElementsPrediction[0][1])
+
+    for i in range(2, len(faceElementsPrediction[0])):
+        faceElementsPredDenorm.append(int(((faceElementsPrediction[0][i] * (minMaxValuesPh02[1][i - 2] - minMaxValuesPh02[0][i - 2]) + minMaxValuesPh02[0][i - 2]) / resizeFactor) + 0.5))
+
+    return [faceElementsPredDenorm]
 
 # denormalize eyes prediction
 # does not change original prediction array
@@ -209,27 +217,23 @@ def cropEyes(faceImg, faceElementsPrediction):
     leftEye = []
     rightEye = []
 
-    topLeftEye = (0, 0)
-    topRightEye = (0, 0)
-
     resizeFactor = cLabeledFaceHeight / faceImg.shape[0]
 
-    faceElementsPrediction = denormalizeFaceElementsPrediction(faceElementsPrediction, resizeFactor)
+    faceElementsPredDenorm = denormalizeFaceElementsPrediction(faceElementsPrediction, resizeFactor)
 
-    if faceElementsPrediction[0][cNoLeftEye] < 0.5:
-        tl, br = eyeCropPoints(faceElementsPrediction[0][cLeftEyeX], faceElementsPrediction[0][cLeftEyeY], faceImg)
+    if faceElementsPrediction[0][cNoLeftEye] < cNoEyeThreshold:
+        tl, br = eyeCropPoints(faceElementsPredDenorm[0][cLeftEyeX], faceElementsPredDenorm[0][cLeftEyeY], faceImg)
 
         clippedValues = np.clip([int(tl[0]), int(tl[1]), int(br[0]), int(br[1])], a_min = 0, a_max = None)
         leftEye = faceImg[clippedValues[1]:clippedValues[3], clippedValues[0]:clippedValues[2]]
-        topLeftEye = tl
-    if faceElementsPrediction[0][cNoRightEye] < 0.5:
-        tl, br = eyeCropPoints(faceElementsPrediction[0][cRightEyeX], faceElementsPrediction[0][cRightEyeY], faceImg)
+    
+    if faceElementsPrediction[0][cNoRightEye] < cNoEyeThreshold:
+        tl, br = eyeCropPoints(faceElementsPredDenorm[0][cRightEyeX], faceElementsPredDenorm[0][cRightEyeY], faceImg)
         
         clippedValues = np.clip([int(tl[0]), int(tl[1]), int(br[0]), int(br[1])], a_min = 0, a_max = None)
         rightEye = faceImg[clippedValues[1]:clippedValues[3], clippedValues[0]:clippedValues[2]]
-        topRightEye = tl
 
-    return [leftEye, rightEye, topLeftEye, topRightEye]
+    return [leftEye, rightEye]
 
 def eyeCropPoints(x, y, faceImg):
     # calculate coordinates to crop from
@@ -291,24 +295,43 @@ def resizeAndNormalizeImage(img):
 
     return normalizedImg
 
+# start capturing frames if video source is open
+def captureStart(vsource = 1):
+
+    #capIsOpened = False
+    cap = None
+    #while(capIsOpened == False):
+    while(cap is None or cap.isOpened() == False):
+        # try to open video source, if not wait and try again
+        # TO-DO: wait for video source
+        if(isinstance(vsource, int)):
+            cap = cv2.VideoCapture(vsource + cv2.CAP_DSHOW)
+            width  = cap.get(cCVwidth)  # float
+            height = cap.get(cCVheight) # float
+            change_res(cap, cResolutionWidth, cResolutionHeight)
+        else:
+            cap = cv2.VideoCapture(vsource)
+
+        if(cap is None or cap.isOpened() == False):
+            print("Error opening video source")
+
+    return cap
+
+# average predictions array 
+def averagePredictions(predictions):
+    np.mean(predictions, axis = 0)
+    predictionsAvg = predictions.copy()
+    predictionsAvg = predictionsAvg[0]
+
+    return [predictionsAvg, []]
+
 def predictFace(vsource = 1):
     width = 0
     height = 0
 
     s_t, e_t = 0, 0
 
-    # try to open video source, if not wait and try again
-    # TO-DO: wait for video source
-    if(isinstance(vsource, int)):
-        cap = cv2.VideoCapture(vsource + cv2.CAP_DSHOW)
-        width  = cap.get(cCVwidth)  # float
-        height = cap.get(cCVheight) # float
-        change_res(cap, cResolutionWidth, cResolutionHeight)
-    else:
-        cap = cv2.VideoCapture(vsource)
-
-    if(cap.isOpened() == False):
-        print("Error opening video source")
+    cap = captureStart()
 
     # frame number
     frameId = 0
@@ -322,6 +345,13 @@ def predictFace(vsource = 1):
 
     consumptionTime = [[], [], [], [], [], [], []]
     startTime = time()
+
+    ########### AVERAGE #############
+    facePredictionAvgTemp = []
+    facePredictionAvg = []
+
+    faceElementsPredAvgTemp = []
+    faceElementsPredAvg = []
 
     while(cap.isOpened()): # and (time() - startTime < breakTime)):  
         s_time = time()
@@ -341,18 +371,23 @@ def predictFace(vsource = 1):
             consumptionTime[0].append(e_t - s_t)
 
             s_t = time()
+            # predict face
             facePrediction = face_model(preparedFrame[np.newaxis, :, :, np.newaxis], training = False).numpy()
             e_t = time()
 
-            # debug < 1 
-            # needs work
-            if(facePrediction[0][cNoFace] < cNoFaceThreshold):
+            # average predictions every cAverageFps 
+            facePredictionAvgTemp.append(facePrediction)
+            if(frameId % cAverageFps == 0):
+                facePredictionAvg, facePredictionAvgTemp = averagePredictions(facePredictionAvgTemp)
+
+            # if face is found continue with other predictions
+            if(facePredictionAvg[0][cNoFace] < cNoFaceThreshold):
                 # face prediction TIME
                 consumptionTime[1].append(e_t - s_t)
 
                 s_t = time()
                 # prepare face for neural network 
-                faceImg = cropFace(grayFrame, facePrediction)
+                faceImg = cropFace(grayFrame, facePredictionAvg)
                 preparedFace = resizeAndNormalizeImage(faceImg)
                 e_t = time()
 
@@ -366,22 +401,27 @@ def predictFace(vsource = 1):
                 # face elements prediction TIME
                 consumptionTime[3].append(e_t - s_t)
 
+                # average predictions every cAverageFps 
+                faceElementsPredAvgTemp.append(faceElementsPrediction)
+                if(frameId % cAverageFps == 0):
+                    faceElementsPredAvg, faceElementsPredAvgTemp = averagePredictions(faceElementsPredAvgTemp)
+
                 s_t = time()
 
                 eyesData = [] 
                 lEyePresent = False
                 rEyePresent = False
 
-                if faceElementsPrediction[0][cNoLeftEye] < cNoEyeThreshold or faceElementsPrediction[0][cNoRightEye] < cNoEyeThreshold:
-                    leftEyeImg, rightEyeImg, topELeft, topERight = cropEyes(faceImg, faceElementsPrediction)
+                if faceElementsPredAvg[0][cNoLeftEye] < cNoEyeThreshold or faceElementsPredAvg[0][cNoRightEye] < cNoEyeThreshold:
+                    leftEyeImg, rightEyeImg = cropEyes(faceImg, faceElementsPredAvg.copy())
 
-                    if faceElementsPrediction[0][cNoLeftEye] < cNoEyeThreshold and leftEyeImg.shape[0] > 20 and leftEyeImg.shape[1] > 20:
+                    if faceElementsPredAvg[0][cNoLeftEye] < cNoEyeThreshold and leftEyeImg.shape[0] > 20 and leftEyeImg.shape[1] > 20:
                         # prepare eyes for neural network
                         preparedLeftEye = resizeAndNormalizeImage(leftEyeImg)
                         eyesData.append(preparedLeftEye)
                         lEyePresent = True
 
-                    if faceElementsPrediction[0][cNoRightEye] < cNoEyeThreshold and rightEyeImg.shape[0] > 20 and rightEyeImg.shape[1] > 20:
+                    if faceElementsPredAvg[0][cNoRightEye] < cNoEyeThreshold and rightEyeImg.shape[0] > 20 and rightEyeImg.shape[1] > 20:
                         # prepare eyes for neural network
                         preparedRightEye = resizeAndNormalizeImage(rightEyeImg)
                         eyesData.append(preparedRightEye)
@@ -411,10 +451,11 @@ def predictFace(vsource = 1):
                     eyesPrediction[cEyesDataRight] = correctEyesPrediction(eyesPrediction[cEyesDataRight])
 
                 # draw face bounding box and face elements on live stream
-                drawPredictionOnImage(facePrediction, faceElementsPrediction, frame, eyesPrediction, topELeft, topERight) #, [lEyePresent, rEyePresent])
+                drawPredictionOnImage(facePredictionAvg, faceElementsPredAvg, frame, faceImg, eyesPrediction) #, [lEyePresent, rEyePresent])
+                #drawPredictionOnImage(facePrediction, faceElementsPrediction, frame, faceImg, eyesPrediction) #, [lEyePresent, rEyePresent])
 
                 #debug
-                drawEyesOnFace(facePrediction, faceElementsPrediction, faceImg, eyesPrediction, topELeft, topERight)
+                drawEyesOnFace(facePrediction, faceElementsPrediction, faceImg, eyesPrediction)
 
                 #debug
                 cv2.imshow(faceWindowName, faceImg)
@@ -452,7 +493,7 @@ def predictFace(vsource = 1):
     cv2.destroyAllWindows()
 
 # draws eyes predictions on face image
-def drawEyesOnFace(facePrediction, faceElementsPrediction, image, eyesPrediction, topELeft, topERight):
+def drawEyesOnFace(facePrediction, faceElementsPrediction, faceImg, eyesPrediction):
     faceElementsPredDenorm = []
     leftEyePredDenorm = []
     rightEyePredDenorm = []
@@ -461,7 +502,12 @@ def drawEyesOnFace(facePrediction, faceElementsPrediction, image, eyesPrediction
     faceWDenom = (facePrediction[0][cFaceW] * (minMaxValuesPh01[cMax][cFaceW - 1] - minMaxValuesPh01[cMin][cFaceW - 1]) + minMaxValuesPh01[cMin][cFaceW - 1])
 
     # copy denormalized face elements to a new array
-    faceElementsPredDenorm = faceElementsPrediction[0].copy()
+    faceElementsPredDenorm = denormalizeFaceElementsPrediction(faceElementsPrediction, resizeFactor = cLabeledFaceHeight / faceImg.shape[0])[0]
+
+    # calculate eye points of interest on faceImg
+    topELeftX, topELeftY = eyeCropPoints(faceElementsPredDenorm[cLeftEyeX], faceElementsPredDenorm[cLeftEyeY], faceImg)[0]
+    topERightX, topERightY = eyeCropPoints(faceElementsPredDenorm[cRightEyeX], faceElementsPredDenorm[cRightEyeY], faceImg)[0]
+  
 
     # denormalize eyes points of interest
     # faceWDenom * cEyeWidthPerc because eye dimension is 30% of faceWDenom
@@ -471,12 +517,10 @@ def drawEyesOnFace(facePrediction, faceElementsPrediction, image, eyesPrediction
         rightEyePredDenorm = denormalizeEyesPrediction(eyesPrediction[cEyesDataRight], faceWDenom * cEyeWidthPerc, 1, 11)
 
     # calculate eyes points of interest on face image
-    topELeftX, topELeftY = topELeft
     for i in range(1, len(leftEyePredDenorm) - 5, 2):
         leftEyePredDenorm[i] += (faceElementsPredDenorm[0] + topELeftX)
         leftEyePredDenorm[i + 1] += (faceElementsPredDenorm[1] + topELeftY)
 
-    topERightX, topERightY = topERight
     for i in range(1, len(rightEyePredDenorm) - 5, 2):
         rightEyePredDenorm[i] += (faceElementsPredDenorm[0] + topERightX)
         rightEyePredDenorm[i + 1] += (faceElementsPredDenorm[1] + topERightY)
@@ -485,15 +529,15 @@ def drawEyesOnFace(facePrediction, faceElementsPrediction, image, eyesPrediction
 
     # draw circular points from predicted eyes points of interest on face image
     for i in range(1, len(leftEyePredDenorm) - 4, 2):
-        cv2.circle(image, (int(leftEyePredDenorm[i]), int(leftEyePredDenorm[i + 1])), 1, color, 2)
+        cv2.circle(faceImg, (int(leftEyePredDenorm[i]), int(leftEyePredDenorm[i + 1])), 1, color, 2)
 
     for i in range(1, len(rightEyePredDenorm) - 4, 2):
-        cv2.circle(image, (int(rightEyePredDenorm[i]), int(rightEyePredDenorm[i + 1])), 1, color, 2)
+        cv2.circle(faceImg, (int(rightEyePredDenorm[i]), int(rightEyePredDenorm[i + 1])), 1, color, 2)
 
-    return image
+    return faceImg
 
 # draws all predictions on original image
-def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, eyesPrediction, topELeft, topERight):
+def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, faceImg, eyesPrediction):
 
     faceElementsPredDenorm = []
     leftEyePredDenorm = []
@@ -509,9 +553,9 @@ def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, eyesPre
     bottomRightX = faceXDenom + int((faceWDenom / 2) + 0.5)
     bottomRightY = faceYDenom + int(((faceWDenom / 2) * cFaceWidthHeightRatio) + 0.5)
 
-    # copy denormalized face elements to a new array
-    faceElementsPredDenorm = faceElementsPrediction[0].copy()
-
+    # denormalize face elements to a new array
+    faceElementsPredDenorm = denormalizeFaceElementsPrediction(faceElementsPrediction, resizeFactor = cLabeledFaceHeight / faceImg.shape[0])[0]
+    
     # denormalize eyes points of interest
     # faceWDenom * cEyeWidthPerc because eye dimension is 30% of faceWDenom
     if faceElementsPrediction[0][cNoLeftEye] < cNoEyeThreshold:
@@ -519,18 +563,20 @@ def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, eyesPre
     if faceElementsPrediction[0][cNoRightEye] < cNoEyeThreshold:
         rightEyePredDenorm = denormalizeEyesPrediction(eyesPrediction[cEyesDataRight], faceWDenom * cEyeWidthPerc, 1, 11)
 
+    # calculate eye points of interest on faceImg
+    topELeftX, topELeftY = eyeCropPoints(faceElementsPredDenorm[cLeftEyeX], faceElementsPredDenorm[cLeftEyeY], faceImg)[0]
+    topERightX, topERightY = eyeCropPoints(faceElementsPredDenorm[cRightEyeX], faceElementsPredDenorm[cRightEyeY], faceImg)[0]
+  
     # calculate face elements coordinates on original frame
     for i in range(0, len(faceElementsPredDenorm), 2):
         faceElementsPredDenorm[i] += topLeftX
         faceElementsPredDenorm[i + 1] += topLeftY
 
     # calculate eyes points of interest on original frame
-    topELeftX, topELeftY = topELeft
     for i in range(1, len(leftEyePredDenorm) - 5, 2):
         leftEyePredDenorm[i] += (faceElementsPredDenorm[0] + topELeftX)
         leftEyePredDenorm[i + 1] += (faceElementsPredDenorm[1] + topELeftY)
 
-    topERightX, topERightY = topERight
     for i in range(1, len(rightEyePredDenorm) - 5, 2):
         rightEyePredDenorm[i] += (faceElementsPredDenorm[0] + topERightX)
         rightEyePredDenorm[i + 1] += (faceElementsPredDenorm[1] + topERightY)
