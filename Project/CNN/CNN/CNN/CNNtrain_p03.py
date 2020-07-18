@@ -40,6 +40,10 @@ imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase03\\
 normalizedDataPath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase03_csv\\trainingSet_phase03_normalized.csv"
 #minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
 
+#imgsDir = "C:\\Users\\Cisra\\Desktop\\phase03_augmentation\\augmented_gaussian\\"
+#normalizedDataPath = "C:\\Users\\Cisra\\Desktop\\phase03_augmentation\\augmented_gaussian_normalized.csv"
+#minMaxCSVpath = "C:\\Users\\Cisra\\Desktop\\phase03_augmentation\\augmented_gaussian_normalized_min_max.csv"
+
 images=[]
 categories = []
 #minMaxValues = []
@@ -92,31 +96,31 @@ if __name__ == "__main__":
 
     model_name = "model_phase03.h5"
     callbacks = [
-        EarlyStopping(monitor='val_accuracy', mode = 'max', patience=350, verbose=1),
+        EarlyStopping(monitor='val_accuracy', mode = 'max', patience=50, verbose=1),
         keras.callbacks.ReduceLROnPlateau(monitor='val_accuracy', mode = 'max', factor=0.5, patience=15, min_lr=0.000001, verbose=1),
-        ModelCheckpoint(model_name, monitor='val_accuracy', mode = 'max', verbose=1, save_best_only=True, save_weights_only=True),
+        ModelCheckpoint(model_name, monitor='val_accuracy', mode = 'max', verbose=1, save_best_only=True, save_weights_only=False),
         tensorboard
     ]
 
     #network training
-    #model_history = model.fit(df_im, df_cat, # df_im - input ; df_cat - output
-    #            batch_size=2,
-    #            #batch_size=64,
-    #            epochs=350,
-    #            validation_data=(val_im, val_cat),
-    #            callbacks=callbacks
-    #)
+    model_history = model.fit(df_im, df_cat, # df_im - input ; df_cat - output
+                batch_size=2,
+                #batch_size=64,
+                epochs=350,
+                validation_data=(val_im, val_cat),
+                callbacks=callbacks
+    )
 
     #Visualizing accuracy and loss of training the model
-    #history_dict=model_history.history
-    #print(history_dict.keys())
-    #val_acc = history_dict['val_accuracy']
-    #val_loss = history_dict['val_loss']
-    #train_acc = history_dict['accuracy']
-    #train_loss = history_dict['loss']
+    history_dict=model_history.history
+    print(history_dict.keys())
+    val_acc = history_dict['val_accuracy']
+    val_loss = history_dict['val_loss']
+    train_acc = history_dict['accuracy']
+    train_loss = history_dict['loss']
 
     #plot accuracy and loss
-    #plotTrainingResults(val_acc, val_loss, train_acc, train_loss)
+    plotTrainingResults(val_acc, val_loss, train_acc, train_loss)
 
 
     #debug

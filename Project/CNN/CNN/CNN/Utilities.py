@@ -111,13 +111,13 @@ def loadImagesAndCategories(images, imgsDir, categories, catPath, phase = 1, inp
             cat = cat.split(',')
 
             # phase 1 specific
-            if(phase == 1):
-                cat.pop(7)
-                cat.pop(7)
-                cat.pop(7)
-                cat.pop(7)
+            #if(phase == 1):
+            #    cat.pop(7)
+            #    cat.pop(7)
+            #    cat.pop(7)
+            #    cat.pop(7)
             # phase 2 specific
-            elif(phase == 2):
+            if(phase == 2):
                 cat.pop(12)
                 cat.pop(12)
                 cat.pop(12)

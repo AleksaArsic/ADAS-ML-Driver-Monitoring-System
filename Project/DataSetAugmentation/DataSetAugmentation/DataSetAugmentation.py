@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 from PIL import Image
 import argparse
+import shutil
 from shutil import copyfile
 import datetime
 from time import time
@@ -164,7 +165,8 @@ if __name__ == "__main__":
     if not os.path.exists(outputFolder):
         os.makedirs(outputFolder)
     else:
-        os._exit(1)
+        shutil.rmtree(outputFolder)
+        os.makedirs(outputFolder)
     #copy old images
     for i in range(len(imagePath)):
         copyfile(imagePath[i], os.path.join(outputFolder, images[i]))
@@ -299,6 +301,7 @@ if __name__ == "__main__":
     for line in newCsv:
         newCSVfile.write("%s" % line)
 
+    newCSVfile.close()
 
     e_t = datetime.datetime.now()
 

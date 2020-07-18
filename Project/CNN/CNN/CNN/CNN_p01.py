@@ -27,11 +27,8 @@ saveHeight = 300
 
 phase = 1
 
-imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\"
-#imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\false_2020_06_30_15_47_49\\"
-#imgsDir = "C:\\Users\\arsic\\Desktop\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\false_2020_06_10_10_00_57\\"
-#imgsDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\"
-#imgsDir = "C:\\Users\\arsic\\Desktop\\1\\"
+#imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\"
+imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Project\\ImageCapture\\ImageCapture\\output_2020_07_17_12_10_14\\"
 #minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
 minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
 #outputDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces_out\\"
@@ -194,10 +191,14 @@ def predictFromImages():
 
     # crop images
     cnt = 0    
+    c = 0
     for img in images:
         # calculate coordinates to crop from
 
-        if(denormPredictions[cnt][0] > 0.75):
+        if(predictions[cnt][0] > 0.5):
+            print(filenames[cnt] + "," + str(predictions[cnt][0]))
+            cnt += 1
+            c += 1
             continue
 
         topLeftX = int(denormPredictions[cnt][1] - int((denormPredictions[cnt][7] / 2) + 0.5))
@@ -234,20 +235,15 @@ def predictFromImages():
             posY = bottomRightY - height
 
         croppedImage = np.pad(croppedImage, ((negY, posY), (negX, posX), (0,0)), constant_values = 0)
-        #img = drawPredictionOnImage([predictions[cnt]], img)
-        #img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
         croppedImage = cv2.cvtColor(croppedImage, cv2.COLOR_BGR2RGB)
         croppedImage = cv2.resize(croppedImage, (saveWidth, saveHeight), Image.ANTIALIAS)
 
         cv2.imwrite(outputDir + filenames[cnt], croppedImage)
 
-        #tempImg = drawPredictionOnImage([predictions[cnt]], img)
-        
-        #tempImg = cv2.cvtColor(tempImg, cv2.COLOR_BGR2RGB)
-        #cv2.imwrite(drawOutputDir + filenames[cnt], tempImg)
-
         cnt = cnt + 1
 
+    print("No face on: " + str(c) + " images")
 
 def denormalizeAllPredictions(predictions, minMaxValues):
     denormPredictions = predictions.copy()
@@ -278,7 +274,7 @@ if __name__ == "__main__":
     predictFromImages()
 
     Utilities.showStat(filenames, predictions, 1)
-    Utilities.drawPredictionsToDisk(predictions, filenames, imgsDir, minMaxValues)
+    #Utilities.drawPredictionsToDisk(predictions, filenames, imgsDir, minMaxValues)
 
     script_end = datetime.datetime.now()
     print (script_end-script_start)

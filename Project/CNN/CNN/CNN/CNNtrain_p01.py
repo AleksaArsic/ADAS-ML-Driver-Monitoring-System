@@ -29,16 +29,24 @@ import CNNmodel as cnn
 
 inputHeight = 100
 inputWidth = 100
-outputNo = 8
+outputNo = 12
 
 phase = 1
 
 start = 0
 max = 8000
 
-imgsDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\"
-normalizedDataPath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized.csv"
-minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
+#imgsDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\"
+#normalizedDataPath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized.csv"
+#minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
+
+#imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\tr_ph01\\"
+#normalizedDataPath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\tr_ph01\\tr_ph01_normalized.csv"
+#minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\tr_ph01\\tr_ph01_normalized_min_max.csv"
+
+imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\"
+normalizedDataPath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized.csv"
+minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
 
 images=[]
 categories = []
@@ -74,7 +82,13 @@ if __name__ == "__main__":
     minMaxValues = Utilities.readMinMaxFromCSV(minMaxCSVpath)
     [images, categories, filenames] = Utilities.loadImagesAndCategories(images, imgsDir, categories, normalizedDataPath, phase = 1, inputWidth = inputWidth, inputHeight = inputHeight)
 
+    model_name = "model_phase01.h5"
+
     model = cnn.create_model(inputWidth, inputHeight, 1, outputNo)
+    #model = tf.keras.models.load_model(model_name)
+    #model.load_weights(model_name)
+    
+    #model.compile(optimizer="adam",loss='mean_squared_error', metrics=["accuracy"])
 
     # prebaci u format koji mrezi odgovara 
     df_im = np.asarray(images)
@@ -95,9 +109,10 @@ if __name__ == "__main__":
     callbacks = [
         EarlyStopping(monitor='val_accuracy', mode = 'max', patience=35, verbose=1),
         keras.callbacks.ReduceLROnPlateau(monitor='val_accuracy', mode = 'max', factor=0.5, patience=15, min_lr=0.000001, verbose=1),
-        ModelCheckpoint(model_name, monitor='val_accuracy', mode = 'max', verbose=1, save_best_only=True, save_weights_only=True),
+        ModelCheckpoint(model_name, monitor='val_accuracy', mode = 'max', verbose=1, save_best_only=True, save_weights_only=False),
         tensorboard
     ]
+
 
     #network training
     model_history = model.fit(df_im, df_cat, # df_im - input ; df_cat - output

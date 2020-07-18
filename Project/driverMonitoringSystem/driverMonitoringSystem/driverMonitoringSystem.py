@@ -21,8 +21,10 @@ eyeWindowName = "eye tracking"
 
 ########## DEBUG INFORMATION ##########
 
-# PIL font object
+# PIL font object for system information
 infoFont = None
+# PIL font object for driver information
+driverFont = None
 # info font location
 fontLocation = r"Fonts\\Roboto\\Roboto-Medium.ttf"
 
@@ -106,7 +108,7 @@ cEyeHeightPerc = 0.2
 cLabeledFaceHeight = 300
 
 ### THRESHOLDS ###
-cNoFaceThreshold = 1 #0.5 #(1 is debug value)
+cNoFaceThreshold = 0.5 #(1 is debug value)
 cNoEyeThreshold = 0.5
 cEyeOpenThreshold = 0.5
 cEyePupilDirectionThreshold = 0.5
@@ -117,6 +119,12 @@ cFalse = 0
 
 # on how many fps to average predictions
 cAverageFps = 2
+
+### INFO CONSTANTS ###
+cInfoDY = 20
+cInfoX = 15
+cDriverInfoX = 190
+cDriverInfoY = 250
 
 ###############################
 
@@ -401,7 +409,11 @@ def predictFace(vsource = 1):
 
             # mean predictions every cAverageFps 
             facePredictionAvgTemp.append(facePrediction)
-            if(frameId % cAverageFps == 0):
+            if(frameId % 2 == 0):
+                #for i in range(1, 8):
+                #    if(abs(facePredictionAvgTemp[0][0][i] - facePredictionAvgTemp[-1][0][i]) <= 0.005):
+                #        facePredictionAvgTemp[-1][0][i] = facePredictionAvgTemp[0][0][i]
+                #facePredictionAvg, facePredictionAvgTemp = [], []
                 facePredictionAvg, facePredictionAvgTemp = averagePredictions(facePredictionAvgTemp)
 
             # if face is found continue with other predictions
@@ -426,6 +438,8 @@ def predictFace(vsource = 1):
                 consumptionTime[3].append(e_t - s_t)
 
                 # mean predictions every cAverageFps 
+                #faceElementsPredAvg, faceElementsPredAvgTemp = [], []
+
                 faceElementsPredAvgTemp.append(faceElementsPrediction)
                 if(frameId % cAverageFps == 0):
                     faceElementsPredAvg, faceElementsPredAvgTemp = averagePredictions(faceElementsPredAvgTemp)
@@ -439,13 +453,13 @@ def predictFace(vsource = 1):
                 if faceElementsPredAvg[0][cNoLeftEye] < cNoEyeThreshold or faceElementsPredAvg[0][cNoRightEye] < cNoEyeThreshold:
                     leftEyeImg, rightEyeImg = cropEyes(faceImg, faceElementsPredAvg)
 
-                    if faceElementsPredAvg[0][cNoLeftEye] < cNoEyeThreshold and leftEyeImg.shape[0] > 20 and leftEyeImg.shape[1] > 20:
+                    if faceElementsPredAvg[0][cNoLeftEye] < cNoEyeThreshold and leftEyeImg.shape[0] > 50 and leftEyeImg.shape[1] > 50:
                         # prepare eyes for neural network
                         preparedLeftEye = resizeAndNormalizeImage(leftEyeImg)
                         eyesData.append(preparedLeftEye)
                         lEyePresent = True
 
-                    if faceElementsPredAvg[0][cNoRightEye] < cNoEyeThreshold and rightEyeImg.shape[0] > 20 and rightEyeImg.shape[1] > 20:
+                    if faceElementsPredAvg[0][cNoRightEye] < cNoEyeThreshold and rightEyeImg.shape[0] > 50 and rightEyeImg.shape[1] > 50:
                         # prepare eyes for neural network
                         preparedRightEye = resizeAndNormalizeImage(rightEyeImg)
                         eyesData.append(preparedRightEye)
@@ -471,9 +485,11 @@ def predictFace(vsource = 1):
                 # check to see if any eye is present and correct noEyes and pupil direction to integer true/false values
                 if(lEyePresent and len(eyesPrediction[cEyesDataLeft])):
                     eyesPrediction[cEyesDataLeft] = correctEyesPrediction(eyesPrediction[cEyesDataLeft])
-                    leftEyePredictionAvgTemp.append(eyesPrediction[cEyesDataLeft])
 
                     # mean predictions every cAverageFps 
+                        #leftEyePredictionAvg, leftEyePredictionAvgTemp = [], []
+
+                    leftEyePredictionAvgTemp.append(eyesPrediction[cEyesDataLeft])
                     if(frameId % cAverageFps == 0):
                         leftEyePredictionAvg, leftEyePredictionAvgTemp = averagePredictions(leftEyePredictionAvgTemp)
 
@@ -481,9 +497,11 @@ def predictFace(vsource = 1):
 
                 if(rEyePresent and len(eyesPrediction[cEyesDataRight])):
                     eyesPrediction[cEyesDataRight] = correctEyesPrediction(eyesPrediction[cEyesDataRight])
-                    rightEyePredictionAvgTemp.append(eyesPrediction[cEyesDataRight])
                     
                     # mean predictions every cAverageFps 
+                        #rightEyePredictionAvg, rightEyePredictionAvgTemp = [], []
+
+                    rightEyePredictionAvgTemp.append(eyesPrediction[cEyesDataRight])
                     if(frameId % cAverageFps == 0):
                         rightEyePredictionAvg, rightEyePredictionAvgTemp = averagePredictions(rightEyePredictionAvgTemp)
 
@@ -507,10 +525,13 @@ def predictFace(vsource = 1):
                 if rEyePresent:
                     cv2.imshow("Right " + eyeWindowName, rightEyeImg)
 
-            frame = showInfo(frame, facePredDenorm, faceElementsPredDenorm)
+            frame = showInfo(frame, facePrediction[0][0], facePredDenorm, faceElementsPredDenorm)
             cv2.imshow(mainWindowName, frame)
 
             frameId += 1
+
+            if(frameId > 60):
+                frameId = 0
             e_t = time()
           
             # visual notification TIME
@@ -527,9 +548,9 @@ def predictFace(vsource = 1):
 
         currentFPS = int(1 / elapsed)
 
-        print("Processing time: " + str(el_time))
-        print("Processing time of current frame: " + str(elapsed))
-        print("FPS: " + str(currentFPS))
+        #print("Processing time: " + str(el_time))
+        #print("Processing time of current frame: " + str(elapsed))
+        #print("FPS: " + str(currentFPS))
 
     Utilities.showAverageTimeConsumption(consumptionTime, breakTime)
     cap.release()
@@ -580,7 +601,7 @@ def drawEyesOnFace(facePrediction, faceElementsPrediction, faceImg, eyesPredicti
     return faceImg
 
 # shows info on original frame
-def showInfo(image, facePredDenorm, faceElementsPredDenorm):
+def showInfo(image, noFacePred, facePredDenorm = [], faceElementsPredDenorm = []):
     faceX, faceY = -1, -1
     leftEyeX, leftEyeY = -1, -1
     rightEyeX, rightEyeY = -1, -1
@@ -599,21 +620,24 @@ def showInfo(image, facePredDenorm, faceElementsPredDenorm):
 
     info = dateAndTime + "\n" + faceCoordinates + "\n" + leftEyeCoordinates + "\n" + rightEyeCoordinates + "\n" + applicationFPS
 
-    tempImg = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    tempImg = Image.fromarray(tempImg)
+    #tempImg = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    tempImg = Image.fromarray(image)
 
     draw = ImageDraw.Draw(tempImg)
 
-    fontColor = (0, 0, 0, 0)
+    infoFontColor = (0, 0, 0, 0)
+    driverFontColor = (0, 0, 255, 0)
 
     y0 = 15
-    dy = 20
 
     for i, line in enumerate(info.split("\n")):
-        y = y0 + i*dy
-        draw.text((15, y), line, font = infoFont, fill = fontColor)
+        y = y0 + i * cInfoDY
+        draw.text((cInfoX, y), line, font = infoFont, fill = infoFontColor)
 
-    image = cv2.cvtColor(np.array(tempImg), cv2.COLOR_RGB2BGR)
+    if(noFacePred > cNoFaceThreshold):
+        draw.text((cDriverInfoX, cDriverInfoY), "Driver not present", font = driverFont, fill = driverFontColor)
+
+    image = np.array(tempImg)#cv2.cvtColor(np.array(tempImg), cv2.COLOR_RGB2BGR)
 
     return image
 
@@ -709,6 +733,8 @@ if __name__ == "__main__":
 
     # load font for information print
     infoFont = ImageFont.truetype(r"Fonts\\Roboto\\Roboto-Medium.ttf", size = 15)
+    # load font for driver information print
+    driverFont = ImageFont.truetype(r"Fonts\\Roboto\\Roboto-Medium.ttf", size = 35)
 
     # Recreate the exact same model
     face_model_name = "model_phase01.h5"

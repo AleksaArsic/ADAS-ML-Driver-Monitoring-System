@@ -12,7 +12,7 @@
     <Name>DataSetAugmentation</Name>
     <RootNamespace>DataSetAugmentation</RootNamespace>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>-i C:\Users\arsic\Desktop\Diplomski\DriverMonitoringSystem\Project\DataSetAugmentation\DataSetAugmentation\augmented -o C:\Users\arsic\Desktop\Diplomski\DriverMonitoringSystem\Project\DataSetAugmentation\DataSetAugmentation\augmented4 -icsv C:\Users\arsic\Desktop\Diplomski\DriverMonitoringSystem\Project\DataSetAugmentation\DataSetAugmentation\augmented.csv -m gamma -g 1.5 -lr 10 -ud -10</CommandLineArguments>
+    <CommandLineArguments>-i C:\Users\Cisra\Desktop\phase03_augmentation\augmented_gamma -o C:\Users\Cisra\Desktop\phase03_augmentation\augmented_gaussian -icsv C:\Users\Cisra\Desktop\phase03_augmentation\augmented_gamma.csv -m gaussian_noise</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

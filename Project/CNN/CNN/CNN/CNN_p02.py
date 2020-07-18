@@ -26,7 +26,8 @@ phase = 1
 
 #imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02\\"
 #imgsDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces_out\\"
-imgsDir = "C:\\Users\\Cisra\\Desktop\\Diplomski_all\\test_ph02\\"
+#imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02\\"
+imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces_out\\"
 #imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces_out\\"
 minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
 outputDir = "D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase02_face_elements_out\\"
@@ -170,7 +171,7 @@ def predictFromImages():
 
     df_im = np.asarray(images)
     df_im = df_im.reshape(df_im.shape[0], inputWidth, inputHeight, 1)
-    cv2.namedWindow("face")
+    #cv2.namedWindow("face")
 
     # debug
     #for img in df_im:
@@ -221,14 +222,16 @@ def predictFromImages():
 
         filename = os.path.splitext(filenames[cnt])[0]
 
-        croppedEyeLeft = cv2.resize(croppedEyeLeft, (saveWidth, saveHeight), Image.ANTIALIAS)
-        cv2.imwrite(outputDir + filename + '_left.jpg', croppedEyeLeft)
+        if(denormPredictions[0][0] < 0.5):
+            croppedEyeLeft = cv2.resize(croppedEyeLeft, (saveWidth, saveHeight), Image.ANTIALIAS)
+            cv2.imwrite(outputDir + filename + '_left.jpg', croppedEyeLeft)
 
         croppedEyeRight = img[clippedValuesY[2]:clippedValuesY[3], clippedValuesX[2]:clippedValuesX[3]]
         croppedEyeRight = cv2.cvtColor(croppedEyeRight, cv2.COLOR_BGR2RGB)
 
-        croppedEyeRight = cv2.resize(croppedEyeRight, (saveWidth, saveHeight), Image.ANTIALIAS)
-        cv2.imwrite(outputDir + filename + '_right.jpg', croppedEyeRight)
+        if (denormPredictions[0][1] < 0.5):
+            croppedEyeRight = cv2.resize(croppedEyeRight, (saveWidth, saveHeight), Image.ANTIALIAS)
+            cv2.imwrite(outputDir + filename + '_right.jpg', croppedEyeRight)
 
         #tempImg = drawPredictionOnImage([predictions[cnt]], img)
         
