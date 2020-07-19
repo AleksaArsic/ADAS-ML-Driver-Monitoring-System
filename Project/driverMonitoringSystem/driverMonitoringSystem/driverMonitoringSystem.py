@@ -71,7 +71,8 @@ cMax = 1
 cNoFace = 0 
 cFaceX = 1
 cFaceY = 2
-cFaceW = 7
+cFaceW = 11
+cFaceWminMax = 7
 
 # indexes of face point of interest in denormalized face prediction array
 cFaceXdenorm = 0
@@ -118,7 +119,7 @@ cTrue = 1
 cFalse = 0
 
 # on how many fps to average predictions
-cAverageFps = 2
+cAverageFps = 6
 
 ### INFO CONSTANTS ###
 cInfoDY = 20
@@ -141,7 +142,7 @@ def denormalizeFacePrediction(facePrediction):
 
     faceXDenom = (facePrediction[0][cFaceX] * (minMaxValuesPh01[cMax][cFaceX - 1] - minMaxValuesPh01[cMin][cFaceX - 1]) + minMaxValuesPh01[cMin][cFaceX - 1])
     faceYDenom = (facePrediction[0][cFaceY] * (minMaxValuesPh01[cMax][cFaceY - 1] - minMaxValuesPh01[cMin][cFaceY - 1]) + minMaxValuesPh01[cMin][cFaceY - 1])
-    faceWDenom = (facePrediction[0][cFaceW] * (minMaxValuesPh01[cMax][cFaceW - 1] - minMaxValuesPh01[cMin][cFaceW - 1]) + minMaxValuesPh01[cMin][cFaceW - 1])
+    faceWDenom = (facePrediction[0][cFaceW] * (minMaxValuesPh01[cMax][cFaceWminMax - 1] - minMaxValuesPh01[cMin][cFaceWminMax - 1]) + minMaxValuesPh01[cMin][cFaceWminMax - 1])
 
     facePredictionDenorm.append(faceXDenom)
     facePredictionDenorm.append(faceYDenom)
@@ -409,11 +410,7 @@ def predictFace(vsource = 1):
 
             # mean predictions every cAverageFps 
             facePredictionAvgTemp.append(facePrediction)
-            if(frameId % 2 == 0):
-                #for i in range(1, 8):
-                #    if(abs(facePredictionAvgTemp[0][0][i] - facePredictionAvgTemp[-1][0][i]) <= 0.005):
-                #        facePredictionAvgTemp[-1][0][i] = facePredictionAvgTemp[0][0][i]
-                #facePredictionAvg, facePredictionAvgTemp = [], []
+            if(frameId % cAverageFps == 0):
                 facePredictionAvg, facePredictionAvgTemp = averagePredictions(facePredictionAvgTemp)
 
             # if face is found continue with other predictions
@@ -563,7 +560,7 @@ def drawEyesOnFace(facePrediction, faceElementsPrediction, faceImg, eyesPredicti
     rightEyePredDenorm = []
 
     # denormalize face width 
-    faceWDenom = (facePrediction[0][cFaceW] * (minMaxValuesPh01[cMax][cFaceW - 1] - minMaxValuesPh01[cMin][cFaceW - 1]) + minMaxValuesPh01[cMin][cFaceW - 1])
+    faceWDenom = (facePrediction[0][cFaceW] * (minMaxValuesPh01[cMax][cFaceWminMax - 1] - minMaxValuesPh01[cMin][cFaceWminMax - 1]) + minMaxValuesPh01[cMin][cFaceWminMax - 1])
 
     # copy denormalized face elements to a new array
     faceElementsPredDenorm = denormalizeFaceElementsPrediction(faceElementsPrediction, resizeFactor = cLabeledFaceHeight / faceImg.shape[0])[0]
@@ -743,11 +740,12 @@ if __name__ == "__main__":
 
     face_model = cnn.create_model(inputWidth, inputHeight, 1, faceOutputNo)
     face_elements_model = cnn.create_model(inputWidth, inputHeight, 1, faceElementsOutputNo)
-    attention_model = cnn.create_model(inputWidth, inputHeight, 1, attentionOutputNo)
+    #attention_model = cnn.create_model(inputWidth, inputHeight, 1, attentionOutputNo)
 
-    face_model.load_weights(face_model_name)
+    face_model = tf.keras.models.load_model(face_model_name)
     face_elements_model.load_weights(face_elements_model_name)
-    attention_model.load_weights(attention_model_name)
+    attention_model = tf.keras.models.load_model(attention_model_name)
+    #attention_model.load_weights(attention_model_name)
 
     # load minimal and maximal values for denormalization
     minMaxValuesPh01 = Utilities.readMinMaxFromCSV(minMaxCSVpath)

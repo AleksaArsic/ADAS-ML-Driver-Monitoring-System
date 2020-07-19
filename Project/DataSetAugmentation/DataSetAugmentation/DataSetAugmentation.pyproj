@@ -12,7 +12,7 @@
     <Name>DataSetAugmentation</Name>
     <RootNamespace>DataSetAugmentation</RootNamespace>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>-i C:\Users\Cisra\Desktop\phase03_augmentation\augmented_gamma -o C:\Users\Cisra\Desktop\phase03_augmentation\augmented_gaussian -icsv C:\Users\Cisra\Desktop\phase03_augmentation\augmented_gamma.csv -m gaussian_noise</CommandLineArguments>
+    <CommandLineArguments>-i C:\Users\Cisra\Desktop\phase03_augmentation\dataset -o C:\Users\Cisra\Desktop\phase03_augmentation\augmented_hflip -icsv C:\Users\Cisra\Desktop\phase03_augmentation\preaugmentation_ph3.csv -m horizontal_flip</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

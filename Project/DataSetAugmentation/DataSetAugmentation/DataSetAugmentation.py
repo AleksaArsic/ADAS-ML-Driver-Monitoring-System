@@ -253,11 +253,13 @@ if __name__ == "__main__":
                 cnt += 1
                 continue
 
-            for i in range(2, 8):
+            line[0] = newImageNames[cnt - 2]
+            for i in range(2, 11):
                 #cast to string at end
                 if(i % 2 == 0):
                     line[i] = str(int(((1 - (int(line[i]) / img.shape[1])) * img.shape[1]) + 0.5))
 
+            cnt += 1
     elif mode == "gamma":
 
         print("Correcting gamma with factor: " + str(gamma))
