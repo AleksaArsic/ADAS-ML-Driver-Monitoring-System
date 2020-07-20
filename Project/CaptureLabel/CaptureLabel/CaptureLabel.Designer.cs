@@ -391,7 +391,6 @@ namespace CaptureLabel
             this.noFaceCB.TabIndex = 10;
             this.noFaceCB.Text = "No face";
             this.noFaceCB.UseVisualStyleBackColor = true;
-            this.noFaceCB.CheckedChanged += new System.EventHandler(this.noFaceCB_CheckedChanged);
             // 
             // faceOptionsGB
             // 

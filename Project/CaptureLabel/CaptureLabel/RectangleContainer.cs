@@ -4,11 +4,13 @@ using System.Drawing;
 
 namespace CaptureLabel
 {
+    // RectangleContainer class is used to store labeling rectangle objects and positions
     class RectangleContainer
     {
         private List<Rectangle> rectContainer = new List<Rectangle>();
         private List<bool> rectFocusList = new List<bool>();
 
+        // constructor used for face elements mode
         public RectangleContainer()
         {
             for (int i = 0; i < Constants.faceElementStartPos.Length; i += 2)
@@ -17,6 +19,8 @@ namespace CaptureLabel
                 rectFocusList.Add(false);
             }
         }
+
+        // constructor used for face mode
         public RectangleContainer(int rectNo, int[] startPos, Size rectSize)
         {
             if (rectNo > startPos.Length)
@@ -30,6 +34,7 @@ namespace CaptureLabel
             }
         }
 
+        // constructor used for eye countour mode
         public RectangleContainer(int rectNo, int[] startPos, Size[] rectSize)
         {
             if (rectNo > startPos.Length)
@@ -43,23 +48,28 @@ namespace CaptureLabel
             }
         }
 
+        // get stored rectangle objects as Rectangle[]
         public Rectangle[] getRectangles()
         {
             return rectContainer.ToArray();
         }
 
+        // get stored rectangle objects as List<Rectangle> 
         public List<Rectangle> getRectangles(int a)
         {
             return rectContainer;
         }
 
+        // get number of stored rectangles
         public int getSize()
         {
             return rectContainer.Count;
         }
 
+        // set size to rectangle at index index
         public void setRectSize(int index, Size size)
         {
+            // check if index is valid
             if (index >= rectContainer.Count)
                 return;
 
@@ -69,6 +79,7 @@ namespace CaptureLabel
             rectContainer[index] = rect;
         }
 
+        // get stored rectangle coordinates as List<int>
         public List<int> getAllRectCoordinates()
         {
             List<int> coordinates = new List<int>();
@@ -82,6 +93,7 @@ namespace CaptureLabel
             return coordinates;
         }
 
+        // set rectangle coordinates at index index
         public void setRectCoordinates(int index, int x, int y)
         {
             Rectangle rect = rectContainer[index];
@@ -92,6 +104,7 @@ namespace CaptureLabel
             rectContainer[index] = rect;
         }
 
+        // set all rectangle coordinates to List<int> coordinates
         public void setAllRectCoordinates(List<int> coordinates)
         {
             int j = 0;
@@ -106,32 +119,38 @@ namespace CaptureLabel
             }
         }
 
+        // check if rectangle is in focus
         public bool isInFocus(Rectangle r)
         {
+            // check if rectangle exists 
             if (rectContainer.Contains(r))
             {
                 return rectFocusList[rectContainer.IndexOf(r)];
             }
                 
-
             return false;
         }
 
+        // set focus to rectangle at index index
         public void setFocus(int index)
         {
             rectFocusList[index] = !rectFocusList[index];
         }
 
+        // set focus to rectangle r
         public void setFocus(Rectangle r)
         {
+            // check if rectangle exists 
             if(rectContainer.Contains(r))
             {
                 rectFocusList[rectContainer.IndexOf(r)] = !rectFocusList[rectContainer.IndexOf(r)];
             }
         }
 
+        // check if Point p is in some rectangle
         public Tuple<bool, int> contains(Point p)
         {
+            // iterate trough rectangle list and check if the point is on some rectangle
             foreach(Rectangle r in rectContainer)
             {
                 if (r.Contains(p))
@@ -141,9 +160,10 @@ namespace CaptureLabel
             return Tuple.Create(false, -1);
         }
 
+        // find rectangle in focus
         public Rectangle findInFocus()
         {
-
+            // iterate trough rectangles and find one in focus if any
             for(int i = 0; i < rectFocusList.Count; i++)
             {
                 if(rectFocusList[i])
@@ -155,8 +175,10 @@ namespace CaptureLabel
             return Rectangle.Empty;
         }
 
+        // get index of rectangle that is in focus
         public int inFocusIndex()
         {
+            // iterate trough rectangles and return index of one in focus if any
             for (int i = 0; i < rectFocusList.Count; i++)
             {
                 if (rectFocusList[i])
@@ -168,6 +190,7 @@ namespace CaptureLabel
             return -1;
         }
 
+        // add x and y distance to focused rectangle
         public void addToFocused(int x, int y)
         {
             int focusedIndex = inFocusIndex();
@@ -180,6 +203,8 @@ namespace CaptureLabel
             rectContainer[focusedIndex] = rect;
         }
 
+        // reset foucs list 
+        // after this function is executed there is no rectangle in focus
         public void resetFocusList()
         {
             for(int i = 0; i < rectFocusList.Count; i++)
@@ -188,10 +213,12 @@ namespace CaptureLabel
             }
         }
 
+        // reset coordinates of all rectangles
         public void resetCoordinates(int[] position)
         {
             int j = 0;
 
+            // iterate trough rectangles and reset their position to int[] position
             for (int i = 0; i < rectContainer.Count * 2; i += 2, j++)
             {
                 Rectangle rect = rectContainer[j];
@@ -203,6 +230,7 @@ namespace CaptureLabel
             }
         }
 
+        // increase or decrease size of rectangle
         public void addToRectSize(int index, int width, int height)
         {
             Rectangle rect = rectContainer[index];
@@ -217,6 +245,7 @@ namespace CaptureLabel
             rectContainer[index] = rect;
         }
 
+        // rescales rectangle at index index to constant width and height with factor
         public void rescaleRect(int index, int width, double factor)
         {
             Rectangle rect = rectContainer[index];
@@ -231,7 +260,7 @@ namespace CaptureLabel
             rectContainer[index] = rect;
         }
 
-
+        // reset whole class 
         public void resetState(char mode, int[] position)
         {
             resetFocusList();

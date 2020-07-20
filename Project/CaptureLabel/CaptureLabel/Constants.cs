@@ -6,14 +6,18 @@ namespace CaptureLabel
 {
     static class Constants
     {
+        // general information
         public static readonly string Version = "CaptureLabel v0.1";
         public static readonly string AboutMe = "Author: Aleksa Arsic \nEmail: arsicaleksa96@gmail.com";
 
+        // supported fromtas
         public static readonly String[] supportedFormats = { ".jpeg", ".jpg", ".png" };
 
+        // image scale minimal and maximal factor
         public static readonly float imageScaleMin = 1.0f;
         public static readonly float imageScaleMax = 2.0f;
 
+        // work information strings
         public static readonly string errorCaption = "Error!";
         public static readonly string pathExceptionMsg = "Path not valid.";
         public static readonly string csvFileNameExceptionMsg = "Input file is not .csv file format";
@@ -27,16 +31,19 @@ namespace CaptureLabel
         public static readonly string progressSavedCaption = "Progress saved";
         public static readonly string modeSwitchInformation = "Please re-import data to complete mode switch.";
 
-
+        // check box strings
         public static readonly string faceAngleCB = "Face angle";
         public static readonly string lookAngleCB = "Look angle";
 
+        // initial rectangle starting positions
         public static readonly int[] rectStartPos = { 200, 200 };
 
+        // char's denoting selected mode
         public static readonly char faceMode = 'f';
         public static readonly char faceElementsMode = 'e';
         public static readonly char eyeContourMode = 'g';
 
+        // face elements and eye countour mode keyboard shortcuts
         public static readonly Keys[] focusShortcutsE =
         {
             Keys.D1,
@@ -46,23 +53,7 @@ namespace CaptureLabel
             Keys.W
         };
 
-        /*
-        public static readonly Keys[] focusShortcutsE = 
-            { 
-                Keys.D1,
-                Keys.D2,
-                Keys.D3,
-                Keys.D4,
-                Keys.Q,
-                Keys.W,
-                Keys.E,
-                Keys.R,
-                Keys.A,
-                Keys.S,
-                Keys.D
-            };
-        */
-
+        // face mode keyboard shortcuts
         public static readonly Keys[] focusShortcutsF =
         {
             Keys.D1,
@@ -70,9 +61,11 @@ namespace CaptureLabel
             Keys.D3
         };
 
+        // status bar strings
         public static readonly string imageCounterString = "Image: ";
         public static readonly string inFocusString = "Currently in focus: ";
 
+        // face elements mode rectangle names
         public static readonly string[] rectangleNameE =
         {
             "Left Eye",
@@ -82,9 +75,11 @@ namespace CaptureLabel
             "Mouth Down"
         };
 
+        // look angle chekbox strings
         public static readonly string[] lookingAngleString =
             { "Left", "Right", "Up", "Down" };
 
+        // face mode rectangle names
         public static readonly string[] rectangleNameF =
         {
             "Face",
@@ -92,6 +87,7 @@ namespace CaptureLabel
             "Right eye "
         };
 
+        // eye countour mode rectangle names
         public static readonly string[] rectangleNameG =
         { 
             "Center Up", 
@@ -101,31 +97,26 @@ namespace CaptureLabel
             "Right Point" 
         };
 
+        // initial rectangle size
         public static Size rectSize = new Size(10, 10);
 
+        // face mode initial starting positions
+        public static readonly int[] faceModeStartPos =
+        {
+            200, 200,
+
+            250, 250,
+            350, 250
+        };
+
+        // face elements mode initial starting positions
         public static readonly int[] faceElementStartPos =
         {
             // (x, y)
-
-            // LEFT EYE
-            // leftEyeUp
-            //250, 200,
-            // leftEyeDown
-            //250, 250,
-            // leftEyeLeft
-            //200, 225,
-            // leftEyeRight
             300, 225,
 
             // RIGHT EYE
-            // rightEyeUp
-            //750, 200,
-            // rightEyeDown
-            //750, 250,
-            // rightEyeLeft
             700, 225,
-            // rightEyeRight
-            //800, 225,
 
             // NOSE
             500, 400,
@@ -137,21 +128,7 @@ namespace CaptureLabel
             500, 600
         };
 
-        public static readonly int[] faceModeStartPos =
-        {
-            200, 200,
-
-            250, 250,
-            350, 250
-        };
-
-        public static readonly Size[] faceModeStartSize =
-        {
-            new Size(200, 300),
-            new Size(10, 10),
-            new Size(10, 10)
-        };
-
+        // eye countour mode initial starting positions
         public static readonly int[] eyeContourStartPos =
         {
             // (x, y)
@@ -168,7 +145,17 @@ namespace CaptureLabel
             700, 400
         };
 
+        // face mode initial sizes
+        public static readonly Size[] faceModeStartSize =
+        {
+            new Size(200, 300),
+            new Size(10, 10),
+            new Size(10, 10)
+        };
+
+        // change in size for face recctangle in face mode
         public static readonly int modeFRectDeltaSize = 3; // in px
-        public static readonly double modeFRectScale = 1.5d; // 1 : 2
+        // constant width to height ration for every rectangle 2:3
+        public static readonly double modeFRectScale = 1.5d; // 2:3
     }
 }

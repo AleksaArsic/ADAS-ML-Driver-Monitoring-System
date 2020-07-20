@@ -4,24 +4,28 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using CsvHelper;
 
 namespace CaptureLabel
 {
+    // static class used for various methods used by application
     static class Utilities
     {
+        // parse supported image formats locations to List<string>
         public static List<string> parseImagesToList(List<string> inList)
         {
             List<string> outList = new List<string>();
 
+            // loop trough everything in folder that's already been stored in List<string> inList
             foreach (string item in inList)
             {
+                // loop trough inList and check if there are any images with supported formats
                 for (int i = 0; i < Constants.supportedFormats.Length; i++)
                 {
                     if (item.Contains(Constants.supportedFormats[i]))
                     {
+                        // add it to supported formats list
                         outList.Add(item);
                         break;
                     }
@@ -31,25 +35,7 @@ namespace CaptureLabel
             return outList;
         }
 
-        public static Bitmap CaptureScreenShot()
-        {
-            // get the bounding area of the screen containing (0,0)
-            // remember in a multidisplay environment you don't know which display holds this point
-            Rectangle bounds = Screen.GetBounds(Point.Empty);
-
-            // create the bitmap to copy the screen shot to
-            Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height);
-
-            // now copy the screen image to the graphics device from the bitmap
-            using (Graphics gr = Graphics.FromImage(bitmap))
-            {
-                gr.CopyFromScreen(Point.Empty, Point.Empty, bounds.Size);
-            }
-
-            return bitmap;
-        }
-
-        //public static char switchMode(ToolStripMenuItem tsmiFace, ToolStripMenuItem tsmiElements)
+        // switch mode based on ToolStripMenuItem[] tsmi list
         public static char switchMode(ToolStripMenuItem[] tsmi)
         {
             if (tsmi[0].Checked)
@@ -62,15 +48,14 @@ namespace CaptureLabel
             return '0';
         }
 
+        // write relevant information to .csv file that is not normalized
         public static void writeToCSV<T, U, X>(char mode, CoordinatesContainer<T> realCoordinatesList, List<string> imageNames, 
                                                 CoordinatesContainer<U> lookAngleContainer, CoordinatesContainer<X> faceModeSize, 
                                                 List<int> elementState = null, CoordinatesContainer<U> eyesNotVisibleContainer = null, bool normalized = false)
         {
-            //bool boolMode = (mode == Constants.faceMode ? true : false);
             // should be embedded in try-catch
             string csvPath = (normalized == true ? CaptureLabel.exportDirectory : CaptureLabel.saveDirectory);
             TextWriter writer = new StreamWriter(@csvPath, false, Encoding.UTF8);
-            //TextWriter writer = new StreamWriter(@"D:\Diplomski\DriverMonitoringSystem\Dataset\new.csv", false, Encoding.UTF8);
             CsvSerializer serializer = new CsvSerializer(writer, System.Globalization.CultureInfo.CurrentCulture);
             CsvWriter csv = new CsvWriter(serializer);
 
@@ -78,6 +63,7 @@ namespace CaptureLabel
 
             string[] rectNames = ((mode == Constants.faceMode) ? Constants.rectangleNameF : (mode == Constants.faceElementsMode ? Constants.rectangleNameE : Constants.rectangleNameG));
 
+            // construct header
             if (mode == Constants.faceMode)
                 csv.WriteField("noFace");
             if (mode == Constants.faceElementsMode)
@@ -94,16 +80,13 @@ namespace CaptureLabel
                 csv.WriteField("");
             }
 
-            //if (boolMode)
-            //{
-                foreach (string s in Constants.lookingAngleString)
-                    csv.WriteField(s);
+            foreach (string s in Constants.lookingAngleString)
+                csv.WriteField(s);
 
             if (mode == Constants.eyeContourMode)
                 csv.WriteField("Eye width:");
             else
                 csv.WriteField("Face width:");
-            //}
 
             csv.NextRecord();
 
@@ -120,6 +103,7 @@ namespace CaptureLabel
 
             csv.NextRecord();
 
+            // write rectangle coordinates to .csv file based on mode
             for (int i = 0; i < realCoordinatesList.getSize(); i++)
             {
                 csv.WriteField(imageNames[i]);
@@ -135,13 +119,11 @@ namespace CaptureLabel
                 foreach (T value in realCoordinatesList.getRow(i))
                     csv.WriteField(value);
 
-                //if (mode == Constants.faceMode)
-                //{
-                    foreach (U value in lookAngleContainer.getRow(i))
-                        csv.WriteField(value);
+                foreach (U value in lookAngleContainer.getRow(i))
+                    csv.WriteField(value);
 
-                    csv.WriteField(faceModeSize.getRow(i)[0]);
-                //}
+                csv.WriteField(faceModeSize.getRow(i)[0]);
+
 
                 csv.NextRecord();
             }
@@ -149,6 +131,7 @@ namespace CaptureLabel
             writer.Close();
         }
 
+        // write minimal and maximal values of coordinates used for normalization and denormalization of data 
         public static void writeMinMax<T, U>(char mode, CoordinatesContainer<T> minMax, CoordinatesContainer<U> faceModeMinMax = null)
         {
             bool boolMode = (mode == Constants.faceMode ? true : false);
@@ -162,9 +145,10 @@ namespace CaptureLabel
 
             csv.WriteField("");
 
+            // check which mode is selected to construct appropriate header
             string[] rectNames = (boolMode) ? Constants.rectangleNameF : (mode == Constants.faceElementsMode ? Constants.rectangleNameE : Constants.rectangleNameG);
-
             
+            // construct header
             foreach (string s in rectNames)
             {
                 csv.WriteField(s);
@@ -186,6 +170,7 @@ namespace CaptureLabel
             csv.NextRecord();
             csv.WriteField("Min:");
 
+            // write minimal and maximal values to .csv file
             for (int i = 0; i < minMaxT.Count; i++)
             {
 
@@ -202,12 +187,14 @@ namespace CaptureLabel
             writer.Close();
         }
 
+        // parse input .csv file that is passed to .csv path text box
         public static Tuple<List<int>, List<CoordinatesContainer<int>>> parseCSV(string path, char mode)
         {
             List<List<int>> result = new List<List<int>>();
             List<int> singleRow = new List<int>();
             int value = 0;
-
+            // construct Tuple object that contains List<int> with relevant information of the current mode 
+            // and List<CoordinateContainer<int>> that contains coordinates 
             Tuple<List<int>, List<CoordinatesContainer<int>>> retTuple;
 
             using (TextReader fileReader = File.OpenText(path))
@@ -229,6 +216,7 @@ namespace CaptureLabel
                     singleRow.Clear();
                 }
 
+                // based on working mode parse values 
                 if (mode != Constants.faceElementsMode)
                     retTuple = parseTypeOneCSV(mode, result);
                 else
@@ -238,6 +226,7 @@ namespace CaptureLabel
             }
         }
 
+        // used for parsing face elements mode and eye contour mode .csv files
         public static Tuple<List<int>, List<CoordinatesContainer<int>>> parseTypeOneCSV(char mode, List<List<int>> lines)
         {
             List<int> item1 = new List<int>();
@@ -251,6 +240,7 @@ namespace CaptureLabel
             int iCoordLow = 0;
             int iCoordHigh = 0;
 
+            // sets starting reading positions base on the working mode
             if(mode == Constants.faceMode)
             {
                 iCoordLow = 7;
@@ -262,12 +252,12 @@ namespace CaptureLabel
                 iCoordHigh = 15;
             }
 
-            //int i = 0;
+            // interate rough rows of values and parse them appropriately 
             foreach (List<int> line in lines)
             {
                 item1.Add(line[0]);
 
-                for(int i = 1; i < iCoordLow/*11*/; i++)
+                for(int i = 1; i < iCoordLow; i++)
                 {
                     singleRow.Add(line[i]);
                 }
@@ -276,7 +266,7 @@ namespace CaptureLabel
                 realCoordinates.addRow(temp);
                 singleRow.Clear();
 
-                for(int i = iCoordLow /*11*/; i < iCoordHigh /*15*/; i++)
+                for(int i = iCoordLow; i < iCoordHigh; i++)
                 {
                     singleRow.Add(line[i]);
                 }
@@ -299,6 +289,7 @@ namespace CaptureLabel
             return Tuple.Create(item1, item2);
         }
 
+        // parsing face elements mode values from .csv file
         public static Tuple<List<int>, List<CoordinatesContainer<int>>> parseFaceElements(List<List<int>> lines)
         {
             List<int> item1 = new List<int>();
@@ -310,11 +301,9 @@ namespace CaptureLabel
 
             List<int> singleRow = new List<int>();
 
-            //int i = 0;
+            // interate rough rows of values and parse them appropriately 
             foreach (List<int> line in lines)
             {
-                //item1.Add(line[0]);
-
                 singleRow.Add(line[0]);
                 singleRow.Add(line[1]);
 
@@ -354,134 +343,9 @@ namespace CaptureLabel
 
             return Tuple.Create(item1, item2);
         }
-        /*
-                public static CoordinatesContainer<T> readFromCSV<T>(string path, char mode)
-                {
 
-                    CoordinatesContainer<T> result = new CoordinatesContainer<T>();
-                    List<T> singleRow = new List<T>();
-                    T value;
-
-                    int start = 1;
-
-                    using (TextReader fileReader = File.OpenText(path))
-                    {
-                        var csv = new CsvReader(fileReader, System.Globalization.CultureInfo.CurrentCulture);
-                        csv.Configuration.HasHeaderRecord = false;
-
-                        csv.Read();
-                        csv.Read();
-
-                        if (mode == Constants.faceMode)
-                            start = 2;
-
-                        while (csv.Read())
-                        {
-                            for (int i = start; csv.TryGetField<T>(i, out value); i++)
-                            {
-                                if (mode == Constants.faceElementsMode && i == 11) break;
-                                if (mode == Constants.faceMode && i == 8) break;
-
-                                singleRow.Add(value);
-                            }
-                            List<T> temp = new List<T>(singleRow);
-                            result.addRow(temp);
-                            singleRow.Clear();
-                        }
-
-                    }
-                    return result;
-                }
-
-                public static CoordinatesContainer<T> readLookAngleFromCSV<T>(string path, char mode)
-                {
-                    CoordinatesContainer<T> result = new CoordinatesContainer<T>();
-                    List<T> singleRow = new List<T>();
-                    T value;
-
-                    int start = (mode == Constants.faceMode) ? 8 : 11;
-
-                    using (TextReader fileReader = File.OpenText(path))
-                    {
-                        var csv = new CsvReader(fileReader, System.Globalization.CultureInfo.CurrentCulture);
-                        csv.Configuration.HasHeaderRecord = false;
-
-                        csv.Read();
-                        csv.Read();
-
-                        while (csv.Read())
-                        {
-                            // correct to read look angle from face element .csv too
-                            for (int i = start; csv.TryGetField<T>(i, out value) && i < start + 4; i++)
-                            {
-                                singleRow.Add(value);
-                            }
-                            List<T> temp = new List<T>(singleRow);
-                            result.addRow(temp);
-                            singleRow.Clear();
-                        }
-
-                    }
-                    return result;
-                }
-
-                public static CoordinatesContainer<T> readFaceSizeFromCSV<T>(string path, char mode)
-                {
-
-                    CoordinatesContainer<T> result = new CoordinatesContainer<T>();
-                    List<T> singleRow = new List<T>();
-                    T value;
-
-                    int start = (mode == Constants.faceMode) ? 12 : 27;
-
-                    using (TextReader fileReader = File.OpenText(path))
-                    {
-                        var csv = new CsvReader(fileReader, System.Globalization.CultureInfo.CurrentCulture);
-                        csv.Configuration.HasHeaderRecord = false;
-
-                        csv.Read();
-                        csv.Read();
-
-                        while (csv.Read())
-                        {
-                            // correct to read face size from face element .csv too
-                            for (int i = start; csv.TryGetField<T>(i, out value); i++)
-                            {
-                                singleRow.Add(value);
-                            }
-                            List<T> temp = new List<T>(singleRow);
-                            result.addRow(temp);
-                            singleRow.Clear();
-                        }
-
-                    }
-                    return result;
-                }
-
-                public static List<int> readIsFacePresentFromCSV(string path)
-                {
-                    List<int> result = new List<int>();
-                    int value = 0;
-
-                    using (TextReader fileReader = File.OpenText(path))
-                    {
-                        var csv = new CsvReader(fileReader, System.Globalization.CultureInfo.CurrentCulture);
-                        csv.Configuration.HasHeaderRecord = false;
-
-                        csv.Read();
-                        csv.Read();
-
-                        while (csv.Read())
-                        {
-
-                            csv.TryGetField<int>(1, out value);
-                            result.Add(value);
-                        }
-
-                    }
-                    return result;
-                }
-        */
+        // called as part of the private void exportNormalized() function
+        // normalize output values to be saved to new .csv file
         public static Tuple<List<List<T>>, List<List<int>>> normalizeOutput<T, U>(CoordinatesContainer<U> realCoordinatesList, CoordinatesContainer<int> faceModeSize = null, char mode = 'f')
         {
             Tuple<List<List<T>>, List<List<int>>> normalized;
@@ -494,10 +358,9 @@ namespace CaptureLabel
             return normalized;
         }
 
+        // normalize output values for face mode 
         public static Tuple<List<List<T>>, List<List<int>>> normalizeOutputFaceMode<T, U>(CoordinatesContainer<U> realCoordinatesList)
         {
-            //CoordinatesContainer<U> retCoordinates = realCoordinatesList;
-
             List<List<U>> coordinates = new List<List<U>>(realCoordinatesList.getCoordinates());
             List<List<int>> minMaxValues = new List<List<int>>();
             List<List<T>> result = new List<List<T>>();
@@ -516,10 +379,13 @@ namespace CaptureLabel
 
                 List<T> temp = new List<T>();
 
+                // normalize output with formula:
+                // Xnorm = (X - Xmin) / (Xmax - Xmin)
                 for (int i = 0; i < l.Count; i++)
                 {
                     double val = (double)(Convert.ToInt32(l[i]) - min) / (max - min);
 
+                    // if value is not a number set it to zero
                     if (Double.IsNaN(val))
                         val = 0;
 
@@ -537,13 +403,13 @@ namespace CaptureLabel
             return Tuple.Create(result, minMaxValues);
         }
 
+        // normalize output values for face elements and eye countour mode
         public static Tuple<List<List<T>>, List<List<int>>> normalizeOutputFaceElements<T, U>(CoordinatesContainer<U> realCoordinatesList, CoordinatesContainer<int> faceModeSize)
         {
 
             List<List<U>> coordinates = new List<List<U>>(realCoordinatesList.getCoordinates());
             List<List<int>> minMaxValues = new List<List<int>>();
             List<List<T>> result = new List<List<T>>();
-
 
             // normalize elements
             int i = 0;
@@ -553,11 +419,14 @@ namespace CaptureLabel
 
                 List<T> temp = new List<T>();
 
+                // normalize output with formula:
+                // Xnorm = (X - Xmin) / (Xmax - Xmin)
                 for (int j = 0; j < l.Count; j += 2)
                 {
                     double valX = (double)(Convert.ToDouble(l[j]) / faceWidth);
                     double valY = (double)(Convert.ToDouble(l[j + 1]) / (faceWidth * Constants.modeFRectScale));
 
+                    // if value is not a number set it to zero
                     if (Double.IsNaN(valX) || Double.IsNaN(valY))
                     {
                         valX = 0;
@@ -575,6 +444,8 @@ namespace CaptureLabel
             return Tuple.Create(result, minMaxValues);
         }
 
+        // correct face rectangle coordinates because stored coordinates are coordinates
+        // of top left corner of the rectangle and we need central point for neural network input
         public static void correctFaceCoordinates(CoordinatesContainer<int> realCoordinatesList, CoordinatesContainer<int> faceModeSize, List<double> imageResizeFactor, double scale, bool reverse = false)
         {
             int i = 0;

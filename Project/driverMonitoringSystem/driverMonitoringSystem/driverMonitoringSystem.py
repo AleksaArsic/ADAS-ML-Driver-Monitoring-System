@@ -119,7 +119,7 @@ cTrue = 1
 cFalse = 0
 
 # on how many fps to average predictions
-cAverageFps = 6
+cAverageFps = 2
 
 ### INFO CONSTANTS ###
 cInfoDY = 20
@@ -410,8 +410,18 @@ def predictFace(vsource = 1):
 
             # mean predictions every cAverageFps 
             facePredictionAvgTemp.append(facePrediction)
-            if(frameId % cAverageFps == 0):
-                facePredictionAvg, facePredictionAvgTemp = averagePredictions(facePredictionAvgTemp)
+            #if(frameId % cAverageFps == 0):
+            if(abs(facePredictionAvgTemp[0][0][1] - facePredictionAvgTemp[-1][0][1]) <= 0.01 and 
+                abs(facePredictionAvgTemp[0][0][2] - facePredictionAvgTemp[-1][0][2]) <= 0.01 or
+                abs(facePredictionAvgTemp[0][0][11] - facePredictionAvgTemp[-1][0][11]) <= 0.02):
+                facePredictionAvg = [facePredictionAvgTemp[0][0]].copy()
+                facePredictionAvgTemp = []
+                facePredictionAvgTemp.append(facePredictionAvg)
+            else:
+                facePredictionAvg = [facePredictionAvgTemp[-1][0]].copy()
+                facePredictionAvgTemp = []
+                facePredictionAvgTemp.append(facePredictionAvg)
+                #facePredictionAvg, facePredictionAvgTemp = averagePredictions(facePredictionAvgTemp)
 
             # if face is found continue with other predictions
             if(facePredictionAvg[0][cNoFace] < cNoFaceThreshold):
@@ -485,6 +495,18 @@ def predictFace(vsource = 1):
 
                     # mean predictions every cAverageFps 
                         #leftEyePredictionAvg, leftEyePredictionAvgTemp = [], []
+
+
+                    #leftEyePredictionAvgTemp.append(eyesPrediction[cEyesDataLeft])
+                    #if(abs(leftEyePredictionAvgTemp[0][2] - leftEyePredictionAvgTemp[-1][2]) <= 0.03 and 
+                    #    abs(leftEyePredictionAvgTemp[0][3] - leftEyePredictionAvgTemp[-1][3]) <= 0.03):
+                    #    leftEyePredictionAvg = leftEyePredictionAvgTemp[0].copy()
+                    #    leftEyePredictionAvgTemp = []
+                    #    leftEyePredictionAvgTemp.append(leftEyePredictionAvg)
+                    #else:
+                    #    leftEyePredictionAvg = leftEyePredictionAvgTemp[-1].copy()
+                    #    leftEyePredictionAvg = []
+                    #    leftEyePredictionAvgTemp.append(leftEyePredictionAvg)
 
                     leftEyePredictionAvgTemp.append(eyesPrediction[cEyesDataLeft])
                     if(frameId % cAverageFps == 0):

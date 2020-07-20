@@ -29,7 +29,7 @@ import CNNmodel as cnn
 
 inputHeight = 100
 inputWidth = 100
-outputNo = 12
+outputNo = 16
 
 phase = 1
 

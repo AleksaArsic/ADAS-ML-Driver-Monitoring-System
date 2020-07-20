@@ -118,13 +118,13 @@ def loadImagesAndCategories(images, imgsDir, categories, catPath, phase = 1, inp
             #    cat.pop(7)
             # phase 2 specific
             if(phase == 2):
-                cat.pop(12)
-                cat.pop(12)
-                cat.pop(12)
-                cat.pop(12)
-                cat.pop(12)
+                cat.pop(16)
+            #    cat.pop(12)
+            #    cat.pop(12)
+            #    cat.pop(12)
+            #    cat.pop(12)
             # phase 3 specific
-            elif(phase == 3):
+            if(phase == 3):
                 cat.pop(15)
 
             cnt_cat = 0

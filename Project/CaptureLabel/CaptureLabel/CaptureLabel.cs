@@ -12,6 +12,7 @@ namespace CaptureLabel
 
     public partial class CaptureLabel : Form
     {
+        // general information fields
         public static string imageFolder = "";
         public static string csvPath = "";
         public static string csvFileName = "newCsv.csv";
@@ -25,6 +26,7 @@ namespace CaptureLabel
         private List<double> imagePadY = new List<double>();
         private int currentImageIndex = 0;
 
+        // set to true if it's been Saved as in current session
         private bool savedAs = false;
 
         // Rectangle labelers variables
@@ -49,35 +51,33 @@ namespace CaptureLabel
         private List<int> isFacePresent = new List<int>();
         private List<int> eyeClosed = new List<int>();
 
+        // set to true if past work has been loaded 
         bool loaded = false;
 
-        // mouse position
-        private int mouseX = 0;
-        private int mouseY = 0;
-
         private char mode = Constants.faceMode;
-        private bool modeSet = false;
 
         private string[] rectangleFocusNames;
         private List<int[]> rectSPostion = new List<int[]>();
 
+        // Constructor
         public CaptureLabel()
         {
             InitializeComponent();
+            // double buffering to remove flickering when scrolling trough images
             typeof(Panel).InvokeMember("DoubleBuffered", BindingFlags.SetProperty
                | BindingFlags.Instance | BindingFlags.NonPublic, null,
                imagePanel, new object[] { true });
-            /*
-            typeof(Panel).InvokeMember("DoubleBuffered", BindingFlags.SetProperty
-               | BindingFlags.Instance | BindingFlags.NonPublic, null,
-               ZoomViewP, new object[] { true });
-            */
+
+            // initialize defualt rectangle positions
             start();
+
+            //initializes selected mode
             initMode(mode);
             
         }
 
         // variables initialized only once, at the beginning
+        // initializes default rectangle positions at the beginning of the programm
         private void start()
         {
             rectSPostion.Add(Constants.faceElementStartPos);
@@ -85,14 +85,10 @@ namespace CaptureLabel
             rectSPostion.Add(Constants.eyeContourStartPos);
         }
 
-        private void CaptureLabel_Load(object sender, EventArgs e)
-        {
-            //leftUp.MouseLeftButtonDown += rectangle_MouseLeftButtonDown;
-        }
-
+        // keyboard event handler
         private void CaptureLabel_KeyDown(object sender, KeyEventArgs e)
         { 
-            // reset state of rectangles
+            // scorll up or down depending on key pressed
             if(e.KeyCode == Keys.PageUp || e.KeyCode == Keys.PageDown)
             {
                 // save all rectangles coordinates
@@ -103,9 +99,11 @@ namespace CaptureLabel
                 if (e.KeyCode == Keys.PageUp)
                     scrollUp();
 
+                // if there are no values for current image set them to initial position
                 if (!isLoaded)
                     rectangles.resetCoordinates(rectSPostion[mode - Constants.faceElementsMode]);
 
+                // reset relevant fields 
                 rectangles.resetFocusList();
                 someoneIsInFocus = false;
                 imagePanel.Refresh();
@@ -115,8 +113,6 @@ namespace CaptureLabel
             // paste previous picture rectangles to current picture
             if (e.KeyCode == Keys.X && currentImageIndex >= 1)
             {
-                //List<int> previosCoordinates = coordinatesList.getRow(currentImageIndex - 1);
-                //rectangles.setAllRectCoordinates(previosCoordinates);
                 loadCoordinates(currentImageIndex - 1);
                 imagePanel.Refresh();
             }
@@ -128,25 +124,21 @@ namespace CaptureLabel
                 {
                     rectangles.addToFocused(-1, 0);
                     imagePanel.Refresh();
-                    //setZoomView(mouseX, mouseY);
                 }
                 if (e.KeyCode == Keys.Right)
                 {
                     rectangles.addToFocused(1, 0);
                     imagePanel.Refresh();
-                    //setZoomView(mouseX, mouseY);
                 }
                 if (e.KeyCode == Keys.Down)
                 {
                     rectangles.addToFocused(0, 1);
                     imagePanel.Refresh();
-                    //setZoomView(mouseX, mouseY);
                 }
                 if (e.KeyCode == Keys.Up)
                 {
                     rectangles.addToFocused(0, -1);
                     imagePanel.Refresh();
-                    //setZoomView(mouseX, mouseY);
                 }
             }
 
@@ -154,7 +146,6 @@ namespace CaptureLabel
             // for face mode this will cause error. 
             // index out of range when setting focus on elements past index 2 
             // in focusShortcuts array
-
             Keys[] focusShortcuts = (mode == Constants.faceMode ? Constants.focusShortcutsF : Constants.focusShortcutsE);
 
             if (Array.Exists(focusShortcuts, 
@@ -169,35 +160,30 @@ namespace CaptureLabel
 
         }
 
-
+        // mouse event handler 
         private void imagePanel_MouseDown(object sender, MouseEventArgs e)
         {
+            // if not on image panel do nothing
             if (!imagePanel.ClientRectangle.Contains(e.Location)) return;
             
             if(e.Button == MouseButtons.Left)
             {
-                mouseX = Cursor.Position.X;
-                mouseY = Cursor.Position.Y;
-
-                //setZoomView(mouseX, mouseY);
-
                 // set rect in focus
                 currentlyInFocus = rectangles.contains(e.Location);
                 if (currentlyInFocus.Item1)
                 {
                     rectangles.resetFocusList();
-                    //someoneIsInFocus = false;
                     someoneIsInFocus = true;
                     if(someoneIsInFocus)
                         rectangles.setFocus(currentlyInFocus.Item2);
                     imagePanel.Refresh();
                 }
-
                 else
                 {
                     int inFocus = rectangles.inFocusIndex();
                     Rectangle rectInFocus = rectangles.findInFocus();
 
+                    // set rectangle center coordinates to mouse coordinates
                     if(inFocus != -1)
                         rectangles.setRectCoordinates(inFocus, e.X - rectInFocus.Width / 2, e.Y - rectInFocus.Height / 2);
 
@@ -214,6 +200,7 @@ namespace CaptureLabel
             if (imagePanel.ClientRectangle.Contains(e.Location))
                 imagePanel.Focus();
 
+            // change focus when mouse keys are released
             if(someoneIsInFocus)
             {
                 someoneIsInFocus = false;
@@ -223,10 +210,11 @@ namespace CaptureLabel
             
         }
 
+        // move rectangles based on mouse movement
         private void imagePanel_MouseMove(object sender, MouseEventArgs e)
         {
-
-            if (e.Button == MouseButtons.Left && someoneIsInFocus)// && rectInFocus.Contains(e.Location))
+            // if the mouse is on the focused rectangle and left mouse key is pressed, move it
+            if (e.Button == MouseButtons.Left && someoneIsInFocus)
             {
                 Rectangle rectInFocus = rectangles.findInFocus();
 
@@ -240,12 +228,13 @@ namespace CaptureLabel
             }         
         }
 
-
+        // scroll trough images with mouse wheel
         private void imagePanel_MouseWheel(object sender, MouseEventArgs e)
         {
             
             if (!imagePanel.ClientRectangle.Contains(e.Location) || imagePanel.BackgroundImage == null) return;
 
+            // change size of face rectangle in face mode
             if(mode == Constants.faceMode && Control.ModifierKeys == Keys.Control)
             {
                 if (e.Delta > 0)
@@ -280,6 +269,7 @@ namespace CaptureLabel
 
         }
         
+        // update rectangles and every compononent that needs to be redrawn
         private void imagePanel_Paint(object sender, PaintEventArgs e)
         {
             if (!loaded)
@@ -288,6 +278,7 @@ namespace CaptureLabel
             Rectangle[] rects = rectangles.getRectangles();
             int inFocus = rectangles.inFocusIndex();
 
+            // dont fill face rectangle in face mode with solid color if focused
             for(int i = 0; i < rects.Length; i++)
             {
                 if((mode != Constants.faceMode && inFocus == i) || (mode == Constants.faceMode && i != 0 && inFocus == i))
@@ -296,37 +287,43 @@ namespace CaptureLabel
                     e.Graphics.DrawRectangle(new Pen(Color.Red), rects[i]);
             }
 
+            // change in focus status bar
             if(someoneIsInFocus)
                     inFocusLabel.Text = Constants.inFocusString + " " + rectangleFocusNames[rectangles.inFocusIndex()];
 
+            // change current image index if changed
             imageCounterLabel.Text = Constants.imageCounterString + " " + (currentImageIndex + 1).ToString() + "/" + imageLocation.Count.ToString();
 
             imagePanel.Focus();
         }
 
+        // set imageFolder to imagePathTB textbox 
         private void imagePathTB_TextChanged(object sender, EventArgs e)
         {
             imageFolder = imagePathTB.Text;
         }
 
+        // set csvPath to csvPathTB textbox 
         private void csvPathTB_TextChanged(object sender, EventArgs e)
         {
             csvPath = csvPathTB.Text;
         }
 
+        // import button logic 
         private void button1_Click(object sender, EventArgs e)
         {
             Cursor.Current = Cursors.WaitCursor;
 
+            // release everything from memory before new import (or new import)
             cleanUp();
 
+            // initialize selected mode
             initMode(mode);
 
             try
             {            
                 // get list of everything in folder passed to imageFolder
                 imageLocation = new List<string>(Directory.GetFiles(imageFolder));
-                //csvFileName = Path.GetFileName(Path.GetDirectoryName(imageFolder));
                 csvFileName = new DirectoryInfo(imageFolder).Name;
 
                 var sortedFiles = Directory.GetFiles(@"C:\", "*").OrderByDescending(d => new FileInfo(d).CreationTime);
@@ -334,20 +331,24 @@ namespace CaptureLabel
                 // Parse list of image locations to contain only image locations
                 imageLocation = Utilities.parseImagesToList(imageLocation);
 
+                // import only if there are images found in folder
                 if (imageLocation.Count > 0)
                 {
+                    // set imagePanel to first image
                     imagePanel.BackgroundImage = Image.FromFile(imageLocation[0]);
                     currentImageIndex = 0;
 
+                    // extract image names
                     foreach(string name in imageLocation)
                         imageNames.Add(Path.GetFileNameWithoutExtension(name));
 
                     // check for existing .csv file
                     if(!String.IsNullOrEmpty(csvPath) && csvPath.Contains(".csv"))
                     {
-
+                        // parse .csv file based on mode selected
                         Tuple<List<int>, List<CoordinatesContainer<int>>> tempCSV = Utilities.parseCSV(csvPath, mode);
 
+                        // set mode relevant fields
                         if (mode == Constants.faceMode)
                             isFacePresent = tempCSV.Item1;
                         if (mode == Constants.faceElementsMode)
@@ -355,19 +356,12 @@ namespace CaptureLabel
                         if (mode == Constants.eyeContourMode)
                             eyeClosed = tempCSV.Item1;
 
+                        // set relevant fields to ones that are parsed from .csv file
                         realCoordinatesList = new CoordinatesContainer<int>(tempCSV.Item2[0]);
                         lookAngleContainer = new CoordinatesContainer<int>(tempCSV.Item2[1]);
                         faceModeSize = new CoordinatesContainer<int>(tempCSV.Item2[2]);
 
-                        // read and load coordinates from .csv
-                        //realCoordinatesList = Utilities.readFromCSV<int>(csvPath, mode);
-                        //if (mode == Constants.faceMode)
-                        //lookAngleContainer = Utilities.readLookAngleFromCSV<int>(csvPath, mode);
-                        //faceModeSize = Utilities.readFaceSizeFromCSV<int>(csvPath, mode);
-
-                        //if (mode == Constants.faceMode)
-                            //isFacePresent = Utilities.readIsFacePresentFromCSV(csvPath);
-
+                        // calculate resize factor between original image and image on the imagePanel
                         for (int i = 0; i < imageNames.Count; i++)
                         {
                             imagePanel.BackgroundImage = Image.FromFile(imageLocation[i]);
@@ -375,6 +369,7 @@ namespace CaptureLabel
                             imagePanel.BackgroundImage.Dispose();
                         }
 
+                        // correct face coordinates
                         if (mode == Constants.faceMode)
                             Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale, true);
 
@@ -386,17 +381,16 @@ namespace CaptureLabel
                             coordinatesList.addRow(new List<int>(calculateRectangleCoordinates(singleRow, i)));
                         }
 
+                        // load currentImageIndex image from file and load associated coordinates
                         imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
-
                         loadCoordinates(currentImageIndex);
-
-                        //csvPathTB.ReadOnly = true;
 
                     }
                     imagePathTB.ReadOnly = true;
                     loaded = true;
                 }
             }
+            // catch if something went wrong in the section above
             catch (Exception msg)
             {
                 imagePathTB.ReadOnly = false;
@@ -408,17 +402,17 @@ namespace CaptureLabel
             Cursor.Current = Cursors.Default;
         }
 
+        // scroll down trough images
         private void scrollDown()
         {
             currentImageIndex++;
 
+            // load new image if there is one to load
             if (currentImageIndex < imageLocation.Count)
             {
                 imagePanel.BackgroundImage.Dispose();
                 imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
-                //resetImagePanelSize();
                 isLoaded = loadCoordinates(currentImageIndex);
-                //resetCheckBoxes(new CheckBox[] { leftCB, rightCB, upCB, downCB });
             }
             else
             {
@@ -426,10 +420,12 @@ namespace CaptureLabel
             }
         }
 
+        // scroll up trough images
         private void scrollUp()
         {
             currentImageIndex--;
 
+            // load new image if there is one to load
             if (currentImageIndex < 0)
                 currentImageIndex = 0;
 
@@ -437,11 +433,11 @@ namespace CaptureLabel
             {
                 imagePanel.BackgroundImage.Dispose();
                 imagePanel.BackgroundImage = Image.FromFile(imageLocation[currentImageIndex]);
-                //resetImagePanelSize();
                 isLoaded = loadCoordinates(currentImageIndex);
             }
         }
 
+        // save coordinates of the current image index
         private void saveCoordinates()
         {
             // save all rectangles coordinates
@@ -460,11 +456,12 @@ namespace CaptureLabel
             }
 
             int faceWidth = (mode == Constants.faceMode) ? rectangles.getRectangles()[0].Width : imagePanel.BackgroundImage.Width;
+            
             // calculate real coordinates
             if (coordinatesList.getRow(currentImageIndex) == null)
             {
+                // add new properties associated with this image, some are based on current mode
                 lookAngleContainer.addRow(lookAngle.ToList());
-                //rectSizeFmode.Add(rectangles.getRectangles()[0].Width);
                 faceModeSize.addRow(new List<int> { faceWidth });
                 coordinatesList.addRow(coordinates);
                 realCoordinatesList.addRow(calculateRealCoordinates(coordinates));
@@ -478,11 +475,11 @@ namespace CaptureLabel
             }
             else
             {
+                // replace new properties associated with this image, some are based on current mode
                 lookAngleContainer.replaceRow(lookAngle.ToList(), currentImageIndex);
                 coordinatesList.replaceRow(coordinates, currentImageIndex);
                 realCoordinatesList.replaceRow(calculateRealCoordinates(coordinates), currentImageIndex);
                 faceModeSize.replaceRow(new List<int> { faceWidth }, currentImageIndex);
-                //rectSizeFmode[currentImageIndex] = rectangles.getRectangles()[0].Width;
 
                 if (mode == Constants.faceMode)
                     isFacePresent[currentImageIndex] = (noFaceCB.Checked ? 1 : 0);
@@ -492,6 +489,7 @@ namespace CaptureLabel
                     eyeClosed[currentImageIndex] = (eyeClosedCB.Checked ? 1 : 0);
             }
 
+            // set look angle and checkbox states
             lookAngle = new int[] { 0, 0, 0, 0 };
             setCheckBoxes(new CheckBox[] { leftCB, rightCB, upCB, downCB });
 
@@ -506,29 +504,28 @@ namespace CaptureLabel
                 eyeClosedCB.Checked = false;
         }
 
+        // load coordinates of the current image index
         private bool loadCoordinates(int index)
         {
+            // if there are no coordinates to load, return
             if (index >= realCoordinatesList.getSize())
                 return false;
 
+            // get corresponding coordinates and checkbox states
             List<int> singleRow = coordinatesList.getRow(index);
             List<int> faceSize = faceModeSize.getRow(index);
-            //List<int> singleRow = calculateRectangleCoordinates(realCoordinatesList.getRow(index), index);
             lookAngle = new int[] { 0, 0, 0, 0 };
             eyesNotVisible = new int[] { 0, 0 };
 
-            //if (isFacePresent.Count > currentImageIndex)
             if(mode == Constants.faceMode)
                 noFaceCB.Checked = (isFacePresent[index] == 0 ? false : true);
             if (mode == Constants.eyeContourMode)
                 eyeClosedCB.Checked = (eyeClosed[index] == 0 ? false : true);
-            //else
-              //  noFaceCB.Checked = false;
 
+            // set rectangle positions and checkbox states based on retireved values
             if (singleRow != null)
             {
                 rectangles.setAllRectCoordinates(singleRow);
-                //rectangles.setRectSize(0, new Size(new Point(rectSizeFmode[currentImageIndex], rectSizeFmode[currentImageIndex])));
                 lookAngle = lookAngleContainer.getRow(index).ToArray();
 
                 if (mode == Constants.faceElementsMode)
@@ -550,6 +547,7 @@ namespace CaptureLabel
             return false;
         }
 
+        // calculate resize factor between original image and image on the imagePanel
         private void calculateResizeFactor(int index)
         {
             if (imagePanel.BackgroundImage == null)
@@ -559,14 +557,20 @@ namespace CaptureLabel
             int realH = imagePanel.BackgroundImage.Height;
             int currentW = imagePanel.Width;
             int currentH = imagePanel.Height;
+
+            // calculate resize factors
             double wFactor = (double)currentW / realW;
             double hFactor = (double)currentH / realH;
 
+            // use minimal from two of the above
             double resizeFactor = Math.Min(wFactor, hFactor);
 
+            // calculate padding to be added
+            // this is done to presereve aspect ratio
             double padX = resizeFactor == wFactor ? 0 : (currentW - (resizeFactor * realW)) / 2;
             double padY = resizeFactor == hFactor ? 0 : (currentH - (resizeFactor * realH)) / 2;
 
+            // assigne resize factor the corresponding image
             if (index < imageResizeFactor.Count)
             {
                 imageResizeFactor[index] = resizeFactor;
@@ -581,6 +585,7 @@ namespace CaptureLabel
             }
         }
 
+        // calculate rectangle coordinates on the original image
         private List<int> calculateRealCoordinates(List<int> l)
         {
 
@@ -588,6 +593,8 @@ namespace CaptureLabel
 
             int tempX = 0;
             int tempY = 0;
+
+            // loop trough relative coordinates and calculate corresponding X and Y coordinates on the original image
             for (int i = 0; i < l.Count; i += 2)
             {
                 tempX = (int)(Math.Round((l[i] - imagePadX[currentImageIndex]) / imageResizeFactor[currentImageIndex], MidpointRounding.AwayFromZero));
@@ -599,14 +606,16 @@ namespace CaptureLabel
             return realCoordinates;
         }
 
+        // calculate rectangle coordinates on the imageView panel image
         private List<int> calculateRectangleCoordinates(List<int> l, int index)
         {
             List<int> rectCoordinates = new List<int>();
 
-            //calculateResizeFactor(index);
-
             int tempX = 0;
             int tempY = 0;
+
+            // loop trough real coordinates of the original image 
+            // and calculate corresponding X and Y coordinates on the imageView panel image
             for (int i = 0; i < l.Count; i += 2)
             {
                 tempX = (int)(Math.Round((l[i] * imageResizeFactor[index]), MidpointRounding.AwayFromZero) + imagePadX[index]);
@@ -618,6 +627,8 @@ namespace CaptureLabel
             return rectCoordinates;
         }
 
+        // clean up function 
+        // called when importing or re-importing data and when New is selected from the File menu
         private void cleanUp()
         {
             imagePathTB.ReadOnly = false;
@@ -650,7 +661,6 @@ namespace CaptureLabel
             imageResizeFactor = new List<double>();
             imagePadX = new List<double>();
             imagePadY = new List<double>();
-            //rectangles = new RectangleContainer();
             coordinatesList = new CoordinatesContainer<int>();
             realCoordinatesList = new CoordinatesContainer<int>();
 
@@ -661,25 +671,26 @@ namespace CaptureLabel
             eyeClosed = new List<int>();
     }
 
+    // initialize selected mode
     private void initMode(char currentMode)
         {
-
+            // initialize face mode and show appropriate group box properties
             if (currentMode == Constants.faceMode)
             {
                 rectangles = new RectangleContainer(3, Constants.faceModeStartPos, Constants.faceModeStartSize);
                 lookAngleGB.Text = Constants.faceAngleCB;
-                //lookAngleGB.Visible = true;
                 faceOptionsGB.Visible = true;
                 eyePropertiesGB.Visible = false;
                 eyePropertiesCGB.Visible = false;
 
                 rectangleFocusNames = Constants.rectangleNameF;
             }
+
+            // initialize face elements mode and show appropriate group box properties
             if (currentMode == Constants.faceElementsMode)
             {
                 rectangles = new RectangleContainer(5, Constants.faceElementStartPos, Constants.rectSize);
                 lookAngleGB.Text = Constants.lookAngleCB;
-                //lookAngleGB.Visible = false;
                 faceOptionsGB.Visible = false;
                 eyePropertiesGB.Visible = true;
                 eyePropertiesCGB.Visible = false;
@@ -687,11 +698,12 @@ namespace CaptureLabel
                 rectangleFocusNames = Constants.rectangleNameE;
 
             }
+
+            // initialize eye countour mode and show appropriate group box properties
             if (currentMode == Constants.eyeContourMode)
             {
                 rectangles = new RectangleContainer(5, Constants.eyeContourStartPos, Constants.rectSize);
                 lookAngleGB.Text = Constants.lookAngleCB;
-                //lookAngleGB.Visible = false;
                 faceOptionsGB.Visible = false;
                 eyePropertiesGB.Visible = false;
                 eyePropertiesCGB.Visible = true;
@@ -700,35 +712,41 @@ namespace CaptureLabel
             }
         }
 
+        // change leftCB state
         private void leftCB_CheckedChanged(object sender, EventArgs e)
         {
             setLookAngle(leftCB, 0);
             rightCB.Checked = false;
         }
 
+        // change rightCB state
         private void rightCB_CheckedChanged(object sender, EventArgs e)
         {
             setLookAngle(rightCB, 1);
             leftCB.Checked = false;
         }
 
+        // change upCB state
         private void upCB_CheckedChanged(object sender, EventArgs e)
         {
             setLookAngle(upCB, 2);
             downCB.Checked = false;
         }
 
+        // change downCB state
         private void downCB_CheckedChanged(object sender, EventArgs e)
         {
             setLookAngle(downCB, 3);
             upCB.Checked = false;
         }
 
+        // set look angle checkboxes
         private void setLookAngle(CheckBox cb, int index)
         {
             lookAngle[index] = cb.Checked ? 1 : 0;
         }
 
+        // change states of look angle checkboxes
         private void setCheckBoxes(CheckBox[] lookAngleCBs)
         {
             for(int i = 0; i < lookAngleCBs.Length; i++)
@@ -737,21 +755,10 @@ namespace CaptureLabel
             }
         }
 
-        private void noFaceCB_CheckedChanged(object sender, EventArgs e)
-        {
-            //setFaceAvailability(noFaceCB, currentImageIndex);
-        }
-
-        private void setFaceAvailability(CheckBox cb, int index)
-        {
-            if (isFacePresent.Count <= index)
-                isFacePresent.Add((cb.Checked ? 1 : 0));
-            else
-                isFacePresent[index] = cb.Checked ? 1 : 0;
-        }
-
+        // called when selected from File -> New 
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // ask user if he wishes to save his progress because it will be lost
             if(MessageBox.Show(Constants.saveProgressString, "Caution!", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 // save logic
@@ -761,6 +768,7 @@ namespace CaptureLabel
                     save();
             }
             
+            // set program into initial state
             loaded = false;
             imagePanel.BackgroundImage = null;
             imagePathTB.Text = "";
@@ -770,14 +778,17 @@ namespace CaptureLabel
             
         }
 
+        // called when selected from File -> Save
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // check if there is any work to be saved
             if (!loaded)
             {
                 MessageBox.Show(Constants.pleaseImport, Constants.pleaseImportCaption, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
+                // save logic
                 if(!savedAs)
                     saveAs();
                 else
@@ -785,38 +796,33 @@ namespace CaptureLabel
             }
         }
 
+        // called when selected from File -> Save as 
         private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // save as logic
-
             saveAs();
         }
 
+        // Save as logic called when selected from File -> Save as
         private void saveAs()
         {
+            // check if there is any work to be saved
             if (!loaded)
             {
                 MessageBox.Show(Constants.pleaseImport, Constants.pleaseImportCaption, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
+                // open Save file dialog and get relevant fields
                 SaveFileDialog saveFileDialog = new SaveFileDialog();
                 saveFileDialog.Filter = "CSV File|*.csv|All files|*.*";
                 saveFileDialog.Title = "Save .csv File";
                 saveFileDialog.RestoreDirectory = true;
 
+                // save logic
                 if(saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    // only correct if face mode is used
-
-                    saveDirectory = saveFileDialog.FileName;//Path.GetFullPath(saveFileDialog.FileName);    
-
-                    /*
-                    saveCoordinates();
-                    Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, Constants.modeFRectScale);
-                    Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer, faceModeSize);
-                    Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, Constants.modeFRectScale, true);
-                    */
+                    saveDirectory = saveFileDialog.FileName;   
 
                     save();
 
@@ -826,30 +832,40 @@ namespace CaptureLabel
             }
         }
 
+        // called when selected from File -> Save
         private void save()
         {
+            // save current image index coordinates
             saveCoordinates();
+
+            // check which mode is selected and save appropriately 
+            // face mode save logic
             if (mode == Constants.faceMode)
             {
+                // correct face coordinates and write them to .csv file
                 Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale);
                 Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer, faceModeSize, elementState: isFacePresent);
                 Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale, true);
             }
+            // face elements mode save logic
             if (mode == Constants.faceElementsMode)
                 Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer, 
                     faceModeSize, eyesNotVisibleContainer : eyesNotVisibleContainer);
+            // eye countour mode save logic
             if (mode == Constants.eyeContourMode)
                 Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer,
                     faceModeSize, elementState : eyeClosed);
         }
+
+        // called when selected from File -> Exit
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // if there is work in progress ask use if he wishes to save it because it will be lost
             if (loaded)
             {
                 if (MessageBox.Show(Constants.saveProgressString, "Caution!", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     // save logic
-
                     if (!savedAs)
                         saveAs();
                     else
@@ -860,21 +876,26 @@ namespace CaptureLabel
                 }
             }
             
+            // exit from application
             Application.Exit();
             
         }
 
+        // called when selected from Other -> about
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             MessageBox.Show(Constants.AboutMe, Constants.Version);
         }
 
+        // called when selected from Mode -> Face mode
         private void faceDetectionToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // set information about which mode is selected
             faceElementsDetectionToolStripMenuItem.Checked = false;
             eyeContourDetectionToolStripMenuItem.Checked = false;
             faceDetectionToolStripMenuItem.Checked = true;
 
+            // if there is work in progress ask use if he wishes to save it because it will be lost
             if (loaded)
             {
                 if (MessageBox.Show(Constants.saveProgressString, "Caution!", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
@@ -889,17 +910,19 @@ namespace CaptureLabel
                 MessageBox.Show(Constants.modeSwitchInformation, "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
 
-
-            //if (!modeSet)
+            // switch mode
             mode = Utilities.switchMode(new ToolStripMenuItem[] { faceDetectionToolStripMenuItem, faceElementsDetectionToolStripMenuItem, eyeContourDetectionToolStripMenuItem });
         }
 
+        // called when selected from Mode -> Face elements mode
         private void faceElementsDetectionToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // set information about which mode is selected
             faceDetectionToolStripMenuItem.Checked = false;
             eyeContourDetectionToolStripMenuItem.Checked = false;
             faceElementsDetectionToolStripMenuItem.Checked = true;
 
+            // if there is work in progress ask use if he wishes to save it because it will be lost
             if (loaded)
             {
                 if (MessageBox.Show(Constants.saveProgressString, "Caution!", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
@@ -914,18 +937,19 @@ namespace CaptureLabel
                 MessageBox.Show(Constants.modeSwitchInformation, "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
 
-
-            //if (!modeSet)
+            // switch mode
             mode = Utilities.switchMode(new ToolStripMenuItem[] { faceDetectionToolStripMenuItem, faceElementsDetectionToolStripMenuItem, eyeContourDetectionToolStripMenuItem });
         }
 
-
+        // called when selected from Mode -> Eye countour mode
         private void eyeContourDetectionToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // set information about which mode is selected
             faceElementsDetectionToolStripMenuItem.Checked = false;
             faceDetectionToolStripMenuItem.Checked = false;
             eyeContourDetectionToolStripMenuItem.Checked = true;
 
+            // if there is work in progress ask use if he wishes to save it because it will be lost
             if (loaded)
             {
                 if (MessageBox.Show(Constants.saveProgressString, "Caution!", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
@@ -940,18 +964,22 @@ namespace CaptureLabel
                 MessageBox.Show(Constants.modeSwitchInformation, "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
 
+            // switch mode
             mode = Utilities.switchMode(new ToolStripMenuItem[] { faceDetectionToolStripMenuItem, faceElementsDetectionToolStripMenuItem, eyeContourDetectionToolStripMenuItem });
 
         }
 
+        // called when selected from File -> Export normalized .csv
         private void exportNormalizedCsvToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // check if there is any work to be exported
             if(!loaded)
             {
                 MessageBox.Show(Constants.pleaseImport, Constants.pleaseImportCaptionExport, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
+                // if the work is not save ask user to first save it to normal .csv file
                 if(!savedAs)
                 {
 
@@ -971,18 +999,19 @@ namespace CaptureLabel
                     save();
                 }
 
-
+                // open save file dialog and set relevant fields
                 SaveFileDialog saveFileDialog = new SaveFileDialog();
                 saveFileDialog.Filter = "CSV File|*.csv|All files|*.*";
                 saveFileDialog.Title = "Export normalized .csv File";
                 saveFileDialog.RestoreDirectory = true;
 
+                // export values to normalized .csv file
                 if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     exportDirectory = saveFileDialog.FileName;
                     exportMinMaxDirectory = Path.Combine(Path.GetDirectoryName(saveFileDialog.FileName),
                                             Path.GetFileNameWithoutExtension(saveFileDialog.FileName) + "_min_max.csv");
-
+                    // export normalized values
                     exportNormalized();
                 }
 
@@ -990,6 +1019,7 @@ namespace CaptureLabel
 
         }
 
+        // exports values to normalized .csv file based on current work mode
         private void exportNormalized()
         {
             Tuple<List<List<double>>, List<List<int>>> normalized;
@@ -999,43 +1029,58 @@ namespace CaptureLabel
             CoordinatesContainer<int> minMaxCoord;
             CoordinatesContainer<int> minMaxFS;
 
+            // save current image index values
             saveCoordinates();
 
+            // export logic for face mode 
             if (mode == Constants.faceMode)
             {
+                // correct face coordinates
                 Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale);
 
+                // normalize coordinates and face size values
                 normalized = Utilities.normalizeOutput<double, int>(realCoordinatesList);
                 normalizedFS = Utilities.normalizeOutput<double, int>(faceModeSize);
 
+                // asing values to appropriate value containers
                 normalizedCoordinates = new CoordinatesContainer<double>(normalized.Item1);
                 minMaxCoord = new CoordinatesContainer<int>(normalized.Item2);
                 normalizedFaceSize = new CoordinatesContainer<double>(normalizedFS.Item1);
                 minMaxFS = new CoordinatesContainer<int>(normalizedFS.Item2);
 
+                // write normalized coordinates .csv file
                 Utilities.writeToCSV(mode, normalizedCoordinates, imageNames, lookAngleContainer, normalizedFaceSize,
                                      isFacePresent, normalized: true);
+
+                // create .csv file with minimal and maximal values needed for denormalization 
                 Utilities.writeMinMax(mode, minMaxCoord, minMaxFS);
 
+                // correct face coordinates
                 Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale, true);
             }
+            // export logic for face elements mode and eye countour mode
             else
             {
+                // normalize coordinates and face size values
                 normalized = Utilities.normalizeOutput<double, int>(realCoordinatesList, faceModeSize, Constants.faceElementsMode);
                 normalizedFS = Utilities.normalizeOutput<double, int>(faceModeSize);
 
+                // asing values to appropriate value containers
                 normalizedCoordinates = new CoordinatesContainer<double>(normalized.Item1);
                 minMaxCoord = new CoordinatesContainer<int>(normalized.Item2);
                 normalizedFaceSize = new CoordinatesContainer<double>(normalizedFS.Item1);
                 minMaxFS = new CoordinatesContainer<int>(normalizedFS.Item2);
 
+                // write normalized coordinates .csv file
                 Utilities.writeToCSV(mode, normalizedCoordinates, imageNames, lookAngleContainer,
                     faceModeSize, eyesNotVisibleContainer: eyesNotVisibleContainer, elementState: eyeClosed, normalized: true);
+                // create .csv file with minimal and maximal values needed for denormalization 
                 Utilities.writeMinMax(mode, minMaxCoord, minMaxFS);
 
             }
         }
 
+        // change state of LEnotVCB
         private void LEnotVCB_CheckedChanged(object sender, EventArgs e)
         {
             REnotVCB.Checked = false;
@@ -1043,6 +1088,7 @@ namespace CaptureLabel
 
         }
 
+        // change state of REnotVCB
         private void REnotVCB_CheckedChanged(object sender, EventArgs e)
         {
             LEnotVCB.Checked = false;
@@ -1050,11 +1096,13 @@ namespace CaptureLabel
 
         }
 
+        // change state of eyes not visible checkboxes
         private void setEyesNotVisible(CheckBox cb, int index)
         {
             eyesNotVisible[index] = cb.Checked ? 1 : 0;
         }
 
+        // change state of eyes not visible checkboxes
         private void setEyesCheckBoxes(CheckBox[] eyesNotVisibleCBs)
         {
             for (int i = 0; i < eyesNotVisibleCBs.Length; i++)
@@ -1063,10 +1111,13 @@ namespace CaptureLabel
             }
         }
 
+        // called when application is going to be closed
         private void CaptureLabel_FormClosing(Object sender, FormClosingEventArgs e)
         {
+            // check if any work is in progress
             if (loaded)
             {
+                // ask user to save work in progress because it will be lost.
                 if (MessageBox.Show(Constants.saveProgressString, "Caution!", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     // save logic

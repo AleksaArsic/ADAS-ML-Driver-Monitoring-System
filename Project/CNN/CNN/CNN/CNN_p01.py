@@ -20,7 +20,7 @@ windowName = "Video source"
 
 inputHeight = 100
 inputWidth = 100
-outputNo = 8
+outputNo = 12
 
 saveWidth = 200
 saveHeight = 300
@@ -28,6 +28,7 @@ saveHeight = 300
 phase = 1
 
 #imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\"
+#imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\tr_1\\"
 imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Project\\ImageCapture\\ImageCapture\\output_2020_07_17_12_10_14\\"
 #minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
 minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
@@ -201,11 +202,11 @@ def predictFromImages():
             c += 1
             continue
 
-        topLeftX = int(denormPredictions[cnt][1] - int((denormPredictions[cnt][7] / 2) + 0.5))
-        topLeftY = int(denormPredictions[cnt][2] - int(((denormPredictions[cnt][7] / 2) * 1.5) + 0.5))
+        topLeftX = int(denormPredictions[cnt][1] - int((denormPredictions[cnt][11] / 2) + 0.5))
+        topLeftY = int(denormPredictions[cnt][2] - int(((denormPredictions[cnt][11] / 2) * 1.5) + 0.5))
 
-        bottomRightX = int(denormPredictions[cnt][1] + int((denormPredictions[cnt][7] / 2) + 0.5))
-        bottomRightY = int(denormPredictions[cnt][2] + int(((denormPredictions[cnt][7] / 2) * 1.5) + 0.5))
+        bottomRightX = int(denormPredictions[cnt][1] + int((denormPredictions[cnt][11] / 2) + 0.5))
+        bottomRightY = int(denormPredictions[cnt][2] + int(((denormPredictions[cnt][11] / 2) * 1.5) + 0.5))
 
         clippedValues = np.clip([topLeftX, topLeftY, bottomRightX, bottomRightY], a_min = 0, a_max = None)
         croppedImage = img[clippedValues[1]:clippedValues[3], clippedValues[0]:clippedValues[2]]
@@ -251,7 +252,7 @@ def denormalizeAllPredictions(predictions, minMaxValues):
     for pred in denormPredictions:
         pred[1] = int((pred[1] * (minMaxValues[1][0] - minMaxValues[0][0]) + minMaxValues[0][0]) + 0.5)
         pred[2] = int((pred[2] * (minMaxValues[1][1] - minMaxValues[0][1]) + minMaxValues[0][1]) + 0.5)
-        pred[7] = int((pred[7] * (minMaxValues[1][6] - minMaxValues[0][6]) + minMaxValues[0][6]) + 0.5)
+        pred[11] = int((pred[11] * (minMaxValues[1][6] - minMaxValues[0][6]) + minMaxValues[0][6]) + 0.5)
 
     return denormPredictions
 
