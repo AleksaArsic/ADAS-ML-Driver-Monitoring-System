@@ -44,7 +44,7 @@ minMaxValuesPh03 = []
 inputHeight = 100
 inputWidth = 100
 faceOutputNo = 8
-faceElementsOutputNo = 12
+faceElementsOutputNo = 16
 attentionOutputNo = 15
 
 # debug 
@@ -159,7 +159,7 @@ def denormalizeFaceElementsPrediction(faceElementsPrediction, resizeFactor):
     faceElementsPredDenorm.append(faceElementsPrediction[0][0])
     faceElementsPredDenorm.append(faceElementsPrediction[0][1])
 
-    for i in range(2, len(faceElementsPrediction[0])):
+    for i in range(2, len(faceElementsPrediction[0]) - 4):
         faceElementsPredDenorm.append(int(((faceElementsPrediction[0][i] * (minMaxValuesPh02[1][i - 2] - minMaxValuesPh02[0][i - 2]) + minMaxValuesPh02[0][i - 2]) / resizeFactor) + 0.5))
 
     return [faceElementsPredDenorm]

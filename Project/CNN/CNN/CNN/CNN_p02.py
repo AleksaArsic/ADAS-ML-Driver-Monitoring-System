@@ -20,7 +20,7 @@ windowName = "Video source"
 
 inputHeight = 100
 inputWidth = 100
-outputNo = 12
+outputNo = 16
 
 phase = 1
 
@@ -201,6 +201,11 @@ def predictFromImages():
     cnt = 0    
     for img in images:
         # calculate coordinates to crop from
+
+        if denormPredictions[cnt][0] > 0.5 or denormPredictions[cnt][1] > 0.5:
+            cnt += 1
+            continue
+
         height, width, channels = img.shape
 
         tlLeyeX = int(denormPredictions[cnt][2] - int(0.15 * width))
@@ -244,7 +249,7 @@ def denormalizeAllPredictions(predictions, minMaxValues):
     denormPredictions = predictions.copy()
 
     for pred in denormPredictions:
-        for i in range(2, len(pred)):
+        for i in range(2, len(pred) - 4):
             pred[i] = int((pred[i] * (minMaxValues[1][i - 2] - minMaxValues[0][i - 2]) + minMaxValues[0][i - 2]) + 0.5)
 
 
