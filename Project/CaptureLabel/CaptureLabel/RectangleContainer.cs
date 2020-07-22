@@ -34,7 +34,7 @@ namespace CaptureLabel
             }
         }
 
-        // constructor used for eye countour mode
+        // constructor that accepts array of sizes to be set to corresponding rectangle
         public RectangleContainer(int rectNo, int[] startPos, Size[] rectSize)
         {
             if (rectNo > startPos.Length)

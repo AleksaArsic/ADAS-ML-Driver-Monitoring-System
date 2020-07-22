@@ -691,7 +691,7 @@ def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, faceImg
     topELeftX, topELeftY = eyeCropPoints(faceElementsPredDenorm[cLeftEyeX], faceElementsPredDenorm[cLeftEyeY], faceImg)[0]
     topERightX, topERightY = eyeCropPoints(faceElementsPredDenorm[cRightEyeX], faceElementsPredDenorm[cRightEyeY], faceImg)[0]
   
-    # calculate face elements coordinates on original frame
+    # calculate face elements coordinates on face image
     for i in range(0, len(faceElementsPredDenorm), 2):
         faceElementsPredDenorm[i] += topLeftX
         faceElementsPredDenorm[i + 1] += topLeftY

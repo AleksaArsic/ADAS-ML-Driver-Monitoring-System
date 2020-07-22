@@ -2,17 +2,6 @@ import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dropout, Flatten, Dense, Activation
 
-#BatchNormalization = tf.keras.layers.BatchNormalization
-#Conv2D = tf.keras.layers.Conv2D
-#MaxPooling2D = tf.keras.layers.MaxPooling2D
-#Activation = tf.keras.layers.Activation
-#Flatten = tf.keras.layers.Flatten
-#Dropout = tf.keras.layers.Dropout
-#Dense = tf.keras.layers.Dense
-#Sequential = tf.keras.models.Sequential
-
-#outputNo = 8
-
 def create_model(inputWidth, inputHeight, ch, outputNo):
     
     tf.keras.backend.set_floatx('float64')

@@ -3,7 +3,6 @@ using System.Windows.Forms;
 using System.IO;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.Linq;
 using System.Reflection;
 
@@ -310,7 +309,7 @@ namespace CaptureLabel
         }
 
         // import button logic 
-        private void button1_Click(object sender, EventArgs e)
+        private void importButton_Click(object sender, EventArgs e)
         {
             Cursor.Current = Cursors.WaitCursor;
 
@@ -1039,8 +1038,8 @@ namespace CaptureLabel
                 Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale);
 
                 // normalize coordinates and face size values
-                normalized = Utilities.normalizeOutput<double, int>(realCoordinatesList);
-                normalizedFS = Utilities.normalizeOutput<double, int>(faceModeSize);
+                normalized = Utilities.writeNormalized<double, int>(realCoordinatesList);
+                normalizedFS = Utilities.writeNormalized<double, int>(faceModeSize);
 
                 // asing values to appropriate value containers
                 normalizedCoordinates = new CoordinatesContainer<double>(normalized.Item1);
@@ -1062,8 +1061,8 @@ namespace CaptureLabel
             else
             {
                 // normalize coordinates and face size values
-                normalized = Utilities.normalizeOutput<double, int>(realCoordinatesList, faceModeSize, Constants.faceElementsMode);
-                normalizedFS = Utilities.normalizeOutput<double, int>(faceModeSize);
+                normalized = Utilities.writeNormalized<double, int>(realCoordinatesList, faceModeSize, Constants.faceElementsMode);
+                normalizedFS = Utilities.writeNormalized<double, int>(faceModeSize);
 
                 // asing values to appropriate value containers
                 normalizedCoordinates = new CoordinatesContainer<double>(normalized.Item1);
