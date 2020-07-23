@@ -1025,8 +1025,6 @@ namespace CaptureLabel
         // exports values to normalized .csv file based on current work mode
         private void exportNormalized()
         {
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-
             Tuple<List<List<double>>, List<List<int>>> normalized;
             Tuple<List<List<double>>, List<List<int>>> normalizedFS;
             CoordinatesContainer<double> normalizedCoordinates;
@@ -1084,10 +1082,6 @@ namespace CaptureLabel
                 Utilities.writeMinMax(mode, minMaxCoord, minMaxFS);
 
             }
-
-            watch.Stop();
-            var elapsedMs = watch.ElapsedMilliseconds;
-            System.Diagnostics.Debug.WriteLine("normalze other mode coordinates: " + elapsedMs);
         }
 
         // change state of LEnotVCB
