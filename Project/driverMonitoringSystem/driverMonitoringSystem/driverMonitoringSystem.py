@@ -760,7 +760,7 @@ if __name__ == "__main__":
     face_elements_model_name = "model_phase02.h5"
     attention_model_name = "model_phase03.h5"
 
-    face_model = cnn.create_model(inputWidth, inputHeight, 1, faceOutputNo)
+    #face_model = cnn.create_model(inputWidth, inputHeight, 1, faceOutputNo)
     face_elements_model = cnn.create_model(inputWidth, inputHeight, 1, faceElementsOutputNo)
     #attention_model = cnn.create_model(inputWidth, inputHeight, 1, attentionOutputNo)
 

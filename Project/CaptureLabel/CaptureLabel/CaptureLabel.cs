@@ -848,12 +848,16 @@ namespace CaptureLabel
             }
             // face elements mode save logic
             if (mode == Constants.faceElementsMode)
-                Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer, 
-                    faceModeSize, eyesNotVisibleContainer : eyesNotVisibleContainer);
+            {
+                Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer,
+                    faceModeSize, eyesNotVisibleContainer: eyesNotVisibleContainer);
+            }
             // eye countour mode save logic
             if (mode == Constants.eyeContourMode)
+            {
                 Utilities.writeToCSV(mode, realCoordinatesList, imageNames, lookAngleContainer,
-                    faceModeSize, elementState : eyeClosed);
+                    faceModeSize, elementState: eyeClosed);
+            }
         }
 
         // called when selected from File -> Exit
@@ -1021,6 +1025,8 @@ namespace CaptureLabel
         // exports values to normalized .csv file based on current work mode
         private void exportNormalized()
         {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+
             Tuple<List<List<double>>, List<List<int>>> normalized;
             Tuple<List<List<double>>, List<List<int>>> normalizedFS;
             CoordinatesContainer<double> normalizedCoordinates;
@@ -1046,6 +1052,7 @@ namespace CaptureLabel
                 minMaxCoord = new CoordinatesContainer<int>(normalized.Item2);
                 normalizedFaceSize = new CoordinatesContainer<double>(normalizedFS.Item1);
                 minMaxFS = new CoordinatesContainer<int>(normalizedFS.Item2);
+
 
                 // write normalized coordinates .csv file
                 Utilities.writeToCSV(mode, normalizedCoordinates, imageNames, lookAngleContainer, normalizedFaceSize,
@@ -1077,6 +1084,10 @@ namespace CaptureLabel
                 Utilities.writeMinMax(mode, minMaxCoord, minMaxFS);
 
             }
+
+            watch.Stop();
+            var elapsedMs = watch.ElapsedMilliseconds;
+            System.Diagnostics.Debug.WriteLine("normalze other mode coordinates: " + elapsedMs);
         }
 
         // change state of LEnotVCB
