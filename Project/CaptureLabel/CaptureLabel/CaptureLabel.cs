@@ -1038,8 +1038,8 @@ namespace CaptureLabel
                 Utilities.correctFaceCoordinates(realCoordinatesList, faceModeSize, imageResizeFactor, Constants.modeFRectScale);
 
                 // normalize coordinates and face size values
-                normalized = Utilities.writeNormalized<double, int>(realCoordinatesList);
-                normalizedFS = Utilities.writeNormalized<double, int>(faceModeSize);
+                normalized = Utilities.normalizeOutput<double, int>(realCoordinatesList);
+                normalizedFS = Utilities.normalizeOutput<double, int>(faceModeSize);
 
                 // asing values to appropriate value containers
                 normalizedCoordinates = new CoordinatesContainer<double>(normalized.Item1);
@@ -1061,8 +1061,8 @@ namespace CaptureLabel
             else
             {
                 // normalize coordinates and face size values
-                normalized = Utilities.writeNormalized<double, int>(realCoordinatesList, faceModeSize, Constants.faceElementsMode);
-                normalizedFS = Utilities.writeNormalized<double, int>(faceModeSize);
+                normalized = Utilities.normalizeOutput<double, int>(realCoordinatesList, faceModeSize, Constants.faceElementsMode);
+                normalizedFS = Utilities.normalizeOutput<double, int>(faceModeSize);
 
                 // asing values to appropriate value containers
                 normalizedCoordinates = new CoordinatesContainer<double>(normalized.Item1);
