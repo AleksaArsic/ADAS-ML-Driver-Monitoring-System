@@ -1,7 +1,7 @@
 import os 
 from pathlib import Path
 
-dirpath = 'C:\\Users\\Cisra\\Desktop\\22'
+dirpath = 'D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\3000\\'
 
 paths = sorted(Path(dirpath).iterdir(), key = os.path.getmtime)
 
