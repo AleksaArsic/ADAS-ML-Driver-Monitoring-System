@@ -29,7 +29,7 @@ phase = 1
 
 #imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\"
 #imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\tr_1\\"
-imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Project\\ImageCapture\\ImageCapture\\output_2020_07_17_12_10_14\\"
+imgsDir = "D:\\dataset_ph01\\output_2020_07_24\\"
 #minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
 minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
 #outputDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces_out\\"
@@ -168,6 +168,14 @@ def predictFromImages():
     global filenames
     global predictions
 
+    if path.exists(outputDir):
+        shutil.rmtree(outputDir)
+    if path.exists(drawOutputDir):
+        shutil.rmtree(drawOutputDir)
+
+    os.mkdir(outputDir)
+    os.mkdir(drawOutputDir)
+
     [images, filenames] = Utilities.loadImagesAndGrayscale(imgsDir, images, inputWidth, inputHeight)
 
     df_im = np.asarray(images)
@@ -181,14 +189,6 @@ def predictFromImages():
     # first load images again because we at this point have only gray images
     images = []
     [images, filenames] = Utilities.loadImages(imgsDir, images)
-
-    if path.exists(outputDir):
-        shutil.rmtree(outputDir)
-    if path.exists(drawOutputDir):
-        shutil.rmtree(drawOutputDir)
-
-    os.mkdir(outputDir)
-    os.mkdir(drawOutputDir)
 
     # crop images
     cnt = 0    
