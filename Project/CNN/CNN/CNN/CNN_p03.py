@@ -25,7 +25,7 @@ outputNo = 15
 phase = 1
 
 #imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase03\\"
-imgsDir = "D:\\Diplomski_all\\test_ph03\\"
+imgsDir = "D:\\Diplomski_all\\final_test\\test_ph03\\"
 
 
 images = []

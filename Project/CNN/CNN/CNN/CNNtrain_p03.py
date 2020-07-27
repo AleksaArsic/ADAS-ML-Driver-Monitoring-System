@@ -96,7 +96,7 @@ if __name__ == "__main__":
 
     model_name = "model_phase03.h5"
     callbacks = [
-        EarlyStopping(monitor='val_accuracy', mode = 'max', patience=50, verbose=1),
+        EarlyStopping(monitor='val_accuracy', mode = 'max', patience=350, verbose=1),
         keras.callbacks.ReduceLROnPlateau(monitor='val_accuracy', mode = 'max', factor=0.5, patience=15, min_lr=0.000001, verbose=1),
         ModelCheckpoint(model_name, monitor='val_accuracy', mode = 'max', verbose=1, save_best_only=True, save_weights_only=False),
         tensorboard

@@ -27,9 +27,9 @@ saveHeight = 300
 
 phase = 1
 
-#imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\"
+imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\"
 #imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\tr_1\\"
-imgsDir = "D:\\Diplomski_all\\final_test\\test_ph01\\"
+#imgsDir = "D:\\Diplomski_all\\final_test\\test_ph01\\"
 #minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
 minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
 #outputDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces_out\\"
