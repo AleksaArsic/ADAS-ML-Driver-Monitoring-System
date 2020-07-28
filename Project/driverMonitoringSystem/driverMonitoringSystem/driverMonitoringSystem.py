@@ -13,6 +13,7 @@ import tensorflow as tf
 from time import time
 from tensorflow import keras
 from PIL import Image, ImageDraw, ImageFont
+import winsound
 
 # window names
 mainWindowName = "Video source"
@@ -282,27 +283,6 @@ def correctEyesPrediction(eyePrediction = []):
                 eyePrediction[i] = cTrue
 
     return eyePrediction
-
-def determineLookAngleRay(eyePrediction = []):
-
-    x, y = 0, 0
-
-    if len(eyePrediction):
-        if(eyePrediction[11] or eyePrediction[12] or eyePrediction[13] or eyePrediction[14]):
-
-            tempL = -1 if eyePrediction[11] else 0
-            tempR = 1 if eyePrediction[12] else 0
-            tempU = -1 if eyePrediction[13] else 0
-            tempD = 1 if eyePrediction[14] else 0
-
-            x = eyePrediction[3] + 50 * tempL + 50 * tempR
-            y = eyePrediction[4] + 50 * tempU + 50 * tempD
-
-        else:
-            x = eyePrediction[3]
-            y = eyePrediction[4]
-
-    return (x, y)
 
 # resize image (img) and normalize it in range (0, 1)
 def resizeAndNormalizeImage(img):
@@ -639,7 +619,6 @@ def showInfo(image, noFacePred, facePredDenorm = [], faceElementsPredDenorm = []
 
     info = dateAndTime + "\n" + faceCoordinates + "\n" + leftEyeCoordinates + "\n" + rightEyeCoordinates + "\n" + applicationFPS
 
-    #tempImg = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     tempImg = Image.fromarray(image)
 
     draw = ImageDraw.Draw(tempImg)
@@ -656,7 +635,7 @@ def showInfo(image, noFacePred, facePredDenorm = [], faceElementsPredDenorm = []
     if(noFacePred > cNoFaceThreshold):
         draw.text((cDriverInfoX, cDriverInfoY), "Driver not present", font = driverFont, fill = driverFontColor)
 
-    image = np.array(tempImg)#cv2.cvtColor(np.array(tempImg), cv2.COLOR_RGB2BGR)
+    image = np.array(tempImg)
 
     return image
 
@@ -715,6 +694,7 @@ def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, faceImg
     # set color to red if eyes are closed
     if(eyesPrediction[cEyesDataLeft][cEyeClosed] or eyesPrediction[cEyesDataRight][cEyeClosed]):
         color = (0, 0, 255)
+        winsound.Beep(1000, 25)
 
     # draw circular points from predicted eyes points of interest on original image
     for i in range(1, len(leftEyePredDenorm) - 4, 2):
@@ -730,13 +710,6 @@ def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, faceImg
             cv2.line(image, (int(rightEyePredDenorm[i]) - halfLength, int(rightEyePredDenorm[i + 1])), (int(rightEyePredDenorm[i]) + halfLength, int(rightEyePredDenorm[i + 1])), color, thickness = 2)
             continue
         cv2.circle(image, (int(rightEyePredDenorm[i]), int(rightEyePredDenorm[i + 1])), 1, color, 2)
-
-    # looking angle ray, to be determined if it will be kept
-    leftRayX, leftRayY = determineLookAngleRay(leftEyePredDenorm)
-    rightRayX, rightRayY = determineLookAngleRay(rightEyePredDenorm)
-
-    #cv2.line(image, (int(leftEyePredDenorm[3]), int(leftEyePredDenorm[4])), (int(leftRayX), int(leftRayY)), (0, 255, 0), thickness=2)
-    #cv2.line(image, (int(rightEyePredDenorm[3]), int(rightEyePredDenorm[4])), (int(rightRayX), int(rightRayY)), (0, 255, 0), thickness=2)
 
     #image = showInfo(image, [faceXDenom, faceYDenom], faceElementsPredDenorm)
 
@@ -755,19 +728,14 @@ if __name__ == "__main__":
     # load font for driver information print
     driverFont = ImageFont.truetype(r"Fonts\\Roboto\\Roboto-Medium.ttf", size = 35)
 
-    # Recreate the exact same model
+    # Load models
     face_model_name = "model_phase01.h5"
     face_elements_model_name = "model_phase02.h5"
     attention_model_name = "model_phase03.h5"
 
-    #face_model = cnn.create_model(inputWidth, inputHeight, 1, faceOutputNo)
-    face_elements_model = cnn.create_model(inputWidth, inputHeight, 1, faceElementsOutputNo)
-    #attention_model = cnn.create_model(inputWidth, inputHeight, 1, attentionOutputNo)
-
     face_model = tf.keras.models.load_model(face_model_name)
-    face_elements_model.load_weights(face_elements_model_name)
+    face_elements_model = tf.keras.models.load_model(face_elements_model_name)
     attention_model = tf.keras.models.load_model(attention_model_name)
-    #attention_model.load_weights(attention_model_name)
 
     # load minimal and maximal values for denormalization
     minMaxValuesPh01 = Utilities.readMinMaxFromCSV(minMaxCSVpath)
@@ -776,14 +744,6 @@ if __name__ == "__main__":
 
     # predict face from live video source
     predictFace(1)
-
-    # predict face from image source
-    #predictFromImages()
-
-    # write results to .csv and on output images
-    # this is obsolete in this version
-    #Utilities.showStat(filenames, predictions, 0)
-    #Utilities.drawPredictionsToDisk(predictions, filenames, imgsDir, minMaxValuesPh01)
 
     script_end = datetime.datetime.now()
     print (script_end-script_start)
