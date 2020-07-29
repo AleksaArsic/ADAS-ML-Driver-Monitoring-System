@@ -389,18 +389,21 @@ def predictFace(vsource = 1):
             e_t = time()
 
             # mean predictions every cAverageFps 
-            facePredictionAvgTemp.append(facePrediction)
+            
+            facePredictionAvg = facePrediction
+            
+            #facePredictionAvgTemp.append(facePrediction)
             #if(frameId % cAverageFps == 0):
-            if(abs(facePredictionAvgTemp[0][0][1] - facePredictionAvgTemp[-1][0][1]) <= 0.01 and 
-                abs(facePredictionAvgTemp[0][0][2] - facePredictionAvgTemp[-1][0][2]) <= 0.01 or
-                abs(facePredictionAvgTemp[0][0][11] - facePredictionAvgTemp[-1][0][11]) <= 0.02):
-                facePredictionAvg = [facePredictionAvgTemp[0][0]].copy()
-                facePredictionAvgTemp = []
-                facePredictionAvgTemp.append(facePredictionAvg)
-            else:
-                facePredictionAvg = [facePredictionAvgTemp[-1][0]].copy()
-                facePredictionAvgTemp = []
-                facePredictionAvgTemp.append(facePredictionAvg)
+            #if(abs(facePredictionAvgTemp[0][0][1] - facePredictionAvgTemp[-1][0][1]) <= 0.01 and 
+            #    abs(facePredictionAvgTemp[0][0][2] - facePredictionAvgTemp[-1][0][2]) <= 0.01 or
+            #    abs(facePredictionAvgTemp[0][0][11] - facePredictionAvgTemp[-1][0][11]) <= 0.02):
+            #    facePredictionAvg = [facePredictionAvgTemp[0][0]].copy()
+            #    facePredictionAvgTemp = []
+            #    facePredictionAvgTemp.append(facePredictionAvg)
+            #else:
+            #    facePredictionAvg = [facePredictionAvgTemp[-1][0]].copy()
+            #    facePredictionAvgTemp = []
+            #    facePredictionAvgTemp.append(facePredictionAvg)
                 #facePredictionAvg, facePredictionAvgTemp = averagePredictions(facePredictionAvgTemp)
 
             # if face is found continue with other predictions
@@ -694,21 +697,21 @@ def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, faceImg
     # set color to red if eyes are closed
     if(eyesPrediction[cEyesDataLeft][cEyeClosed] or eyesPrediction[cEyesDataRight][cEyeClosed]):
         color = (0, 0, 255)
-        winsound.Beep(1000, 25)
+        #winsound.Beep(1000, 25)
 
     # draw circular points from predicted eyes points of interest on original image
     for i in range(1, len(leftEyePredDenorm) - 4, 2):
-        if(i == 1 or i == 5):
-            halfLength = int((leftEyeImg.shape[0] * 0.15) + 0.5)
-            cv2.line(image, (int(leftEyePredDenorm[i]) - halfLength, int(leftEyePredDenorm[i + 1])), (int(leftEyePredDenorm[i]) + halfLength, int(leftEyePredDenorm[i + 1])), color, thickness = 2)
-            continue
+        #if(i == 1 or i == 5):
+        #    halfLength = int((leftEyeImg.shape[0] * 0.15) + 0.5)
+        #    cv2.line(image, (int(leftEyePredDenorm[i]) - halfLength, int(leftEyePredDenorm[i + 1])), (int(leftEyePredDenorm[i]) + halfLength, int(leftEyePredDenorm[i + 1])), color, thickness = 2)
+        #    continue
         cv2.circle(image, (int(leftEyePredDenorm[i]), int(leftEyePredDenorm[i + 1])), 1, color, 2)
 
     for i in range(1, len(rightEyePredDenorm) - 4, 2):
-        if(i == 1 or i == 5):
-            halfLength = int((rightEyeImg.shape[0] * 0.15) + 0.5)
-            cv2.line(image, (int(rightEyePredDenorm[i]) - halfLength, int(rightEyePredDenorm[i + 1])), (int(rightEyePredDenorm[i]) + halfLength, int(rightEyePredDenorm[i + 1])), color, thickness = 2)
-            continue
+        #if(i == 1 or i == 5):
+        #    halfLength = int((rightEyeImg.shape[0] * 0.15) + 0.5)
+        #    cv2.line(image, (int(rightEyePredDenorm[i]) - halfLength, int(rightEyePredDenorm[i + 1])), (int(rightEyePredDenorm[i]) + halfLength, int(rightEyePredDenorm[i + 1])), color, thickness = 2)
+        #    continue
         cv2.circle(image, (int(rightEyePredDenorm[i]), int(rightEyePredDenorm[i + 1])), 1, color, 2)
 
     #image = showInfo(image, [faceXDenom, faceYDenom], faceElementsPredDenorm)
