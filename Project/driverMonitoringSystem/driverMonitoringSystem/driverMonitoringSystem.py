@@ -472,6 +472,7 @@ def predictFace(vsource = 1):
                 consumptionTime[5].append(e_t - s_t)
 
                 s_t = time()
+                eyesPredictionAvg = []
                 # check to see if any eye is present and correct noEyes and pupil direction to integer true/false values
                 if(lEyePresent and len(eyesPrediction[cEyesDataLeft])):
                     eyesPrediction[cEyesDataLeft] = correctEyesPrediction(eyesPrediction[cEyesDataLeft])
@@ -491,11 +492,11 @@ def predictFace(vsource = 1):
                     #    leftEyePredictionAvg = []
                     #    leftEyePredictionAvgTemp.append(leftEyePredictionAvg)
 
-                    leftEyePredictionAvgTemp.append(eyesPrediction[cEyesDataLeft])
-                    if(frameId % cAverageFps == 0):
-                        leftEyePredictionAvg, leftEyePredictionAvgTemp = averagePredictions(leftEyePredictionAvgTemp)
+                    #leftEyePredictionAvgTemp.append(eyesPrediction[cEyesDataLeft])
+                    #if(frameId % cAverageFps == 0):
+                    #    leftEyePredictionAvg, leftEyePredictionAvgTemp = averagePredictions(leftEyePredictionAvgTemp)
 
-                    eyesPredictionAvg.append(leftEyePredictionAvg)
+                    eyesPredictionAvg.append(eyesPrediction[cEyesDataLeft])
 
                 if(rEyePresent and len(eyesPrediction[cEyesDataRight])):
                     eyesPrediction[cEyesDataRight] = correctEyesPrediction(eyesPrediction[cEyesDataRight])
@@ -503,11 +504,11 @@ def predictFace(vsource = 1):
                     # mean predictions every cAverageFps 
                         #rightEyePredictionAvg, rightEyePredictionAvgTemp = [], []
 
-                    rightEyePredictionAvgTemp.append(eyesPrediction[cEyesDataRight])
-                    if(frameId % cAverageFps == 0):
-                        rightEyePredictionAvg, rightEyePredictionAvgTemp = averagePredictions(rightEyePredictionAvgTemp)
+                    #rightEyePredictionAvgTemp.append(eyesPrediction[cEyesDataRight])
+                    #if(frameId % cAverageFps == 0):
+                    #    rightEyePredictionAvg, rightEyePredictionAvgTemp = averagePredictions(rightEyePredictionAvgTemp)
 
-                    eyesPredictionAvg.append(rightEyePredictionAvg)
+                    eyesPredictionAvg.append(eyesPrediction[cEyesDataRight])
 
 
                 # draw face bounding box and face elements on live stream
@@ -622,9 +623,9 @@ def showInfo(image, noFacePred, facePredDenorm = [], faceElementsPredDenorm = []
 
     info = dateAndTime + "\n" + faceCoordinates + "\n" + leftEyeCoordinates + "\n" + rightEyeCoordinates + "\n" + applicationFPS
 
-    tempImg = Image.fromarray(image)
+    #tempImg = Image.fromarray(image)
 
-    draw = ImageDraw.Draw(tempImg)
+    #draw = ImageDraw.Draw(tempImg)
 
     infoFontColor = (0, 0, 0, 0)
     driverFontColor = (0, 0, 255, 0)
@@ -633,12 +634,14 @@ def showInfo(image, noFacePred, facePredDenorm = [], faceElementsPredDenorm = []
 
     for i, line in enumerate(info.split("\n")):
         y = y0 + i * cInfoDY
-        draw.text((cInfoX, y), line, font = infoFont, fill = infoFontColor)
+        cv2.putText(image, line, (10, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, infoFontColor, 2)
+        #draw.text((cInfoX, y), line, font = infoFont, fill = infoFontColor)
 
     if(noFacePred > cNoFaceThreshold):
-        draw.text((cDriverInfoX, cDriverInfoY), "Driver not present", font = driverFont, fill = driverFontColor)
+         cv2.putText(image, "Driver not present", (cDriverInfoX, cDriverInfoY), cv2.FONT_HERSHEY_SIMPLEX, 10, infoFontColor, 2)
+    #    draw.text((cDriverInfoX, cDriverInfoY), "Driver not present", font = driverFont, fill = driverFontColor)
 
-    image = np.array(tempImg)
+    #image = np.array(tempImg)
 
     return image
 
