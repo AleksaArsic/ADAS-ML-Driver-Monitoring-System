@@ -11,6 +11,7 @@ import pandas as pd
 import CNNmodel as cnn
 import tensorflow as tf 
 from time import time
+from time import clock
 from tensorflow import keras
 from PIL import Image, ImageDraw, ImageFont
 import winsound
@@ -373,12 +374,12 @@ def predictFace(vsource = 1):
         
         if(ret == True):
 
-            s_t = time()
+            s_t = clock()
 
             # frame grayscale and prepare for neural network 
             grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             preparedFrame = resizeAndNormalizeImage(grayFrame)
-            e_t = time()
+            e_t = clock()
 
             # frame preprocessing TIME
             consumptionTime[0].append(e_t - s_t)
@@ -411,18 +412,19 @@ def predictFace(vsource = 1):
                 # face prediction TIME
                 consumptionTime[1].append(e_t - s_t)
 
-                s_t = time()
+                s_t = clock()
                 # prepare face for neural network 
                 faceImg = cropFace(grayFrame, facePredictionAvg)
                 preparedFace = resizeAndNormalizeImage(faceImg)
-                e_t = time()
+                e_t = clock()
 
                 # face preprocessing TIME
                 consumptionTime[2].append(e_t - s_t)
 
-                s_t = time()
+                s_t = clock()
                 faceElementsPrediction = face_elements_model(preparedFace[np.newaxis, :, :, np.newaxis], training = False).numpy()
-                e_t = time()
+                e_t = clock()
+
 
                 # face elements prediction TIME
                 consumptionTime[3].append(e_t - s_t)
@@ -434,7 +436,7 @@ def predictFace(vsource = 1):
                 if(frameId % cAverageFps == 0):
                     faceElementsPredAvg, faceElementsPredAvgTemp = averagePredictions(faceElementsPredAvgTemp)
 
-                s_t = time()
+                s_t = clock()
 
                 eyesData = [] 
                 lEyePresent = False
@@ -458,15 +460,19 @@ def predictFace(vsource = 1):
                 # prepare eyes for neural network
                 df_im = np.asarray(eyesData)
                 df_im = df_im.reshape(df_im.shape[0], inputWidth, inputHeight, 1)
-                e_t = time()
+                e_t = clock()
+
+                print(e_t - s_t)
 
                 # face elements preprocessing TIME
                 consumptionTime[4].append(e_t - s_t)
 
-                s_t = time()
+                s_t = clock()
                 if len(eyesData):
                     eyesPrediction = attention_model(df_im, training = False).numpy()
-                e_t = time()
+                e_t = clock()
+
+                print(e_t - s_t)
 
                 # eyes prediction TIME
                 consumptionTime[5].append(e_t - s_t)
@@ -638,7 +644,7 @@ def showInfo(image, noFacePred, facePredDenorm = [], faceElementsPredDenorm = []
         #draw.text((cInfoX, y), line, font = infoFont, fill = infoFontColor)
 
     if(noFacePred > cNoFaceThreshold):
-         cv2.putText(image, "Driver not present", (cDriverInfoX, cDriverInfoY), cv2.FONT_HERSHEY_SIMPLEX, 10, infoFontColor, 2)
+         cv2.putText(image, "Driver not present", (cDriverInfoX, cDriverInfoY), cv2.FONT_HERSHEY_SIMPLEX, 0.5, infoFontColor, 2)
     #    draw.text((cDriverInfoX, cDriverInfoY), "Driver not present", font = driverFont, fill = driverFontColor)
 
     #image = np.array(tempImg)
