@@ -27,9 +27,9 @@ saveHeight = 300
 
 phase = 1
 
-imgsDir = "D:\\dataset_ph01\\output_2020_07_24\\"
+#imgsDir = "D:\\dataset_ph01\\output_2020_07_24\\"
 #imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\tr_1\\"
-#imgsDir = "D:\\Diplomski_all\\final_test\\test_ph01\\"
+imgsDir = "D:\\Diplomski_all\\final_test\\test_ph01\\"
 #minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
 minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
 #outputDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces_out\\"
@@ -168,13 +168,13 @@ def predictFromImages():
     global filenames
     global predictions
 
-    if path.exists(outputDir):
-        shutil.rmtree(outputDir)
-    if path.exists(drawOutputDir):
-        shutil.rmtree(drawOutputDir)
+    #if path.exists(outputDir):
+    #    shutil.rmtree(outputDir)
+    #if path.exists(drawOutputDir):
+    #    shutil.rmtree(drawOutputDir)
 
-    os.mkdir(outputDir)
-    os.mkdir(drawOutputDir)
+    #os.mkdir(outputDir)
+    #os.mkdir(drawOutputDir)
 
     [images, filenames] = Utilities.loadImagesAndGrayscale(imgsDir, images, inputWidth, inputHeight)
 
