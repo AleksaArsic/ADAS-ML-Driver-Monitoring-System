@@ -1,7 +1,7 @@
 import os 
 from pathlib import Path
 
-dirpath = 'C:\\Users\\Cisra\\Desktop\\33\\'
+dirpath = 'D:\\ImageCapture\\ImageCapture\\output_2020_08_01_22_19_42\\'
 
 paths = sorted(Path(dirpath).iterdir(), key = os.path.getmtime)
 

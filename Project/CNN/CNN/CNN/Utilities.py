@@ -125,7 +125,11 @@ def loadImagesAndCategories(images, imgsDir, categories, catPath, phase = 1, inp
             #    cat.pop(12)
             # phase 3 specific
             if(phase == 3):
-                cat.pop(15)
+                cat.pop(11)
+                cat.pop(11)
+                cat.pop(11)
+                cat.pop(11)
+                cat.pop(11)
 
             cnt_cat = 0
             for item in cat:

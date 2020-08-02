@@ -126,8 +126,13 @@ cAverageFps = 2
 ### INFO CONSTANTS ###
 cInfoDY = 20
 cInfoX = 15
-cDriverInfoX = 190
+cDriverInfoX = 140
 cDriverInfoY = 250
+
+### MOVING AVERAGE WINDOW SIZE ###
+cFaceWindowSize = 20
+cFaceElementsWindowSize = 20
+cEyesWindowSize = 10
 
 ###############################
 
@@ -319,13 +324,16 @@ def captureStart(vsource = 1):
 
     return cap
 
-# average predictions array 
-def averagePredictions(predictions):
-    np.mean(predictions, axis = 0)
-    predictionsAvg = predictions.copy()
-    predictionsAvg = predictionsAvg[0]
+# movinga average function
+def movingAverage(readings, reading, windowSize):
+    readings.append(reading)
 
-    return [predictionsAvg, []]
+    avg = np.mean(readings, axis = 0)
+
+    if(len(readings) == windowSize):
+        readings = readings[1:]
+
+    return avg, readings
 
 def predictFace(vsource = 1):
     global currentFPS
@@ -351,21 +359,15 @@ def predictFace(vsource = 1):
     cv2.namedWindow("Right " + eyeWindowName)
     cv2.namedWindow(faceWindowName)
 
-    consumptionTime = [[], [], [], [], [], [], []]
-    startTime = time()
-
-    ########### AVERAGE #############
-    facePredictionAvgTemp = []
+    ########## MOVING AVERAGE ##########
     facePredictionAvg = []
-
-    faceElementsPredAvgTemp = []
     faceElementsPredAvg = []
-
-    leftEyePredictionAvgTemp = []
-    leftEyePredictionAvg = []
-    rightEyePredictionAvgTemp = []
-    rightEyePredictionAvg = []
     eyesPredictionAvg = []
+
+    faceReadings = []
+    faceElementsReadings = []
+    leftEyeReadings = []
+    rightEyeReadings = []
 
     while(cap.isOpened()): # and (time() - startTime < breakTime)):  
         s_time = time()
@@ -373,70 +375,27 @@ def predictFace(vsource = 1):
         ret, frame = cap.read()
         
         if(ret == True):
-
-            s_t = clock()
-
             # frame grayscale and prepare for neural network 
             grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             preparedFrame = resizeAndNormalizeImage(grayFrame)
-            e_t = clock()
 
-            # frame preprocessing TIME
-            consumptionTime[0].append(e_t - s_t)
-
-            s_t = time()
             # predict face
             facePrediction = face_model(preparedFrame[np.newaxis, :, :, np.newaxis], training = False).numpy()
-            e_t = time()
 
-            # mean predictions every cAverageFps 
+            # moving average 
+            facePredictionAvg, faceReadings = movingAverage(faceReadings, facePrediction, cFaceWindowSize)
             
-            facePredictionAvg = facePrediction
-            
-            #facePredictionAvgTemp.append(facePrediction)
-            #if(frameId % cAverageFps == 0):
-            #if(abs(facePredictionAvgTemp[0][0][1] - facePredictionAvgTemp[-1][0][1]) <= 0.01 and 
-            #    abs(facePredictionAvgTemp[0][0][2] - facePredictionAvgTemp[-1][0][2]) <= 0.01 or
-            #    abs(facePredictionAvgTemp[0][0][11] - facePredictionAvgTemp[-1][0][11]) <= 0.02):
-            #    facePredictionAvg = [facePredictionAvgTemp[0][0]].copy()
-            #    facePredictionAvgTemp = []
-            #    facePredictionAvgTemp.append(facePredictionAvg)
-            #else:
-            #    facePredictionAvg = [facePredictionAvgTemp[-1][0]].copy()
-            #    facePredictionAvgTemp = []
-            #    facePredictionAvgTemp.append(facePredictionAvg)
-                #facePredictionAvg, facePredictionAvgTemp = averagePredictions(facePredictionAvgTemp)
 
             # if face is found continue with other predictions
             if(facePredictionAvg[0][cNoFace] < cNoFaceThreshold):
-                # face prediction TIME
-                consumptionTime[1].append(e_t - s_t)
-
-                s_t = clock()
                 # prepare face for neural network 
                 faceImg = cropFace(grayFrame, facePredictionAvg)
                 preparedFace = resizeAndNormalizeImage(faceImg)
-                e_t = clock()
 
-                # face preprocessing TIME
-                consumptionTime[2].append(e_t - s_t)
-
-                s_t = clock()
                 faceElementsPrediction = face_elements_model(preparedFace[np.newaxis, :, :, np.newaxis], training = False).numpy()
-                e_t = clock()
 
-
-                # face elements prediction TIME
-                consumptionTime[3].append(e_t - s_t)
-
-                # mean predictions every cAverageFps 
-                #faceElementsPredAvg, faceElementsPredAvgTemp = [], []
-
-                faceElementsPredAvgTemp.append(faceElementsPrediction)
-                if(frameId % cAverageFps == 0):
-                    faceElementsPredAvg, faceElementsPredAvgTemp = averagePredictions(faceElementsPredAvgTemp)
-
-                s_t = clock()
+                # moving average 
+                faceElementsPredAvg, faceElementsReadings = movingAverage(faceElementsReadings, faceElementsPrediction, cFaceElementsWindowSize)
 
                 eyesData = [] 
                 lEyePresent = False
@@ -460,66 +419,30 @@ def predictFace(vsource = 1):
                 # prepare eyes for neural network
                 df_im = np.asarray(eyesData)
                 df_im = df_im.reshape(df_im.shape[0], inputWidth, inputHeight, 1)
-                e_t = clock()
 
-                print(e_t - s_t)
-
-                # face elements preprocessing TIME
-                consumptionTime[4].append(e_t - s_t)
-
-                s_t = clock()
                 if len(eyesData):
                     eyesPrediction = attention_model(df_im, training = False).numpy()
-                e_t = clock()
 
-                print(e_t - s_t)
-
-                # eyes prediction TIME
-                consumptionTime[5].append(e_t - s_t)
-
-                s_t = time()
                 eyesPredictionAvg = []
                 # check to see if any eye is present and correct noEyes and pupil direction to integer true/false values
                 if(lEyePresent and len(eyesPrediction[cEyesDataLeft])):
-                    eyesPrediction[cEyesDataLeft] = correctEyesPrediction(eyesPrediction[cEyesDataLeft])
 
-                    # mean predictions every cAverageFps 
-                        #leftEyePredictionAvg, leftEyePredictionAvgTemp = [], []
+                    # moving average 
+                    leftEyeAvg, leftEyeReadings = movingAverage(leftEyeReadings, eyesPrediction[cEyesDataLeft], cEyesWindowSize)
+                    eyesPredictionAvg.append(leftEyeAvg)
 
-
-                    #leftEyePredictionAvgTemp.append(eyesPrediction[cEyesDataLeft])
-                    #if(abs(leftEyePredictionAvgTemp[0][2] - leftEyePredictionAvgTemp[-1][2]) <= 0.03 and 
-                    #    abs(leftEyePredictionAvgTemp[0][3] - leftEyePredictionAvgTemp[-1][3]) <= 0.03):
-                    #    leftEyePredictionAvg = leftEyePredictionAvgTemp[0].copy()
-                    #    leftEyePredictionAvgTemp = []
-                    #    leftEyePredictionAvgTemp.append(leftEyePredictionAvg)
-                    #else:
-                    #    leftEyePredictionAvg = leftEyePredictionAvgTemp[-1].copy()
-                    #    leftEyePredictionAvg = []
-                    #    leftEyePredictionAvgTemp.append(leftEyePredictionAvg)
-
-                    #leftEyePredictionAvgTemp.append(eyesPrediction[cEyesDataLeft])
-                    #if(frameId % cAverageFps == 0):
-                    #    leftEyePredictionAvg, leftEyePredictionAvgTemp = averagePredictions(leftEyePredictionAvgTemp)
-
-                    eyesPredictionAvg.append(eyesPrediction[cEyesDataLeft])
+                    eyesPredictionAvg[cEyesDataLeft] = correctEyesPrediction(eyesPredictionAvg[cEyesDataLeft])
 
                 if(rEyePresent and len(eyesPrediction[cEyesDataRight])):
-                    eyesPrediction[cEyesDataRight] = correctEyesPrediction(eyesPrediction[cEyesDataRight])
                     
-                    # mean predictions every cAverageFps 
-                        #rightEyePredictionAvg, rightEyePredictionAvgTemp = [], []
+                    # moving average 
+                    rightEyeAvg, rightEyeReadings = movingAverage(rightEyeReadings, eyesPrediction[cEyesDataRight], cEyesWindowSize)
+                    eyesPredictionAvg.append(rightEyeAvg)
 
-                    #rightEyePredictionAvgTemp.append(eyesPrediction[cEyesDataRight])
-                    #if(frameId % cAverageFps == 0):
-                    #    rightEyePredictionAvg, rightEyePredictionAvgTemp = averagePredictions(rightEyePredictionAvgTemp)
-
-                    eyesPredictionAvg.append(eyesPrediction[cEyesDataRight])
-
+                    eyesPredictionAvg[cEyesDataRight] = correctEyesPrediction(eyesPredictionAvg[cEyesDataRight])
 
                 # draw face bounding box and face elements on live stream
-                frame, facePredDenorm, faceElementsPredDenorm = drawPredictionOnImage(facePredictionAvg, faceElementsPredAvg, frame, faceImg, eyesPrediction, leftEyeImg, rightEyeImg)
-                #drawPredictionOnImage(facePrediction, faceElementsPrediction, frame, faceImg, eyesPrediction)
+                frame, facePredDenorm, faceElementsPredDenorm = drawPredictionOnImage(facePredictionAvg, faceElementsPredAvg, frame, faceImg, eyesPredictionAvg, leftEyeImg, rightEyeImg)
 
                 #debug
                 drawEyesOnFace(facePrediction, faceElementsPrediction, faceImg, eyesPrediction)
@@ -541,11 +464,7 @@ def predictFace(vsource = 1):
 
             if(frameId > 60):
                 frameId = 0
-            e_t = time()
           
-            # visual notification TIME
-            consumptionTime[6].append(e_t - s_t)
-
             if(cv2.waitKey(1) & 0xFF == ord('q')):
                 break
         else:
@@ -556,10 +475,6 @@ def predictFace(vsource = 1):
         el_time = e_t - s_t
 
         currentFPS = int(1 / elapsed)
-
-        #print("Processing time: " + str(el_time))
-        #print("Processing time of current frame: " + str(elapsed))
-        #print("FPS: " + str(currentFPS))
 
     Utilities.showAverageTimeConsumption(consumptionTime, breakTime)
     cap.release()
@@ -629,10 +544,6 @@ def showInfo(image, noFacePred, facePredDenorm = [], faceElementsPredDenorm = []
 
     info = dateAndTime + "\n" + faceCoordinates + "\n" + leftEyeCoordinates + "\n" + rightEyeCoordinates + "\n" + applicationFPS
 
-    #tempImg = Image.fromarray(image)
-
-    #draw = ImageDraw.Draw(tempImg)
-
     infoFontColor = (0, 0, 0, 0)
     driverFontColor = (0, 0, 255, 0)
 
@@ -641,13 +552,9 @@ def showInfo(image, noFacePred, facePredDenorm = [], faceElementsPredDenorm = []
     for i, line in enumerate(info.split("\n")):
         y = y0 + i * cInfoDY
         cv2.putText(image, line, (10, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, infoFontColor, 2)
-        #draw.text((cInfoX, y), line, font = infoFont, fill = infoFontColor)
 
     if(noFacePred > cNoFaceThreshold):
-         cv2.putText(image, "Driver not present", (cDriverInfoX, cDriverInfoY), cv2.FONT_HERSHEY_SIMPLEX, 0.5, infoFontColor, 2)
-    #    draw.text((cDriverInfoX, cDriverInfoY), "Driver not present", font = driverFont, fill = driverFontColor)
-
-    #image = np.array(tempImg)
+         cv2.putText(image, "Driver not present", (cDriverInfoX, cDriverInfoY), cv2.FONT_HERSHEY_SIMPLEX, 1.3, driverFontColor, 2)
 
     return image
 
@@ -735,11 +642,6 @@ if __name__ == "__main__":
     #my_devices = tf.config.experimental.list_physical_devices(device_type='CPU')
     #tf.config.set_visible_devices([], 'GPU')
 
-    # load font for information print
-    infoFont = ImageFont.truetype(r"Fonts\\Roboto\\Roboto-Medium.ttf", size = 15)
-    # load font for driver information print
-    driverFont = ImageFont.truetype(r"Fonts\\Roboto\\Roboto-Medium.ttf", size = 35)
-
     # Load models
     face_model_name = "model_phase01.h5"
     face_elements_model_name = "model_phase02.h5"
@@ -759,5 +661,4 @@ if __name__ == "__main__":
 
     script_end = datetime.datetime.now()
     print (script_end-script_start)
-
 
