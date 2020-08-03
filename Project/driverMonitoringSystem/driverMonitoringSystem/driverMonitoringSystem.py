@@ -81,6 +81,10 @@ cFaceY = 2
 cFaceW = 11
 cFaceWminMax = 7
 
+# start indexes of Face angle fields in prediction array
+cFaceAngleStartIndex = 7
+cFaceAngleEndIndex = 11
+
 # indexes of face point of interest in denormalized face prediction array
 cFaceXdenorm = 0
 cFaceYdenorm = 1
@@ -117,6 +121,7 @@ cLabeledFaceHeight = 300
 
 ### THRESHOLDS ###
 cNoFaceThreshold = 0.5 #(1 is debug value)
+cFaceHasAngle = 0.5
 cNoEyeThreshold = 0.5
 cEyeOpenThreshold = 0.5
 cEyePupilDirectionThreshold = 0.5
@@ -146,6 +151,9 @@ cTimeInterval = 2.5
 # holidng eyes predictions for both eyes
 eyesAttentionList = [[], []]
 
+# holding face predictions
+faceAttentionList = []
+
 # index of left and right eye data in eyesAttentionList
 cLeftEyeAtt = 0
 cRightEyeAtt = 1
@@ -157,8 +165,13 @@ cSoundFrequency = 1000
 
 # EYES CLOSED THRESHOLD 
 # if sum of 'eyeClosed' predictions for both eyes are greater than this number
-# give a  sound warning
+# give a sound warning
 cEyesClosedThreshold = 35
+
+# FACE HAS ANGLE THRESHOLD
+# if there is more than cFaceHasAngleThreshold predictions in face prediction array 
+# that have an angle fields set to 1 give a sound warning
+cFaceHasAngleThreshold = 40 
 
 ###############################
 
@@ -300,6 +313,7 @@ def eyeCropPoints(x, y, faceImg):
 
     return [(tlEyeX, tlEyeY), (brEyeX, brEyeY)]
 
+# check if 'eyeClosed' is above cEyeOpenThreshold and set it to 1 if above
 def correctEyesPrediction(eyePrediction = []):
     # left and right eye open prediction correct
     if len(eyePrediction):
@@ -315,6 +329,17 @@ def correctEyesPrediction(eyePrediction = []):
                 eyePrediction[i] = cTrue
 
     return eyePrediction
+
+# check if Face angle fields are above cFaceHasAngle and set it to 1 if above
+def correctFacePrediction(facePrediction = []):
+    if len(facePrediction):
+        for i in range(cFaceAngleStartIndex, cFaceAngleEndIndex):
+            if(facePrediction[0][i] < cFaceHasAngle):
+                facePrediction[0][i] = cFalse
+            else:
+                facePrediction[0][i] = cTrue
+
+    return facePrediction
 
 # resize image (img) and normalize it in range (0, 1)
 def resizeAndNormalizeImage(img):
@@ -363,10 +388,14 @@ def movingAverage(readings, reading, windowSize):
 
 def checkAttention(): 
     global eyesAttentionList
+    global faceAttentionList
 
     # how many frames in cTimeInterval have 'eyeClosed' prediction set to 1
     leftEyeFramesOpen = 0
     rightEyeFramesOpen = 0
+
+    # how many frames in cTimeInterval have Face angle fields prediction set to 1
+    faceHasAngle = 0
 
     # start thread every cTimeInterval seconds
     threading.Timer(cTimeInterval, checkAttention).start()
@@ -379,15 +408,23 @@ def checkAttention():
     for i in range(len(eyesAttentionList[cRightEyeAtt])):
         rightEyeFramesOpen += eyesAttentionList[cRightEyeAtt][i][cEyeClosed]
 
-    # reset state of the eyesAttentionList
+    # how many frames in cTimeInterval have Face angle fields prediction set to 1
+    for i in range(len(faceAttentionList)):
+        for j in range(cFaceAngleStartIndex, cFaceAngleEndIndex):
+            faceHasAngle += faceAttentionList[i][0][j]
+
+    print(str(len(faceAttentionList)))
+    # reset state of the eyesAttentionList and faceAttentionList
     eyesAttentionList = [[], []]
+    faceAttentionList = []
 
     # check if attention dropped
-    if (leftEyeFramesOpen + rightEyeFramesOpen >= cEyesClosedThreshold):
+    if (leftEyeFramesOpen + rightEyeFramesOpen >= cEyesClosedThreshold or
+        faceHasAngle >= cFaceHasAngleThreshold):
         winsound.Beep(cSoundFrequency, cSoundDuration)
 
+    print(str(faceHasAngle))
     #print(str(leftEyeFramesOpen) + " " + str(rightEyeFramesOpen))
-
 
 def predictFace(vsource = 1):
     global currentFPS
@@ -441,17 +478,21 @@ def predictFace(vsource = 1):
             # predict face
             facePrediction = face_model(preparedFrame[np.newaxis, :, :, np.newaxis], training = False).numpy()
             
+            # correct Face angle fields if facePrediction list
+            facePrediction = correctFacePrediction(facePrediction)
+
+            # add predictions to attention check list
+            faceAttentionList.append(facePrediction)
+
             # moving average 
             facePredictionAvg, faceReadings = movingAverage(faceReadings, facePrediction, cFaceWindowSize)
             
-
             # if face is found continue with other predictions
             if(facePredictionAvg[0][cNoFace] < cNoFaceThreshold):
                 
                 # prepare face for neural network 
                 faceImg = cropFace(grayFrame, facePredictionAvg)
                 preparedFace = resizeAndNormalizeImage(faceImg)
-                
                 
                 faceElementsPrediction = face_elements_model(preparedFace[np.newaxis, :, :, np.newaxis], training = False).numpy()
                 
@@ -489,7 +530,9 @@ def predictFace(vsource = 1):
                 # check to see if any eye is present and correct noEyes and pupil direction to integer true/false values
                 if(lEyePresent and len(eyesPrediction[cEyesDataLeft])):
                     eyesPrediction[cEyesDataLeft] = correctEyesPrediction(eyesPrediction[cEyesDataLeft])
+                    # add predictions to attention check list
                     eyesAttentionList[0].append(eyesPrediction[cEyesDataLeft])
+
                     # moving average 
                     leftEyeAvg, leftEyeReadings = movingAverage(leftEyeReadings, eyesPrediction[cEyesDataLeft], cEyesWindowSize)
                     leftEyeAvg[0] = eyesPrediction[cEyesDataLeft][0]
@@ -498,6 +541,7 @@ def predictFace(vsource = 1):
 
                 if(rEyePresent and len(eyesPrediction[cEyesDataRight])):
                     eyesPrediction[cEyesDataRight] = correctEyesPrediction(eyesPrediction[cEyesDataRight])
+                    # add predictions to attention check list
                     eyesAttentionList[1].append(eyesPrediction[cEyesDataRight])
 
                     # moving average 
