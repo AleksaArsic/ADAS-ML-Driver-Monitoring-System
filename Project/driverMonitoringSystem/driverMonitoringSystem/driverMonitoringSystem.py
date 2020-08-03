@@ -375,7 +375,7 @@ def captureStart(vsource = 0):
 
     return cap
 
-# movinga average function
+# moving average function
 def movingAverage(readings, reading, windowSize):
     readings.append(reading)
 
@@ -389,6 +389,8 @@ def movingAverage(readings, reading, windowSize):
 def checkAttention(): 
     global eyesAttentionList
     global faceAttentionList
+
+    s_t = clock()
 
     # how many frames in cTimeInterval have 'eyeClosed' prediction set to 1
     leftEyeFramesOpen = 0
@@ -413,18 +415,16 @@ def checkAttention():
         for j in range(cFaceAngleStartIndex, cFaceAngleEndIndex):
             faceHasAngle += faceAttentionList[i][0][j]
 
-    print(str(len(faceAttentionList)))
     # reset state of the eyesAttentionList and faceAttentionList
     eyesAttentionList = [[], []]
     faceAttentionList = []
+
+    print(clock() - s_t)
 
     # check if attention dropped
     if (leftEyeFramesOpen + rightEyeFramesOpen >= cEyesClosedThreshold or
         faceHasAngle >= cFaceHasAngleThreshold):
         winsound.Beep(cSoundFrequency, cSoundDuration)
-
-    print(str(faceHasAngle))
-    #print(str(leftEyeFramesOpen) + " " + str(rightEyeFramesOpen))
 
 def predictFace(vsource = 1):
     global currentFPS
