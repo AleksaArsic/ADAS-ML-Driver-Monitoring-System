@@ -15,6 +15,7 @@ from time import clock
 from tensorflow import keras
 from PIL import Image, ImageDraw, ImageFont
 import winsound
+import threading
 
 # window names
 mainWindowName = "Video source"
@@ -137,6 +138,27 @@ cDriverInfoY = 250
 cFaceWindowSize = 15
 cFaceElementsWindowSize = 15
 cEyesWindowSize = 10
+
+### ATTENTION LOGIC ###
+# time interval for attention check in seconds
+cTimeInterval = 2.5
+
+# holidng eyes predictions for both eyes
+eyesAttentionList = [[], []]
+
+# index of left and right eye data in eyesAttentionList
+cLeftEyeAtt = 0
+cRightEyeAtt = 1
+
+# sound duration in ms
+cSoundDuration = 1000
+# sound frequency
+cSoundFrequency = 1000
+
+# EYES CLOSED THRESHOLD 
+# if sum of 'eyeClosed' predictions for both eyes are greater than this number
+# give a  sound warning
+cEyesClosedThreshold = 35
 
 ###############################
 
@@ -339,8 +361,37 @@ def movingAverage(readings, reading, windowSize):
 
     return avg, readings
 
+def checkAttention(): 
+    global eyesAttentionList
+
+    # how many frames in cTimeInterval have 'eyeClosed' prediction set to 1
+    leftEyeFramesOpen = 0
+    rightEyeFramesOpen = 0
+
+    # start thread every cTimeInterval seconds
+    threading.Timer(cTimeInterval, checkAttention).start()
+    #print(str(len(eyesAttentionList[cLeftEyeAtt])) + " " + str(len(eyesAttentionList[cRightEyeAtt])))
+
+    # calculate how many frames in cTimeInterval have 'eyeClosed' prediction set to 1
+    for i in range(len(eyesAttentionList[cLeftEyeAtt])):
+        leftEyeFramesOpen += eyesAttentionList[cLeftEyeAtt][i][cEyeClosed]
+
+    for i in range(len(eyesAttentionList[cRightEyeAtt])):
+        rightEyeFramesOpen += eyesAttentionList[cRightEyeAtt][i][cEyeClosed]
+
+    # reset state of the eyesAttentionList
+    eyesAttentionList = [[], []]
+
+    # check if attention dropped
+    if (leftEyeFramesOpen + rightEyeFramesOpen >= cEyesClosedThreshold):
+        winsound.Beep(cSoundFrequency, cSoundDuration)
+
+    #print(str(leftEyeFramesOpen) + " " + str(rightEyeFramesOpen))
+
+
 def predictFace(vsource = 1):
     global currentFPS
+    global eyesAttentionList
 
     # used for drawing info on frame
     facePredDenorm = []
@@ -373,7 +424,10 @@ def predictFace(vsource = 1):
     leftEyeReadings = []
     rightEyeReadings = []
 
-    while(cap.isOpened()): # and (time() - startTime < breakTime)):  
+    # attention logic 
+    checkAttention()
+
+    while(cap.isOpened()):
         s_time = time()
 
         ret, frame = cap.read()
@@ -435,7 +489,7 @@ def predictFace(vsource = 1):
                 # check to see if any eye is present and correct noEyes and pupil direction to integer true/false values
                 if(lEyePresent and len(eyesPrediction[cEyesDataLeft])):
                     eyesPrediction[cEyesDataLeft] = correctEyesPrediction(eyesPrediction[cEyesDataLeft])
-
+                    eyesAttentionList[0].append(eyesPrediction[cEyesDataLeft])
                     # moving average 
                     leftEyeAvg, leftEyeReadings = movingAverage(leftEyeReadings, eyesPrediction[cEyesDataLeft], cEyesWindowSize)
                     leftEyeAvg[0] = eyesPrediction[cEyesDataLeft][0]
@@ -444,12 +498,12 @@ def predictFace(vsource = 1):
 
                 if(rEyePresent and len(eyesPrediction[cEyesDataRight])):
                     eyesPrediction[cEyesDataRight] = correctEyesPrediction(eyesPrediction[cEyesDataRight])
-                    
+                    eyesAttentionList[1].append(eyesPrediction[cEyesDataRight])
+
                     # moving average 
                     rightEyeAvg, rightEyeReadings = movingAverage(rightEyeReadings, eyesPrediction[cEyesDataRight], cEyesWindowSize)
                     rightEyeAvg[0] = eyesPrediction[cEyesDataRight][0]
                     eyesPredictionAvg.append(rightEyeAvg)
-
 
                 # draw face bounding box and face elements on live stream
                 frame, facePredDenorm, faceElementsPredDenorm = drawPredictionOnImage(facePredictionAvg, faceElementsPredAvg, frame, faceImg, eyesPredictionAvg, leftEyeImg, rightEyeImg)
