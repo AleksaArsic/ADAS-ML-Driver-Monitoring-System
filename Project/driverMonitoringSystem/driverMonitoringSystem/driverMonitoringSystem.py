@@ -33,9 +33,13 @@ fontLocation = r"Fonts\\Roboto\\Roboto-Medium.ttf"
 ###############################
 
 # .csv paths with minimal and maximal values needed for data denormalization
-minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
-minMaxPhase02 = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
-minMaxPhase03 = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase03_csv\\trainingSet_phase03_normalized_min_max.csv"
+#minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
+#minMaxPhase02 = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
+#minMaxPhase03 = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase03_csv\\trainingSet_phase03_normalized_min_max.csv"
+
+minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
+minMaxPhase02 = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
+minMaxPhase03 = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\Dataset\\trainingSet_phase03_csv\\trainingSet_phase03_normalized_min_max.csv"
 
 # minimal and maximal values arrays needed for data denormalization
 minMaxValuesPh01 = []
@@ -130,8 +134,8 @@ cDriverInfoX = 140
 cDriverInfoY = 250
 
 ### MOVING AVERAGE WINDOW SIZE ###
-cFaceWindowSize = 20
-cFaceElementsWindowSize = 20
+cFaceWindowSize = 15
+cFaceElementsWindowSize = 15
 cEyesWindowSize = 10
 
 ###############################
@@ -303,7 +307,7 @@ def resizeAndNormalizeImage(img):
     return normalizedImg
 
 # start capturing frames if video source is open
-def captureStart(vsource = 1):
+def captureStart(vsource = 0):
 
     #capIsOpened = False
     cap = None
@@ -375,33 +379,37 @@ def predictFace(vsource = 1):
         ret, frame = cap.read()
         
         if(ret == True):
+
             # frame grayscale and prepare for neural network 
             grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             preparedFrame = resizeAndNormalizeImage(grayFrame)
-
+            
             # predict face
             facePrediction = face_model(preparedFrame[np.newaxis, :, :, np.newaxis], training = False).numpy()
-
+            
             # moving average 
             facePredictionAvg, faceReadings = movingAverage(faceReadings, facePrediction, cFaceWindowSize)
             
 
             # if face is found continue with other predictions
             if(facePredictionAvg[0][cNoFace] < cNoFaceThreshold):
+                
                 # prepare face for neural network 
                 faceImg = cropFace(grayFrame, facePredictionAvg)
                 preparedFace = resizeAndNormalizeImage(faceImg)
-
+                
+                
                 faceElementsPrediction = face_elements_model(preparedFace[np.newaxis, :, :, np.newaxis], training = False).numpy()
-
+                
                 # moving average 
                 faceElementsPredAvg, faceElementsReadings = movingAverage(faceElementsReadings, faceElementsPrediction, cFaceElementsWindowSize)
 
                 eyesData = [] 
                 lEyePresent = False
                 rEyePresent = False
-
+                
                 if faceElementsPredAvg[0][cNoLeftEye] < cNoEyeThreshold or faceElementsPredAvg[0][cNoRightEye] < cNoEyeThreshold:
+                    
                     leftEyeImg, rightEyeImg = cropEyes(faceImg, faceElementsPredAvg)
 
                     if faceElementsPredAvg[0][cNoLeftEye] < cNoEyeThreshold and leftEyeImg.shape[0] > 50 and leftEyeImg.shape[1] > 50:
@@ -415,7 +423,7 @@ def predictFace(vsource = 1):
                         preparedRightEye = resizeAndNormalizeImage(rightEyeImg)
                         eyesData.append(preparedRightEye)
                         rEyePresent = True
-
+                
                 # prepare eyes for neural network
                 df_im = np.asarray(eyesData)
                 df_im = df_im.reshape(df_im.shape[0], inputWidth, inputHeight, 1)
@@ -426,20 +434,22 @@ def predictFace(vsource = 1):
                 eyesPredictionAvg = []
                 # check to see if any eye is present and correct noEyes and pupil direction to integer true/false values
                 if(lEyePresent and len(eyesPrediction[cEyesDataLeft])):
+                    eyesPrediction[cEyesDataLeft] = correctEyesPrediction(eyesPrediction[cEyesDataLeft])
 
                     # moving average 
                     leftEyeAvg, leftEyeReadings = movingAverage(leftEyeReadings, eyesPrediction[cEyesDataLeft], cEyesWindowSize)
+                    leftEyeAvg[0] = eyesPrediction[cEyesDataLeft][0]
                     eyesPredictionAvg.append(leftEyeAvg)
 
-                    eyesPredictionAvg[cEyesDataLeft] = correctEyesPrediction(eyesPredictionAvg[cEyesDataLeft])
 
                 if(rEyePresent and len(eyesPrediction[cEyesDataRight])):
+                    eyesPrediction[cEyesDataRight] = correctEyesPrediction(eyesPrediction[cEyesDataRight])
                     
                     # moving average 
                     rightEyeAvg, rightEyeReadings = movingAverage(rightEyeReadings, eyesPrediction[cEyesDataRight], cEyesWindowSize)
+                    rightEyeAvg[0] = eyesPrediction[cEyesDataRight][0]
                     eyesPredictionAvg.append(rightEyeAvg)
 
-                    eyesPredictionAvg[cEyesDataRight] = correctEyesPrediction(eyesPredictionAvg[cEyesDataRight])
 
                 # draw face bounding box and face elements on live stream
                 frame, facePredDenorm, faceElementsPredDenorm = drawPredictionOnImage(facePredictionAvg, faceElementsPredAvg, frame, faceImg, eyesPredictionAvg, leftEyeImg, rightEyeImg)
@@ -630,8 +640,6 @@ def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, faceImg
         #    continue
         cv2.circle(image, (int(rightEyePredDenorm[i]), int(rightEyePredDenorm[i + 1])), 1, color, 2)
 
-    #image = showInfo(image, [faceXDenom, faceYDenom], faceElementsPredDenorm)
-
     return [image, [faceXDenom, faceYDenom], faceElementsPredDenorm]
 
 if __name__ == "__main__":
@@ -657,7 +665,7 @@ if __name__ == "__main__":
     minMaxValuesPh03 = Utilities.readMinMaxFromCSV(minMaxPhase03)
 
     # predict face from live video source
-    predictFace(1)
+    predictFace(0)
 
     script_end = datetime.datetime.now()
     print (script_end-script_start)
