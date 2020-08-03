@@ -34,13 +34,13 @@ fontLocation = r"Fonts\\Roboto\\Roboto-Medium.ttf"
 ###############################
 
 # .csv paths with minimal and maximal values needed for data denormalization
-#minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
-#minMaxPhase02 = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
-#minMaxPhase03 = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase03_csv\\trainingSet_phase03_normalized_min_max.csv"
+minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
+minMaxPhase02 = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
+minMaxPhase03 = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase03_csv\\trainingSet_phase03_normalized_min_max.csv"
 
-minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
-minMaxPhase02 = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
-minMaxPhase03 = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\Dataset\\trainingSet_phase03_csv\\trainingSet_phase03_normalized_min_max.csv"
+#minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
+#minMaxPhase02 = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
+#minMaxPhase03 = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\Dataset\\trainingSet_phase03_csv\\trainingSet_phase03_normalized_min_max.csv"
 
 # minimal and maximal values arrays needed for data denormalization
 minMaxValuesPh01 = []
