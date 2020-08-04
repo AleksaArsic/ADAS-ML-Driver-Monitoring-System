@@ -6,6 +6,7 @@ import math
 import PIL as PIL
 from PIL import Image, ImageDraw
 
+# used for reading whole .csv files
 def readCSV(filepath):
     result = []
     dat_file = open(filepath,'r')
@@ -19,6 +20,8 @@ def readCSV(filepath):
             result.append(s)
     return result
 
+# used for parsing .csv files with minimal and maximal values
+# used for normalization and denormalization
 def readMinMaxFromCSV(filepath):
 	
 	lines = readCSV(filepath)
@@ -30,8 +33,7 @@ def readMinMaxFromCSV(filepath):
 		if(cnt < 2):
 			cnt = cnt + 1
 			continue
-			
-			
+		
 		if(len(line) > 0):
 			p1 = line.find(',')
 			p1 = p1+1
