@@ -132,6 +132,12 @@ cFalse = 0
 cAverageFps = 2
 
 ### INFO CONSTANTS ###
+
+# information font color
+infoFontColor = (0, 0, 0, 0)
+# driver not present font color
+driverFontColor = (0, 0, 255, 0)
+
 cInfoDY = 20
 cInfoX = 15
 cDriverInfoX = 140
@@ -648,9 +654,6 @@ def showInfo(image, noFacePred, facePredDenorm = [], faceElementsPredDenorm = []
     applicationFPS = "FPS: " + str(currentFPS)
 
     info = dateAndTime + "\n" + faceCoordinates + "\n" + leftEyeCoordinates + "\n" + rightEyeCoordinates + "\n" + applicationFPS
-
-    infoFontColor = (0, 0, 0, 0)
-    driverFontColor = (0, 0, 255, 0)
 
     y0 = 15
 
