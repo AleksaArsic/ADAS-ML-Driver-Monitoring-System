@@ -20,6 +20,7 @@ lr = 0
 ud = 0
 gamma = 1
 
+# shift image
 def shiftImage(image, lr, ud):
     a = 1
     b = 0
@@ -34,6 +35,7 @@ def shiftImage(image, lr, ud):
 
     return img
 
+# add gaussian noise
 def gaussianNoise(img):
 
     gauss = np.random.normal(0, 0.3, img.size)
@@ -44,12 +46,14 @@ def gaussianNoise(img):
 
     return img_gauss
 
+# horizontal flip
 def horizontalFlip(img):
     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
     h_flipped = cv2.flip(img, 1)
 
     return h_flipped
 
+# change gamma
 def adjustGamma(image, gamma=1.0):
    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
@@ -59,6 +63,7 @@ def adjustGamma(image, gamma=1.0):
 
    return cv2.LUT(image, table)
 
+# parse script arguments
 def argParser():
 
     global inputFolder
@@ -133,6 +138,7 @@ def argParser():
 
     return retVal
 
+# load images
 def loadImages(inputFolder):
     images=os.listdir(inputFolder)
     for fichier in images[:]: # filelist[:] makes a copy of filelist.
@@ -159,7 +165,6 @@ if __name__ == "__main__":
 
     #load images
     images, imagePath = loadImages(inputFolder)
-    #print(images)
 
     #create output folder if there is none
     if not os.path.exists(outputFolder):
@@ -195,6 +200,7 @@ if __name__ == "__main__":
 
     parsed = parsed[:end + 2]
 
+	# based on mode augment images
     if mode == "shift":
         print("Shifting images.")
         for i in range(end):
@@ -274,17 +280,6 @@ if __name__ == "__main__":
 
         for i in range(2, len(newImageNames) + 2):
             parsed[i][0] = newImageNames[i - 2]
-        #img = Image.open("C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\DataSetAugmentation\\DataSetAugmentation\\capture_2020_04_17_11_39_49_7213.jpg")
-        #img = np.array(img)
-        #img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-        #cv2.imshow('original', img)
-
-        #gamma = 0.5                                   # change the value here to get different result
-        #adjusted = adjustGamma(img, gamma=gamma)
-        #cv2.putText(adjusted, "g={}".format(gamma), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 3)
-        #adjusted = cv2.cvtColor(adjusted, cv2.COLOR_RGB2BGR)
-        #cv2.imshow("gammam image 1", adjusted)
-        #cv2.waitKey(1)
 
 
     #construct and save new .csv file
