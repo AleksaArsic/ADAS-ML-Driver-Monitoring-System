@@ -587,7 +587,7 @@ def predictFace(vsource = 1):
         # calculate current frame rate
         currentFPS = int(1 / elapsed)
 
-    Utilities.showAverageTimeConsumption(consumptionTime, breakTime)
+    #Utilities.showAverageTimeConsumption(consumptionTime, breakTime)
     cap.release()
     cv2.destroyAllWindows()
 
@@ -718,7 +718,7 @@ def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, faceImg
 
     # check to see if eyes are open 
     # set color to red if eyes are closed
-    if(eyesPrediction[cEyesDataLeft][cEyeClosed] or eyesPrediction[cEyesDataRight][cEyeClosed]):
+    if(len(eyesPrediction) and eyesPrediction[cEyesDataLeft][cEyeClosed] or eyesPrediction[cEyesDataRight][cEyeClosed]):
         color = (0, 0, 255)
 
     # draw circular points from predicted eyes points of interest on original image
@@ -733,7 +733,6 @@ def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, faceImg
 if __name__ == "__main__":
     script_start = datetime.datetime.now()
 
-    # debug and time measurement
     # disable GPU and work with CPU only
     #my_devices = tf.config.experimental.list_physical_devices(device_type='CPU')
     #tf.config.set_visible_devices([], 'GPU')

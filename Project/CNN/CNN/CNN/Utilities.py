@@ -48,7 +48,6 @@ def loadImages(imgsDir, images):
         images.append(img)
       
         fname = os.path.basename(imagePath)
-        #fname = os.path.splitext(fname)[0]
         filenames.append(fname)
 
     print ('loading complete!')
@@ -110,20 +109,9 @@ def loadImagesAndCategories(images, imgsDir, categories, catPath, phase = 1, inp
             cat = cat.rstrip(',\n')
             cat = cat.split(',')
 
-            # phase 1 specific
-            #if(phase == 1):
-            #    cat.pop(7)
-            #    cat.pop(7)
-            #    cat.pop(7)
-            #    cat.pop(7)
-            # phase 2 specific
             if(phase == 2):
                 cat.pop(16)
-            #    cat.pop(12)
-            #    cat.pop(12)
-            #    cat.pop(12)
-            #    cat.pop(12)
-            # phase 3 specific
+
             if(phase == 3):
                 cat.pop(11)
                 cat.pop(11)
@@ -152,9 +140,6 @@ def loadImagesAndCategories(images, imgsDir, categories, catPath, phase = 1, inp
             
             gray = grayConversion(img)
 
-            # debug
-            #drawExpected(gray, fname, faceX, faceY, faceW, minMaxValues)
-            
             img1 = gray/255
 
             images.append(img1)
@@ -177,15 +162,9 @@ def showStat(filenames, predictions, ph):
         ss = ''
         sctg = ''
         for item in predictions[cnt]:
-            #if item>0.5:
-            #    p=1
-            #else:
-            #    p=0
-            p = item #predictions[cnt]
+            p = item
             predictions[cnt][c1] = p
             ss = ss+str(p)+','
-            #c = categories[cnt][c1]
-            #sctg = sctg+str(c)+','
             c1 = c1 + 1
 
         if ss==sctg:
@@ -201,13 +180,6 @@ def showStat(filenames, predictions, ph):
     with open('phase' + str(ph)+'_results_'+str(len(filenames))+'.csv', 'w') as f:
         for item in compare:
             f.write("%s\n" % item)
-
-    #with open('Accuracy_img' + str(r)+'_results_'+'_'+str(start)+'_'+str(start+max)+'.csv', 'w') as f:
-    #    f.write("Accuracy = %s\n" % str(ok_cnt/cnt))
-
-    #with open('errors.csv', 'w') as f:
-    #    for item in errors:
-    #        f.write("%s\n" % item)
 
 def readMinMaxFromCSV(filepath):
 	
