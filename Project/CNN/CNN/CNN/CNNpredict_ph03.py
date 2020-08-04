@@ -22,11 +22,10 @@ inputHeight = 100
 inputWidth = 100
 outputNo = 15
 
-phase = 1
+phase = 3
 
 #imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase03\\"
 imgsDir = "D:\\Diplomski_all\\final_test\\test_ph03\\"
-
 
 images = []
 filenames = []
@@ -50,7 +49,7 @@ if __name__ == "__main__":
 
     predictions = model.predict(df_im, verbose = 1)
 
-    # write normalized predictions to .csv file
+    # write predictions to .csv file
     Utilities.showStat(filenames, predictions, 3)
 
     script_end = datetime.datetime.now()

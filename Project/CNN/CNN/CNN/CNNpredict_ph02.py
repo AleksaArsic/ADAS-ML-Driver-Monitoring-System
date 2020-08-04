@@ -20,26 +20,17 @@ windowName = "Video source"
 
 inputHeight = 100
 inputWidth = 100
-outputNo = 12
+outputNo = 16
 
-saveWidth = 200
-saveHeight = 300
+phase = 2
 
-phase = 1
+imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces_out\\"
+minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
+outputDir = "D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase02_face_elements_out\\"
+drawOutputDir = "D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase02_face_elements_out_draw\\"
 
-#imgsDir = "D:\\dataset_ph01\\output_2020_07_24\\"
-#imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\tr_1\\"
-#imgsDir = "D:\\Diplomski_all\\final_test\\test_ph01\\"
-imgsDir = "D:\\ImageCapture\\ImageCapture\\output_2020_08_01_22_19_42\\"
-#minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
-minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
-#outputDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces_out\\"
-outputDir = "D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces_out\\"
-#drawOutputDir = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces_out_draw\\"
-drawOutputDir = "D:\\Diplomski\\DriverMonitoringSystem\\Project\\CNN\\CNN\\CNN\\phase01_faces_out_draw\\"
-
-start = 0
-max = 8000
+saveWidth = 100
+saveHeight = 100
 
 images = []
 filenames = []
@@ -58,7 +49,6 @@ def predictFace(vsource = 1, savePredictions = False):
         cap = cv2.VideoCapture(vsource + cv2.CAP_DSHOW)
         width  = cap.get(3)  # float
         height = cap.get(4) # float
-        #change_res(cap, 1280, 720)
     else:
         cap = cv2.VideoCapture(vsource)
 
@@ -138,10 +128,10 @@ def drawPredictionOnImage(prediction, image):
     faceYDenom = (faceY * (minMaxValues[1][1] - minMaxValues[0][1]) + minMaxValues[0][1])
     faceWDenom = (faceW * (minMaxValues[1][6] - minMaxValues[0][6]) + minMaxValues[0][6])
 
-    #faceLocationNorm = "(x, y, w): (" + str(faceX) + ", " + str(faceY) + ", " + str(faceW) + ")"
-    #faceLocation = "(x, y, w): (" + str(faceXDenom) + ", " + str(faceYDenom) + ", " + str(faceWDenom) + ")"
-    #print("(x, y, w): (" + str(faceX) + ", " + str(faceY) + ", " + str(faceW) + ")")
-    #print("(x, y, w): (" + str(faceXDenom) + ", " + str(faceYDenom) + ", " + str(faceWDenom) + ")")
+    faceLocationNorm = "(x, y, w): (" + str(faceX) + ", " + str(faceY) + ", " + str(faceW) + ")"
+    faceLocation = "(x, y, w): (" + str(faceXDenom) + ", " + str(faceYDenom) + ", " + str(faceWDenom) + ")"
+    print("(x, y, w): (" + str(faceX) + ", " + str(faceY) + ", " + str(faceW) + ")")
+    print("(x, y, w): (" + str(faceXDenom) + ", " + str(faceYDenom) + ", " + str(faceWDenom) + ")")
 
 
     lEyeXDenom = (leftEyeX * (minMaxValues[1][2] - minMaxValues[0][2]) + minMaxValues[0][2])
@@ -159,7 +149,7 @@ def drawPredictionOnImage(prediction, image):
     cv2.rectangle(image, (int(lEyeXDenom),int(lEyeYDenom)), (int(lEyeXDenom + 3),int(lEyeYDenom + 3)) , (0,0,255), 2)
     cv2.rectangle(image, (int(rEyeXDenom),int(rEyeYDenom)), (int(rEyeXDenom + 3),int(rEyeYDenom + 3)) , (0,0,255), 2)
 
-    #print("Face on: (" + str(prediction[0][1]) + ", " + str(prediction[0][2]) + ")")
+    print("Face on: (" + str(prediction[0][1]) + ", " + str(prediction[0][2]) + ")")
 
     return image
 
@@ -168,14 +158,6 @@ def predictFromImages():
     global images
     global filenames
     global predictions
-
-    #if path.exists(outputDir):
-    #    shutil.rmtree(outputDir)
-    #if path.exists(drawOutputDir):
-    #    shutil.rmtree(drawOutputDir)
-
-    #os.mkdir(outputDir)
-    #os.mkdir(drawOutputDir)
 
     [images, filenames] = Utilities.loadImagesAndGrayscale(imgsDir, images, inputWidth, inputHeight)
 
@@ -191,77 +173,90 @@ def predictFromImages():
     images = []
     [images, filenames] = Utilities.loadImages(imgsDir, images)
 
+    if path.exists(outputDir):
+        shutil.rmtree(outputDir)
+    #if path.exists(drawOutputDir):
+    #    shutil.rmtree(drawOutputDir)
+
+    os.mkdir(outputDir)
+    #os.mkdir(drawOutputDir)
+
+
     # crop images
     cnt = 0    
-    c = 0
     for img in images:
         # calculate coordinates to crop from
-
-        if(predictions[cnt][0] > 0.5):
-            print(filenames[cnt] + "," + str(predictions[cnt][0]))
+        if denormPredictions[cnt][0] > 0.5 or denormPredictions[cnt][1] > 0.5:
             cnt += 1
-            c += 1
             continue
 
-        topLeftX = int(denormPredictions[cnt][1] - int((denormPredictions[cnt][11] / 2) + 0.5))
-        topLeftY = int(denormPredictions[cnt][2] - int(((denormPredictions[cnt][11] / 2) * 1.5) + 0.5))
+        height, width, channels = img.shape
 
-        bottomRightX = int(denormPredictions[cnt][1] + int((denormPredictions[cnt][11] / 2) + 0.5))
-        bottomRightY = int(denormPredictions[cnt][2] + int(((denormPredictions[cnt][11] / 2) * 1.5) + 0.5))
+        tlLeyeX = int(denormPredictions[cnt][2] - int(0.15 * width))
+        tlLeyeY = int(denormPredictions[cnt][3] - int(0.1 * height))
+        brLeyeX = int(denormPredictions[cnt][2] + int(0.15 * width))
+        brLeyeY = int(denormPredictions[cnt][3] + int(0.1 * height))
 
-        clippedValues = np.clip([topLeftX, topLeftY, bottomRightX, bottomRightY], a_min = 0, a_max = None)
-        croppedImage = img[clippedValues[1]:clippedValues[3], clippedValues[0]:clippedValues[2]]
+        tlReyeX = int(denormPredictions[cnt][4] - int(0.15 * width))
+        tlReyeY = int(denormPredictions[cnt][5] - int(0.1 * height))
+        brReyeX = int(denormPredictions[cnt][4] + int(0.15 * width))
+        brReyeY = int(denormPredictions[cnt][5] + int(0.1 * height))
+
+        clippedValuesX = np.clip([tlLeyeX, brLeyeX, tlReyeX, brReyeX], a_min = 0, a_max = width)
+        clippedValuesY = np.clip([tlLeyeY, brLeyeY, tlReyeY, brReyeY], a_min = 0, a_max = height)
 
 
-        # add padding if ratio is not 3:4
-        height = img.shape[0]
-        width = img.shape[1]
+        croppedEyeLeft = img[clippedValuesY[0]:clippedValuesY[1], clippedValuesX[0]:clippedValuesX[1]]
+        croppedEyeLeft = cv2.cvtColor(croppedEyeLeft, cv2.COLOR_BGR2RGB)
 
-        dimX = abs(bottomRightX - topLeftX)
-        dimY = abs(bottomRightY - topLeftY)
+        filename = os.path.splitext(filenames[cnt])[0]
 
-        negX = 0
-        negY = 0
+        if(denormPredictions[0][0] < 0.5):
+            croppedEyeLeft = cv2.resize(croppedEyeLeft, (saveWidth, saveHeight), Image.ANTIALIAS)
+            cv2.imwrite(outputDir + filename + '_left.jpg', croppedEyeLeft)
 
-        posX = 0
-        posY = 0
+        croppedEyeRight = img[clippedValuesY[2]:clippedValuesY[3], clippedValuesX[2]:clippedValuesX[3]]
+        croppedEyeRight = cv2.cvtColor(croppedEyeRight, cv2.COLOR_BGR2RGB)
 
-        if(topLeftX < 0):
-            negX = abs(topLeftX)
-        if(topLeftY < 0):
-            negY = abs(topLeftY)
-
-        if(bottomRightX > width):
-            posX = bottomRightX - width
-        if(bottomRightY > height):
-            posY = bottomRightY - height
-
-        croppedImage = np.pad(croppedImage, ((negY, posY), (negX, posX), (0,0)), constant_values = 0)
-
-        croppedImage = cv2.cvtColor(croppedImage, cv2.COLOR_BGR2RGB)
-        croppedImage = cv2.resize(croppedImage, (saveWidth, saveHeight), Image.ANTIALIAS)
-
-        cv2.imwrite(outputDir + filenames[cnt], croppedImage)
+        if (denormPredictions[0][1] < 0.5):
+            croppedEyeRight = cv2.resize(croppedEyeRight, (saveWidth, saveHeight), Image.ANTIALIAS)
+            cv2.imwrite(outputDir + filename + '_right.jpg', croppedEyeRight)
 
         cnt = cnt + 1
-
-    print("No face on: " + str(c) + " images")
 
 def denormalizeAllPredictions(predictions, minMaxValues):
     denormPredictions = predictions.copy()
 
     for pred in denormPredictions:
-        pred[1] = int((pred[1] * (minMaxValues[1][0] - minMaxValues[0][0]) + minMaxValues[0][0]) + 0.5)
-        pred[2] = int((pred[2] * (minMaxValues[1][1] - minMaxValues[0][1]) + minMaxValues[0][1]) + 0.5)
-        pred[11] = int((pred[11] * (minMaxValues[1][6] - minMaxValues[0][6]) + minMaxValues[0][6]) + 0.5)
+        for i in range(2, len(pred) - 4):
+            pred[i] = int((pred[i] * (minMaxValues[1][i - 2] - minMaxValues[0][i - 2]) + minMaxValues[0][i - 2]) + 0.5)
+
 
     return denormPredictions
+
+def denormalizeFaceElements(elements):
+	result = []
+	
+	for arr in elements:
+		cnt = 0
+		tempArr = []
+		
+		for cnt in range(0, 22, 2):
+			tempX = arr[cnt] * arr[len(arr) - 1]
+			tempY = arr[cnt + 1] * (arr[len(arr) - 1] * 1.5)
+			tempArr.append(tempX)
+			tempArr.append(tempY)
+			
+		tempArr = np.ceil(np.asarray(tempArr))
+		result.append(tempArr)
+					
+	return result
 
 if __name__ == "__main__":
     script_start = datetime.datetime.now()
 
     # Recreate the exact same model
-    model_name = "model_phase01.h5"
+    model_name = "model_phase02.h5"
     model = cnn.create_model(inputWidth, inputHeight, 1, outputNo)
 
     model.load_weights(model_name)
@@ -275,9 +270,10 @@ if __name__ == "__main__":
     # predict face from image source
     predictFromImages()
 
-    Utilities.showStat(filenames, predictions, 1)
+    Utilities.showStat(filenames, predictions, 2)
     #Utilities.drawPredictionsToDisk(predictions, filenames, imgsDir, minMaxValues)
 
     script_end = datetime.datetime.now()
     print (script_end-script_start)
+
 

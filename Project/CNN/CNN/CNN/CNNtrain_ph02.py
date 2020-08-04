@@ -26,16 +26,11 @@ import CNNmodel as cnn
 # shift left, right, top, down
 # zoom in, zoom out
 
-
 inputHeight = 100
 inputWidth = 100
 outputNo = 16
 
-phase = 1
-
-start = 0
-max = 8000
-
+phase = 2
 
 imgsDir = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02\\"
 normalizedDataPath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized.csv"
@@ -44,8 +39,6 @@ normalizedDataPath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSe
 images=[]
 categories = []
 #minMaxValues = []
-
-r = 1
 
 def plotTrainingResults(val_acc, val_loss, train_acc, train_loss):
 
@@ -77,17 +70,12 @@ if __name__ == "__main__":
 
     model = cnn.create_model(inputWidth, inputHeight, 1, outputNo)
 
-    # prebaci u format koji mrezi odgovara 
+    # change to cnn input format
     df_im = np.asarray(images)
     df_im = df_im.reshape(df_im.shape[0], inputWidth, inputHeight, 1)
     df_cat = np.asarray(categories)
     df_cat = df_cat.reshape(df_cat.shape[0], outputNo)
     tr_im, val_im, tr_cat, val_cat = train_test_split(df_im, df_cat, test_size=0.2)
-
-
-    #config = tf.compat.v1.ConfigProto()
-    #config.gpu_options.allow_growth = True
-    #session = tf.compat.v1.Session(config=config)
 
     tensorboard = TensorBoard(log_dir=imgsDir + "logs_img1" + "\{}".format(time()))
 
@@ -118,14 +106,6 @@ if __name__ == "__main__":
 
     #plot accuracy and loss
     plotTrainingResults(val_acc, val_loss, train_acc, train_loss)
-
-
-    #debug
-    #model.load_weights(model_name)
-    #predict
-    #predictions = model.predict(df_im, verbose=0)
-    #write predictions to .csv
-    #Utilities.showStat(filenames, predictions)
 
     script_end = datetime.datetime.now()
     print (script_end-script_start)

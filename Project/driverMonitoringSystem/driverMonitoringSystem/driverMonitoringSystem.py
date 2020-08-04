@@ -11,7 +11,7 @@ import pandas as pd
 import CNNmodel as cnn
 import tensorflow as tf 
 from time import time
-from time import clock
+from time import clock, sleep
 from tensorflow import keras
 from PIL import Image, ImageDraw, ImageFont
 import winsound
@@ -33,14 +33,15 @@ fontLocation = r"Fonts\\Roboto\\Roboto-Medium.ttf"
 
 ###############################
 
-# .csv paths with minimal and maximal values needed for data denormalization
-minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
-minMaxPhase02 = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
-minMaxPhase03 = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase03_csv\\trainingSet_phase03_normalized_min_max.csv"
+# path to .csv files with minimal and maximal values used for denormalization
+#minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
+#minMaxPhase02 = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
+#minMaxPhase03 = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase03_csv\\trainingSet_phase03_normalized_min_max.csv"
 
-#minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
-#minMaxPhase02 = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
-#minMaxPhase03 = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\Dataset\\trainingSet_phase03_csv\\trainingSet_phase03_normalized_min_max.csv"
+# path to .csv files with minimal and maximal values used for denormalization
+minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
+minMaxPhase02 = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
+minMaxPhase03 = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\Dataset\\trainingSet_phase03_csv\\trainingSet_phase03_normalized_min_max.csv"
 
 # minimal and maximal values arrays needed for data denormalization
 minMaxValuesPh01 = []
@@ -54,12 +55,9 @@ faceOutputNo = 8
 faceElementsOutputNo = 16
 attentionOutputNo = 15
 
-# debug 
-# time consumption break time
-breakTime = 0
-
 # application FPS counter
 currentFPS = 0
+
 ########## CONSTANTS ##########
 
 # opencv width and height information index
@@ -232,6 +230,7 @@ def denormalizeEyesPrediction(faceElementsPrediction, elementWidth, start = 0, e
     
     return predictions
 
+# crops face image from original image
 def cropFace(img, facePrediction):
 
     facePredictionDenormalized = denormalizeFacePrediction(facePrediction)
@@ -250,13 +249,11 @@ def cropFace(img, facePrediction):
 
     return croppedImage
 
+# adds padding to face image if it's not in ratio 3:2
 def addFacePadding(img, faceCoords = [], fullImgDim = (0,0)):
     croppedImage = []
 
     height, width = fullImgDim
-    #height = fullImgDim[0]
-    #width = fullImgDim[1]
-
     dimX = abs(faceCoords[2] - faceCoords[0])
     dimY = abs(faceCoords[3] - faceCoords[1])
 
@@ -280,6 +277,7 @@ def addFacePadding(img, faceCoords = [], fullImgDim = (0,0)):
 
     return croppedImage
 
+# crops eyes from face image
 def cropEyes(faceImg, faceElementsPrediction):
     leftEye = []
     rightEye = []
@@ -353,15 +351,13 @@ def resizeAndNormalizeImage(img):
 
     return normalizedImg
 
-# start capturing frames if video source is open
+# try opening video source
 def captureStart(vsource = 0):
 
-    #capIsOpened = False
     cap = None
-    #while(capIsOpened == False):
+
+    # try to open video source, if not wait and try again
     while(cap is None or cap.isOpened() == False):
-        # try to open video source, if not wait and try again
-        # TO-DO: wait for video source
         if(isinstance(vsource, int)):
             cap = cv2.VideoCapture(vsource + cv2.CAP_DSHOW)
             width  = cap.get(cCVwidth)  # float
@@ -372,6 +368,9 @@ def captureStart(vsource = 0):
 
         if(cap is None or cap.isOpened() == False):
             print("Error opening video source")
+            cap.release()
+
+        sleep(2)
 
     return cap
 
@@ -386,11 +385,10 @@ def movingAverage(readings, reading, windowSize):
 
     return avg, readings
 
+# attention logic run in another thread
 def checkAttention(): 
     global eyesAttentionList
     global faceAttentionList
-
-    s_t = clock()
 
     # how many frames in cTimeInterval have 'eyeClosed' prediction set to 1
     leftEyeFramesOpen = 0
@@ -401,7 +399,6 @@ def checkAttention():
 
     # start thread every cTimeInterval seconds
     threading.Timer(cTimeInterval, checkAttention).start()
-    #print(str(len(eyesAttentionList[cLeftEyeAtt])) + " " + str(len(eyesAttentionList[cRightEyeAtt])))
 
     # calculate how many frames in cTimeInterval have 'eyeClosed' prediction set to 1
     for i in range(len(eyesAttentionList[cLeftEyeAtt])):
@@ -419,13 +416,12 @@ def checkAttention():
     eyesAttentionList = [[], []]
     faceAttentionList = []
 
-    print(clock() - s_t)
-
     # check if attention dropped
     if (leftEyeFramesOpen + rightEyeFramesOpen >= cEyesClosedThreshold or
         faceHasAngle >= cFaceHasAngleThreshold):
         winsound.Beep(cSoundFrequency, cSoundDuration)
 
+# main program loop
 def predictFace(vsource = 1):
     global currentFPS
     global eyesAttentionList
@@ -434,19 +430,16 @@ def predictFace(vsource = 1):
     facePredDenorm = []
     faceElementsPredDenorm = []
 
-    width = 0
-    height = 0
-
-    s_t, e_t = 0, 0
-
+    # open video source
     cap = captureStart()
 
     # frame number
     frameId = 0
     
+    # video stream window
     cv2.namedWindow(mainWindowName)
 
-    #debug
+    # face and eye windows
     cv2.namedWindow("Left " + eyeWindowName)
     cv2.namedWindow("Right " + eyeWindowName)
     cv2.namedWindow(faceWindowName)
@@ -552,12 +545,13 @@ def predictFace(vsource = 1):
                 # draw face bounding box and face elements on live stream
                 frame, facePredDenorm, faceElementsPredDenorm = drawPredictionOnImage(facePredictionAvg, faceElementsPredAvg, frame, faceImg, eyesPredictionAvg, leftEyeImg, rightEyeImg)
 
-                #debug
+                # draw predictions on face and eyes
                 drawEyesOnFace(facePrediction, faceElementsPrediction, faceImg, eyesPrediction)
 
-                #debug
+                # show face
                 cv2.imshow(faceWindowName, faceImg)
 
+                # show eyes
                 leftEyeImg = np.array(leftEyeImg)
                 rightEyeImg = np.array(rightEyeImg)
                 if lEyePresent:
@@ -565,7 +559,10 @@ def predictFace(vsource = 1):
                 if rEyePresent:
                     cv2.imshow("Right " + eyeWindowName, rightEyeImg)
 
+            # show main program information
             frame = showInfo(frame, facePrediction[0][0], facePredDenorm, faceElementsPredDenorm)
+
+            # show video stream
             cv2.imshow(mainWindowName, frame)
 
             frameId += 1
@@ -580,8 +577,8 @@ def predictFace(vsource = 1):
 
         e_time = time()
         elapsed = e_time - s_time
-        el_time = e_t - s_t
 
+        # calculate current frame rate
         currentFPS = int(1 / elapsed)
 
     Utilities.showAverageTimeConsumption(consumptionTime, breakTime)
@@ -688,9 +685,9 @@ def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, faceImg
     
     # denormalize eyes points of interest
     # faceWDenom * cEyeWidthPerc because eye dimension is 30% of faceWDenom
-    if faceElementsPrediction[0][cNoLeftEye] < cNoEyeThreshold:
+    if len(eyesPrediction) and faceElementsPrediction[0][cNoLeftEye] < cNoEyeThreshold:
         leftEyePredDenorm = denormalizeEyesPrediction(eyesPrediction[cEyesDataLeft], faceWDenom * cEyeWidthPerc, 1, 11)
-    if faceElementsPrediction[0][cNoRightEye] < cNoEyeThreshold:
+    if len(eyesPrediction) and faceElementsPrediction[0][cNoRightEye] < cNoEyeThreshold:
         rightEyePredDenorm = denormalizeEyesPrediction(eyesPrediction[cEyesDataRight], faceWDenom * cEyeWidthPerc, 1, 11)
 
     # calculate eye points of interest on faceImg
@@ -717,25 +714,15 @@ def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, faceImg
     color = (0, 255, 0)
 
     # check to see if eyes are open 
-    # needs work
     # set color to red if eyes are closed
     if(eyesPrediction[cEyesDataLeft][cEyeClosed] or eyesPrediction[cEyesDataRight][cEyeClosed]):
         color = (0, 0, 255)
-        #winsound.Beep(1000, 25)
 
     # draw circular points from predicted eyes points of interest on original image
     for i in range(1, len(leftEyePredDenorm) - 4, 2):
-        #if(i == 1 or i == 5):
-        #    halfLength = int((leftEyeImg.shape[0] * 0.15) + 0.5)
-        #    cv2.line(image, (int(leftEyePredDenorm[i]) - halfLength, int(leftEyePredDenorm[i + 1])), (int(leftEyePredDenorm[i]) + halfLength, int(leftEyePredDenorm[i + 1])), color, thickness = 2)
-        #    continue
         cv2.circle(image, (int(leftEyePredDenorm[i]), int(leftEyePredDenorm[i + 1])), 1, color, 2)
 
     for i in range(1, len(rightEyePredDenorm) - 4, 2):
-        #if(i == 1 or i == 5):
-        #    halfLength = int((rightEyeImg.shape[0] * 0.15) + 0.5)
-        #    cv2.line(image, (int(rightEyePredDenorm[i]) - halfLength, int(rightEyePredDenorm[i + 1])), (int(rightEyePredDenorm[i]) + halfLength, int(rightEyePredDenorm[i + 1])), color, thickness = 2)
-        #    continue
         cv2.circle(image, (int(rightEyePredDenorm[i]), int(rightEyePredDenorm[i + 1])), 1, color, 2)
 
     return [image, [faceXDenom, faceYDenom], faceElementsPredDenorm]
