@@ -4,7 +4,6 @@ import time
 import random
 import datetime
 import glob, os
-import Utilities
 import PIL as PIL
 import numpy as np 
 import pandas as pd 
