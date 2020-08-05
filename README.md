@@ -1,8 +1,6 @@
 # DriverMonitoringSystem
  Driver monitoring system
 
-**Start date:** 27.3.2020.
-
 ## ImageCapture
 **Functionality:** Capture pictures from one of three possible video sources:
   - Internal camera
