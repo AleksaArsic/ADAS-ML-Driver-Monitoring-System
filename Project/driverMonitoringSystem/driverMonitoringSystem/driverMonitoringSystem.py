@@ -22,16 +22,8 @@ mainWindowName = "Video source"
 faceWindowName = "Face tracking"
 eyeWindowName = "eye tracking"
 
-########## DEBUG INFORMATION ##########
-
-# PIL font object for system information
-infoFont = None
-# PIL font object for driver information
-driverFont = None
-# info font location
-fontLocation = r"Fonts\\Roboto\\Roboto-Medium.ttf"
-
-###############################
+# video source
+vSource = 0
 
 # path to .csv files with minimal and maximal values used for denormalization
 #minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
@@ -184,6 +176,52 @@ cFaceHasAngleThreshold = 40
 def change_res(cap, width, height):
     cap.set(3, width)
     cap.set(4, height)
+
+# used for reading whole .csv files
+def readCSV(filepath):
+    result = []
+    datFile = open(filepath,'r')
+    lines=datFile.readlines()
+    for line in lines:
+        if len(line)>0:
+            p1 = line.find(',')
+            filename = line[0:p1]
+            categ = line[p1+1:]
+            s = filename+','+categ
+            result.append(s)
+    return result
+
+# used for parsing .csv files with minimal and maximal values
+# used for normalization and denormalization
+def readMinMaxFromCSV(filepath):
+	
+	lines = readCSV(filepath)
+	cnt = 0
+	result = []
+	
+	for line in lines:
+		
+		if(cnt < 2):
+			cnt = cnt + 1
+			continue
+		
+		if(len(line) > 0):
+			p1 = line.find(',')
+			p1 = p1+1
+			cat=line[p1:]
+
+			cat = cat.rstrip(',\n')
+			cat = cat.split(',')
+			
+			cntCat = 0
+			for item in cat:
+				cat[cntCat] = float(item)
+				cntCat = cntCat + 1
+			cat = np.asarray(cat)
+			
+			result.append(cat)
+
+	return result
 
 # denormalize face predictions from normalized range (0, 1) to pixel values of the original image
 # does not change original prediction array
@@ -587,7 +625,6 @@ def predictFace(vsource = 1):
         # calculate current frame rate
         currentFPS = int(1 / elapsed)
 
-    #Utilities.showAverageTimeConsumption(consumptionTime, breakTime)
     cap.release()
     cv2.destroyAllWindows()
 
@@ -718,8 +755,9 @@ def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, faceImg
 
     # check to see if eyes are open 
     # set color to red if eyes are closed
-    if(len(eyesPrediction) and eyesPrediction[cEyesDataLeft][cEyeClosed] or eyesPrediction[cEyesDataRight][cEyeClosed]):
-        color = (0, 0, 255)
+    if (len(eyesPrediction)):
+        if(eyesPrediction[cEyesDataLeft][cEyeClosed] or eyesPrediction[cEyesDataRight][cEyeClosed]):
+            color = (0, 0, 255)
 
     # draw circular points from predicted eyes points of interest on original image
     for i in range(1, len(leftEyePredDenorm) - 4, 2):
@@ -747,12 +785,12 @@ if __name__ == "__main__":
     attention_model = tf.keras.models.load_model(attention_model_name)
 
     # load minimal and maximal values for denormalization
-    minMaxValuesPh01 = Utilities.readMinMaxFromCSV(minMaxCSVpath)
-    minMaxValuesPh02 = Utilities.readMinMaxFromCSV(minMaxPhase02)
-    minMaxValuesPh03 = Utilities.readMinMaxFromCSV(minMaxPhase03)
+    minMaxValuesPh01 = readMinMaxFromCSV(minMaxCSVpath)
+    minMaxValuesPh02 = readMinMaxFromCSV(minMaxPhase02)
+    minMaxValuesPh03 = readMinMaxFromCSV(minMaxPhase03)
 
     # predict face from live video source
-    predictFace(0)
+    predictFace(vSource)
 
     script_end = datetime.datetime.now()
     print (script_end-script_start)
