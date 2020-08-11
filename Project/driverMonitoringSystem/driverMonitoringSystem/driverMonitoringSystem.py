@@ -22,7 +22,7 @@ faceWindowName = "Face tracking"
 eyeWindowName = "eye tracking"
 
 # video source
-vSource = 0
+vSource = 1
 
 # path to .csv files with minimal and maximal values used for denormalization
 minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
@@ -175,6 +175,8 @@ cFaceHasAngleThreshold = 40
 def change_res(cap, width, height):
     cap.set(3, width)
     cap.set(4, height)
+
+    return cap
 
 # used for reading whole .csv files
 def readCSV(filepath):
@@ -395,7 +397,7 @@ def resizeAndNormalizeImage(img):
     return normalizedImg
 
 # try opening video source
-def captureStart(vsource = 0):
+def captureStart(vsource = "C:\\Users\\Cisra\\Pictures\\WIN_20200801_20_06_09_Pro.mp4"):
 
     cap = None
 
@@ -405,7 +407,7 @@ def captureStart(vsource = 0):
             cap = cv2.VideoCapture(vsource + cv2.CAP_DSHOW)
             width  = cap.get(cCVwidth)  # float
             height = cap.get(cCVheight) # float
-            change_res(cap, cResolutionWidth, cResolutionHeight)
+            cap = change_res(cap, cResolutionWidth, cResolutionHeight)
         else:
             cap = cv2.VideoCapture(vsource)
 
@@ -504,8 +506,9 @@ def predictFace(vsource = 1):
         s_time = time()
 
         ret, frame = cap.read()
-        
+
         if(ret == True):
+            frame = cv2.resize(frame, (640, 480), 0, 0, interpolation = cv2.INTER_CUBIC); 
 
             # frame grayscale and prepare for neural network 
             grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
