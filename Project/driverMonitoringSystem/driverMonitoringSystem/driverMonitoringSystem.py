@@ -397,7 +397,7 @@ def resizeAndNormalizeImage(img):
     return normalizedImg
 
 # try opening video source
-def captureStart(vsource = "C:\\Users\\Cisra\\Pictures\\WIN_20200801_20_06_09_Pro.mp4"):
+def captureStart(vsource = 1):
 
     cap = None
 
@@ -476,7 +476,7 @@ def predictFace(vsource = 1):
     faceElementsPredDenorm = []
 
     # open video source
-    cap = captureStart()
+    cap = captureStart(vsource)
 
     # frame number
     frameId = 0
