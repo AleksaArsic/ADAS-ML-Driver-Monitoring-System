@@ -2,6 +2,7 @@ import numpy as np
 
 # paths of input files
 inputCSVPath_phase01 = 'C:\\Users\\Cisra\\Desktop\\Rad\\trainingSet_phase01_csv\\trainingSet_phase01.csv'
+inputCSVPath_phase02 = 'C:\\Users\\Cisra\\Desktop\\Rad\\trainingSet_phase02_csv\\trainingSet_phase02.csv'
 inputCSVPath_phase03 = 'C:\\Users\\Cisra\\Desktop\\Rad\\trainingSet_phase03_csv\\trainingSet_phase03.csv'
 
 # last item of interest in phase 3 labels
@@ -57,21 +58,29 @@ def saveCSV(filepath, labels):
 
 # find common labels among two labeled datasets
 # find based on common image name
-def findCommonLabels(labels1, labels2):
+def findCommonLabels(labels1, labels2, labels3):
 
     print("[*] Finding common label names ...")
 
     result = []
 
-    k = 0
     for i in range(2, len(labels1)):
+        l = []
+        l.append(labels1[i])
         for j in range(2, len(labels2)):
             if (labels1[i][0] in labels2[j][0]):
-                result.append([labels1[i], labels2[j]])
-                continue
+                l.append(labels2[j])
+                for k in range(2, len(labels3)):
+                    if(labels2[j][0] in labels3[k][0]):
+                        l.append(labels3[k])
+                        
+        
+        if (len(l) > 2):
+            result.append(l)
 
     return result
 
+# filter for only those labels that are of interest
 def filterPhaseThreeLabels(labels):
 
     print("[*] Filtering labels of interest in phase 3 ...")
@@ -94,18 +103,78 @@ def translatePhaseThreeToPhaseOne(commonLabels):
 
     for i in range(len(commonLabels)):
         for j in range(len(commonLabels[i])):
-            faceWidth = commonLabels[i][j][-1]
-            faceHeight = cFaceHeigthToWidthRation * float(faceWidth)
+            faceW = commonLabels[i][j][-1]
+            faceX = commonLabels[i][j][2]
+            faceY = commonLabels[i][j][3]
 
-            eyeWidth = cEyeWidthPercentage * float(faceWidth)
-            eyeHeight = cEyeHeightPercentage * faceHeight
+            #eyeWidth = cEyeWidthPercentage * float(faceWidth)
+            #eyeHeight = cEyeHeightPercentage * faceHeight
 
-            # idea: we have precentages and dimensions so we can easly manipulate numbers
-            # and coordinates to match phase 2 and at last phase 1
-            # idea is to scale coordinates systems of phase 3 and phase 2 
-            # by using those percentages and dimnesions
+            # calculate points for face bounding rectangle
+            topLeftX = faceX - int((faceW / 2) + 0.5)
+            topLeftY = faceY - int(((faceW / 2) * cFaceWidthHeightRatio) + 0.5)
 
-# TO-DO: implement functionality that will concatenate
+            bottomRightX = faceX + int((faceW / 2) + 0.5)
+            bottomRightY = faceY + int(((faceW / 2) * cFaceWidthHeightRatio) + 0.5)
+
+            # calculate eye points of interest on faceImg
+            topELeftX, topELeftY = eyeCropPoints(faceElementsPrediction[cLeftEyeX], faceElementsPrediction[cLeftEyeY])[0]
+            topERightX, topERightY = eyeCropPoints(faceElementsPrediction[cRightEyeX], faceElementsPrediction[cRightEyeY])[0]
+  
+
+def eyeCropPoints(x, y, faceW):
+    # calculate coordinates to crop from
+    height, width = faceW * cFaceHeigthToWidthRation, faceW
+    
+    tlEyeX = x - int(cEyeWidthPercentage / 2 * width)
+    tlEyeY = y - int(cEyeHeightPercentage / 2 * height)
+    brEyeX = x + int(cEyeWidthPercentage / 2 * width)
+    brEyeY = y + int(cEyeHeightPercentage / 2 * height)
+
+    return [(tlEyeX, tlEyeY), (brEyeX, brEyeY)]
+
+# draws all predictions on original image
+def drawPredictionOnImage(facePrediction, faceElementsPrediction, eyesPrediction):
+
+    # denormalize face predictions
+    #[faceXDenom, faceYDenom, faceWDenom] = denormalizeFacePrediction(facePrediction)
+
+    # calculate points for face bounding rectangle to be drawn
+    topLeftX = faceXDenom - int((faceWDenom / 2) + 0.5)
+    topLeftY = faceYDenom - int(((faceWDenom / 2) * cFaceWidthHeightRatio) + 0.5)
+
+    bottomRightX = faceXDenom + int((faceWDenom / 2) + 0.5)
+    bottomRightY = faceYDenom + int(((faceWDenom / 2) * cFaceWidthHeightRatio) + 0.5)
+
+    # denormalize face elements to a new array
+    #faceElementsPredDenorm = denormalizeFaceElementsPrediction(faceElementsPrediction, resizeFactor = cLabeledFaceHeight / faceImg.shape[0])[0]
+    
+    # denormalize eyes points of interest
+    # faceWDenom * cEyeWidthPerc because eye dimension is 30% of faceWDenom
+    #if len(eyesPrediction) and faceElementsPrediction[0][cNoLeftEye] < cNoEyeThreshold:
+    #    leftEyePredDenorm = denormalizeEyesPrediction(eyesPrediction[cEyesDataLeft], faceWDenom * cEyeWidthPerc, 1, 11)
+    #if len(eyesPrediction) and faceElementsPrediction[0][cNoRightEye] < cNoEyeThreshold:
+    #    rightEyePredDenorm = denormalizeEyesPrediction(eyesPrediction[cEyesDataRight], faceWDenom * cEyeWidthPerc, 1, 11)
+
+    # calculate eye points of interest on faceImg
+    topELeftX, topELeftY = eyeCropPoints(faceElementsPrediction[cLeftEyeX], faceElementsPrediction[cLeftEyeY])[0]
+    topERightX, topERightY = eyeCropPoints(faceElementsPrediction[cRightEyeX], faceElementsPrediction[cRightEyeY])[0]
+  
+    # calculate face elements coordinates on face image
+    for i in range(0, len(faceElementsPredDenorm), 2):
+        faceElementsPrediction[i] += topLeftX
+        faceElementsPrediction[i + 1] += topLeftY
+
+    # calculate eyes points of interest on original frame
+    for i in range(1, len(leftEyePredDenorm) - 5, 2):
+        leftEyePredDenorm[i] += (faceElementsPredDenorm[0] + topELeftX)
+        leftEyePredDenorm[i + 1] += (faceElementsPredDenorm[1] + topELeftY)
+
+    for i in range(1, len(rightEyePredDenorm) - 5, 2):
+        rightEyePredDenorm[i] += (faceElementsPredDenorm[0] + topERightX)
+        rightEyePredDenorm[i + 1] += (faceElementsPredDenorm[1] + topERightY)
+
+
 # translated phase 3 labels to labels from phase 1
 def formatOutputLabels(commonLabels):
 
@@ -129,6 +198,10 @@ if __name__ == "__main__":
     phase01_labels = []
     phase01_labels = readCSV(inputCSVPath_phase01)
 
+    # load phase 2 labels
+    phase02_labels = []
+    phase02_labels = readCSV(inputCSVPath_phase02)
+
     # load phase 3 labels
     phase03_labels = []
     phase03_labels = readCSV(inputCSVPath_phase03)
@@ -137,8 +210,13 @@ if __name__ == "__main__":
     phase03_labels = filterPhaseThreeLabels(phase03_labels)
 
     # find common labels in datasets
+    #common_labels_ph12 = []
+    #common_labels_ph12 = findCommonLabels(phase01_labels, phase02_labels)
+
     common_labels = []
-    common_labels = findCommonLabels(phase01_labels, phase03_labels)
+    common_labels = findCommonLabels(phase01_labels, phase02_labels, phase03_labels)
+
+    print(len(common_labels))
 
     # format output labels
     common_labels = formatOutputLabels(common_labels)
