@@ -7,6 +7,8 @@ inputCSVPath_phase03 = 'C:\\Users\\Cisra\\Desktop\\Rad\\trainingSet_phase03_csv\
 
 # last item of interest in phase 3 labels
 cPh03LastItem = 12
+# last item of interest in phase 1 labels
+cPh01LastItem = 4
 
 # eye image dimensions
 # (width, height)
@@ -24,12 +26,12 @@ cEyeWidthPercentage = 0.3
 cEyeHeightPercentage = 0.2
 
 # indexes of eyes data in face elements prediction array
-cNoLeftEye = 0
-cNoRightEye = 1
-cLeftEyeX = 2
-cLeftEyeY = 3
-cRightEyeX = 4
-cRightEyeY = 5
+cNoLeftEye = 1
+cNoRightEye = 2
+cLeftEyeX = 3
+cLeftEyeY = 4
+cRightEyeX = 5
+cRightEyeY = 6
 
 # read CSV file
 def readCSV(filepath):
@@ -53,11 +55,15 @@ def saveCSV(filepath, labels):
     print("[*] Saving labels: " + str(filepath.split('\\')[-1]))
 
     dat_file = open(filepath, "w+")
-
+    
     for line in labels:
         l = ''
-        for item in line:
-            l = l + str(item) + ','
+        for i in range(len(line)):
+            if i != 1:
+                for j in range(len(line[i])):
+                    if i > 1 and j == 0:
+                        continue
+                    l = l + str(line[i][j]) + ','
 
         l = l + '\n'
         dat_file.write(str(l))
@@ -99,6 +105,19 @@ def datasetCastToFloat(labels):
             labels[i][j] = float(labels[i][j])
 
 # filter for only those labels that are of interest
+def filterPhaseOneLabels(labels):
+
+    print("[*] Filtering labels of interest in phase 1 ...")
+
+    for i in range(len(labels)):
+        l = labels[i]
+        l = l[:cPh01LastItem]
+        l.append(labels[i][-1])
+        labels[i] = l
+
+    return labels
+
+# filter for only those labels that are of interest
 def filterPhaseThreeLabels(labels):
 
     print("[*] Filtering labels of interest in phase 3 ...")
@@ -110,7 +129,6 @@ def filterPhaseThreeLabels(labels):
 
     return labels
 
-# TO-DO: implement functionality that will assure safe
 # translation from phase 3 coordinate system to phase 1 coordinate system
 def translatePhaseThreeToPhaseOne(commonLabels):
 
@@ -118,11 +136,6 @@ def translatePhaseThreeToPhaseOne(commonLabels):
 
     frameWidth = cFrameShape[0]
     frameHeight = cFrameShape[1]
-
-    #[[['capture_2020_07_24_18_01_42_010999', '0', '297', '263', '246', '218', '353', '223', '0', '0', '0', '0', '223'], 
-    #['capture_2020_07_24_18_01_42_010999', '0', '0', '60', '128', '129', '112', '57', '167', '79', '217', '89', '243', '0', '0', '0', '0', '200'], 
-    #['capture_2020_07_24_18_01_42_010999_left', '0', '52', '21', '49', '32', '49', '47', '25', '39', '81', '41'], 
-    #['capture_2020_07_24_18_01_42_010999_right', '0', '45', '28', '43', '38', '41', '53', '12', '45', '69', '44']]]
 
     for i in range(len(commonLabels)):
         #for j in range(len(commonLabels[i])):
@@ -142,19 +155,18 @@ def translatePhaseThreeToPhaseOne(commonLabels):
         topERightX, topERightY = eyeCropPoints(commonLabels[i][1][cRightEyeX], commonLabels[i][1][cRightEyeY], faceW)[0]
  
         # calculate face elements coordinates on face image
-        for k in range(1, len(commonLabels[i][1]) - 1, 2):
+        for k in range(3, len(commonLabels[i][1]) - 1, 2):
             commonLabels[i][1][k] += topLeftX
             commonLabels[i][1][k + 1] += topLeftY
 
         # calculate eyes points of interest on original frame
-        for k in range(2, len(commonLabels[i][2]) - 6, 2):
-            commonLabels[i][2][k] += (commonLabels[i][1][1] + topELeftX)
-            commonLabels[i][2][k + 1] += (commonLabels[i][1][2] + topELeftY)
+        for k in range(2, len(commonLabels[i][2]), 2):
+            commonLabels[i][2][k] += (commonLabels[i][1][3] + topELeftX)
+            commonLabels[i][2][k + 1] += (commonLabels[i][1][4] + topELeftY)
 
-
-        for k in range(2, len(commonLabels[i][3]) - 6, 2):
-            commonLabels[i][3][k] += (commonLabels[i][1][1] + topERightX)
-            commonLabels[i][3][k + 1] += (commonLabels[i][1][2] + topERightY)
+        for k in range(2, len(commonLabels[i][3]), 2):
+            commonLabels[i][3][k] += (commonLabels[i][1][3] + topERightX)
+            commonLabels[i][3][k + 1] += (commonLabels[i][1][4] + topERightY)
 
 def eyeCropPoints(x, y, faceW):
     # calculate coordinates to crop from
@@ -166,61 +178,6 @@ def eyeCropPoints(x, y, faceW):
     brEyeY = y + int(cEyeHeightPercentage / 2 * height)
 
     return [(tlEyeX, tlEyeY), (brEyeX, brEyeY)]
-
-# draws all predictions on original image
-def drawPredictionOnImage(facePrediction, faceElementsPrediction, eyesPrediction):
-
-    # denormalize face predictions
-    #[faceXDenom, faceYDenom, faceWDenom] = denormalizeFacePrediction(facePrediction)
-
-    # calculate points for face bounding rectangle to be drawn
-    topLeftX = faceXDenom - int((faceWDenom / 2) + 0.5)
-    topLeftY = faceYDenom - int(((faceWDenom / 2) * cFaceWidthHeightRatio) + 0.5)
-
-    bottomRightX = faceXDenom + int((faceWDenom / 2) + 0.5)
-    bottomRightY = faceYDenom + int(((faceWDenom / 2) * cFaceWidthHeightRatio) + 0.5)
-
-    # denormalize face elements to a new array
-    #faceElementsPredDenorm = denormalizeFaceElementsPrediction(faceElementsPrediction, resizeFactor = cLabeledFaceHeight / faceImg.shape[0])[0]
-    
-    # denormalize eyes points of interest
-    # faceWDenom * cEyeWidthPerc because eye dimension is 30% of faceWDenom
-    #if len(eyesPrediction) and faceElementsPrediction[0][cNoLeftEye] < cNoEyeThreshold:
-    #    leftEyePredDenorm = denormalizeEyesPrediction(eyesPrediction[cEyesDataLeft], faceWDenom * cEyeWidthPerc, 1, 11)
-    #if len(eyesPrediction) and faceElementsPrediction[0][cNoRightEye] < cNoEyeThreshold:
-    #    rightEyePredDenorm = denormalizeEyesPrediction(eyesPrediction[cEyesDataRight], faceWDenom * cEyeWidthPerc, 1, 11)
-
-    # calculate eye points of interest on faceImg
-    topELeftX, topELeftY = eyeCropPoints(faceElementsPrediction[cLeftEyeX], faceElementsPrediction[cLeftEyeY])[0]
-    topERightX, topERightY = eyeCropPoints(faceElementsPrediction[cRightEyeX], faceElementsPrediction[cRightEyeY])[0]
-  
-    # calculate face elements coordinates on face image
-    for i in range(0, len(faceElementsPredDenorm), 2):
-        faceElementsPrediction[i] += topLeftX
-        faceElementsPrediction[i + 1] += topLeftY
-
-    # calculate eyes points of interest on original frame
-    for i in range(1, len(leftEyePredDenorm) - 5, 2):
-        leftEyePredDenorm[i] += (faceElementsPredDenorm[0] + topELeftX)
-        leftEyePredDenorm[i + 1] += (faceElementsPredDenorm[1] + topELeftY)
-
-    for i in range(1, len(rightEyePredDenorm) - 5, 2):
-        rightEyePredDenorm[i] += (faceElementsPredDenorm[0] + topERightX)
-        rightEyePredDenorm[i + 1] += (faceElementsPredDenorm[1] + topERightY)
-
-
-# translated phase 3 labels to labels from phase 1
-def formatOutputLabels(commonLabels):
-
-    print("[*] Formating output labels ...")
-    
-    result = []
-
-    for list in commonLabels:
-        l2 = list[1][1:]
-        result.append(list[0] + l2)
-
-    return result
 
 if __name__ == "__main__":
 
@@ -240,6 +197,9 @@ if __name__ == "__main__":
     phase03_labels = []
     phase03_labels = readCSV(inputCSVPath_phase03)
 
+    # filter for labels of interest in phase 1
+    filterPhaseOneLabels(phase01_labels)
+
     # filter for labels of interest in phase 3
     phase03_labels = filterPhaseThreeLabels(phase03_labels)
 
@@ -248,20 +208,15 @@ if __name__ == "__main__":
     datasetCastToFloat(phase02_labels)
     datasetCastToFloat(phase03_labels)
 
-    # find common labels in datasets
-    #common_labels_ph12 = []
-    #common_labels_ph12 = findCommonLabels(phase01_labels, phase02_labels)
-
     common_labels = []
-    common_labels = findCommonLabels(phase01_labels, phase02_labels, phase03_labels)
+    #common_labels = findCommonLabels(phase01_labels, phase02_labels, phase03_labels)
+
+    common_labels = [[['capture_2020_04_17_11_39_49_7263', 0.0, 350.0, 331.0, 154.0], ['capture_2020_04_17_11_39_49_7263', 0.0, 0.0, 52.0, 141.0, 144.0, 139.0, 99.0, 173.0, 97.0, 216.0, 97.0, 230.0, 0.0, 0.0, 0.0, 0.0, 200.0], ['capture_2020_04_17_11_39_49_7263_left', 0.0, 50.0, 40.0, 51.0, 56.0, 51.0, 73.0, 18.0, 61.0, 88.0, 56.0], ['capture_2020_04_17_11_39_49_7263_right', 0.0, 54.0, 36.0, 53.0, 51.0, 56.0, 70.0, 24.0, 53.0, 93.0, 55.0]]]
+
+    print(common_labels)
 
     # translate label coordinates from phase 3 to phase 1 
     translatePhaseThreeToPhaseOne(common_labels)
-
-    #print(common_labels)
-    
-    # format output labels
-    #common_labels = formatOutputLabels(common_labels)
 
     # save output labels
     saveCSV('C:\\Users\\Cisra\\Desktop\\Rad\\output.csv', common_labels)
