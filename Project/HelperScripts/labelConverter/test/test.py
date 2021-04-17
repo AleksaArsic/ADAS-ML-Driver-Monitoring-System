@@ -9,14 +9,18 @@ import numpy as np
 imagesPath = r'C:\Users\arsic\Desktop\master\Rad\CNN-Driver-Monitoring-System\Dataset\trainingSet_phase01'
 
 # path to .csv files with minimal and maximal values used for denormalization
-minMaxCSVpath = r'C:\Users\arsic\Desktop\master\Rad\CNN-Driver-Monitoring-System\Dataset\trainingSet_phase01_csv\trainingSet_phase01_normalized_min_max.csv'
-minMaxPhase02 = r'C:\Users\arsic\Desktop\master\Rad\CNN-Driver-Monitoring-System\Dataset\trainingSet_phase02_csv\trainingSet_phase02_normalized_min_max.csv'
-minMaxPhase03 = r'C:\Users\arsic\Desktop\master\Rad\CNN-Driver-Monitoring-System\Dataset\trainingSet_phase03_csv\trainingSet_phase03_normalized_min_max.csv'
+#minMaxCSVpath = r'C:\Users\arsic\Desktop\master\Rad\CNN-Driver-Monitoring-System\Dataset\trainingSet_phase01_csv\trainingSet_phase01_normalized_min_max.csv'
+#minMaxPhase02 = r'C:\Users\arsic\Desktop\master\Rad\CNN-Driver-Monitoring-System\Dataset\trainingSet_phase02_csv\trainingSet_phase02_normalized_min_max.csv'
+#minMaxPhase03 = r'C:\Users\arsic\Desktop\master\Rad\CNN-Driver-Monitoring-System\Dataset\trainingSet_phase03_csv\trainingSet_phase03_normalized_min_max.csv'
+minMaxCSVpath = r'D:\Diplomski\DriverMonitoringSystem\Dataset\trainingSet_phase01_csv\trainingSet_phase01_normalized_min_max.csv'
+minMaxPhase02 = r'D:\Diplomski\DriverMonitoringSystem\Dataset\trainingSet_phase02_csv\trainingSet_phase02_normalized_min_max.csv'
+minMaxPhase03 = r'D:\Diplomski\DriverMonitoringSystem\Dataset\trainingSet_phase03_csv\trainingSet_phase03_normalized_min_max.csv'
+
 
 # path to normalized .csv labels
-normalizedPh01Path = r'C:\Users\arsic\Desktop\master\Rad\CNN-Driver-Monitoring-System\Dataset\trainingSet_phase01_csv\trainingSet_phase01_normalized.csv'
-normalizedPh02Path = r'C:\Users\arsic\Desktop\master\Rad\CNN-Driver-Monitoring-System\Dataset\trainingSet_phase02_csv\trainingSet_phase02_normalized.csv'
-normalizedPh03Path = r'C:\Users\arsic\Desktop\master\Rad\CNN-Driver-Monitoring-System\Dataset\trainingSet_phase03_csv\trainingSet_phase03_normalized.csv'
+normalizedPh01Path = r'D:\Diplomski\DriverMonitoringSystem\Dataset\trainingSet_phase01_csv\trainingSet_phase01_normalized.csv'
+normalizedPh02Path = r'D:\Diplomski\DriverMonitoringSystem\Dataset\trainingSet_phase02_csv\trainingSet_phase02_normalized.csv'
+normalizedPh03Path = r'D:\Diplomski\DriverMonitoringSystem\Dataset\trainingSet_phase03_csv\trainingSet_phase03_normalized.csv'
 
 # opencv width and height information index
 cCVwidth = 3
@@ -317,7 +321,22 @@ def translateLabels(facePrediction, faceElementsPrediction, eyesPrediction):
 
     return [faceXDenom, faceYDenom, faceWDenom, faceElementsPredDenorm, leftEyePredDenorm, rightEyePredDenorm]
 
+def normalizedLabelsToFloat(labels):
+    result = []
+    l = []
+    for i in range(len(labels)):
+        l.append(labels[i][0])
+        for j in range(1, len(labels[i])):
+            l.append(float(labels[i][j]))
+
+        result.append(l)
+
+    return result
+
 def stripImageNames(commonLabels = []):
+
+    imageNames = []
+
     if not len(commonLabels):
         print("[*] commonLabels empty!")
         return -1
@@ -326,16 +345,20 @@ def stripImageNames(commonLabels = []):
         for i in range(len(commonLabels)):
             facePrediction = commonLabels[i][0]
             faceElementsPrediction = commonLabels[i][1]
-            eyesPrediction = [commonLabels[i][2][0], commonLabels[i][2][-1]]
+            eyesPrediction = [commonLabels[i][2], commonLabels[i][2]]
+
+            imageNames.append(facePrediction[0])
 
             facePrediction = facePrediction[1:]
             faceElementsPrediction = faceElementsPrediction[1:]
-            eyesPrediction[i][2][0] = eyesPrediction[i][2][0][1:]
-            eyesPrediction[i][2][1] = eyesPrediction[i][2][1][1:]
+            eyesPrediction[0] = eyesPrediction[0][1:]
+            eyesPrediction[1] = eyesPrediction[1][1:]
 
             commonLabels[i][0] = facePrediction
             commonLabels[i][1] = faceElementsPrediction
-            
+            commonLabels[i][2] = eyesPrediction
+
+    return [commonLabels, imageNames]
 
 
 if __name__ == "__main__":
@@ -350,10 +373,20 @@ if __name__ == "__main__":
     normalizedPh02 = readNormalizedLabels(normalizedPh02Path, 2)
     normalizedPh03 = readNormalizedLabels(normalizedPh03Path, 3)
 
+    # normalized labels to float
+    normalizedPh01 = normalizedLabelsToFloat(normalizedPh01)
+    normalizedPh02 = normalizedLabelsToFloat(normalizedPh02)
+    normalizedPh03 = normalizedLabelsToFloat(normalizedPh03)
+
     # find common labels
     commonLabels = findCommonLabels(normalizedPh01, normalizedPh02, normalizedPh03)
 
     # strip image names from commonLabels
+    imageNames = []
+    [commonLabels, imageNames] = stripImageNames(commonLabels)
+
+    print(commonLabels)
+    print(imageNames)
 
     for i in range(len(commonLabels)):
 
