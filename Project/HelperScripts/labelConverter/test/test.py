@@ -99,6 +99,11 @@ faceOutputNo = 8
 faceElementsOutputNo = 16
 attentionOutputNo = 15
 
+# last item of interest in phase 3 labels
+cPh03LastItem = 11
+# last item of interest in phase 1 labels
+cPh01LastItem = 4
+
 # find common labels among two labeled datasets
 # find based on common image name
 def findCommonLabels(labels1, labels2, labels3):
@@ -208,6 +213,43 @@ def parseCSV(filepath, mode = 0):
             result.append(cat)
 
     return result
+
+# save csv file
+def saveCSV(filepath, labels):
+
+    print("[*] Saving labels: " + str(filepath.split('\\')[-1]))
+
+    dat_file = open(filepath, "w+")
+    
+    for line in labels:
+        l = ''
+        for i in range(len(line)):
+            if i != 1:
+                for j in range(len(line[i])):
+                    l = l + str(line[i][j]) + ','
+
+        l = l + '\n'
+        dat_file.write(str(l))
+
+
+    dat_file.close()
+
+# save minMaxValues .csv
+def saveMinMaxCSV(filepath, minMaxValues):
+
+    print("[*] Saving minMaxValues.csv")
+
+    dat_file = open(filepath, "w+")
+
+    for line in minMaxValues:
+        l = ''
+        for i in range(len(line)):
+            l = l + str(line[i]) + ','
+
+        l = l + '\n'
+        dat_file.write(str(l))
+
+    dat_file.close()
 
 # denormalize eyes prediction
 # does not change original prediction array
@@ -319,12 +361,13 @@ def translateLabels(facePrediction, faceElementsPrediction, eyesPrediction):
         rightEyePredDenorm[i] += (faceElementsPredDenorm[0] + topERightX)
         rightEyePredDenorm[i + 1] += (faceElementsPredDenorm[1] + topERightY)
 
-    return [faceXDenom, faceYDenom, faceWDenom, faceElementsPredDenorm, leftEyePredDenorm, rightEyePredDenorm]
+    return [[faceXDenom, faceYDenom, faceWDenom], faceElementsPredDenorm, leftEyePredDenorm, rightEyePredDenorm]
 
 def normalizedLabelsToFloat(labels):
     result = []
-    l = []
+
     for i in range(len(labels)):
+        l = []
         l.append(labels[i][0])
         for j in range(1, len(labels[i])):
             l.append(float(labels[i][j]))
@@ -360,6 +403,81 @@ def stripImageNames(commonLabels = []):
 
     return [commonLabels, imageNames]
 
+def appendImageNames(commonLabels, imageNames):
+    if not len(commonLabels):
+        print("[*] commonLabels empty!")
+        return -1
+    else:
+        
+        for i in range(len(commonLabels)):
+            facePrediction = commonLabels[i][0]
+
+            facePrediction.insert(0, imageNames[i])
+
+            commonLabels[i][0] = facePrediction
+
+    return commonLabels
+
+# filter for only those labels that are of interest
+def filterPhaseThreeLabels(commonLabels):
+
+    print("[*] Filtering labels of interest in phase 3 ...")
+
+    for i in range(len(commonLabels)):
+        l1 = commonLabels[i][2]
+        l2 = commonLabels[i][3]
+
+        l1 = l1[:cPh03LastItem]
+        l2 = l2[:cPh03LastItem]
+
+        commonLabels[i][2] = l1
+        commonLabels[i][3] = l2
+
+    return commonLabels
+
+def normalizeOutputLabels(commonLabels):
+
+    result = []
+
+    for i in range(len(commonLabels)):
+        l = []
+        for j in range(len(commonLabels[i])):
+            for k in range(len(commonLabels[i][j])):
+                l.append(commonLabels[i][j][k])
+
+        result.append(l)
+
+    result = np.transpose(result)
+
+    # find minimal and maximal value in each category
+    minimum = []
+    maximum = []
+
+    for i in range(1, len(result)):
+        minimum.append(min(result[i]))
+        maximum.append(max(result[i]))
+
+        for j in range(len(result[i])):
+            result[i][j] = (float(result[i][j]) - float(minimum[i - 1])) / (float(maximum[i - 1]) - float(minimum[i - 1]))
+
+    result = np.transpose(result)
+
+    ret = []
+
+    for i in range(len(result)):
+        facePrediction = result[i][:5]
+        faceElementsPrediction = result[i][5:17]
+        eyesPredictionLeft = result[i][17:28]
+        eyesPredictionRight = result[i][28:39]
+
+        ret.append([facePrediction, faceElementsPrediction, eyesPredictionLeft, eyesPredictionRight])
+
+
+    minMaxValues = []
+    minMaxValues.append(minimum)
+    minMaxValues.append(maximum)
+
+    return [ret, minMaxValues]
 
 if __name__ == "__main__":
 
@@ -385,8 +503,7 @@ if __name__ == "__main__":
     imageNames = []
     [commonLabels, imageNames] = stripImageNames(commonLabels)
 
-    print(commonLabels)
-    print(imageNames)
+    newLabels = []
 
     for i in range(len(commonLabels)):
 
@@ -397,4 +514,23 @@ if __name__ == "__main__":
         # translate labels
         result = translateLabels(facePrediction, faceElementsPrediction, eyesPrediction)
 
-        print(result)
+        newLabels.append(result)
+    
+    # append image names
+    newLabels = appendImageNames(newLabels, imageNames)
+
+    # filter output labels
+    newLabels = filterPhaseThreeLabels(newLabels)
+
+    # normalize output labels
+    # TO-DO: check validity of normalized values 
+    minMaxValues = []
+    newLabels, minMaxValues = normalizeOutputLabels(newLabels)
+
+    # construct and save .csv used for denormalization
+    #saveMinMaxCSV(r'C:\Users\arsic\Desktop\master\Rad\minMaxOutput.csv', minMaxValues)
+    saveMinMaxCSV(r'D:\Diplomski\DriverMonitoringSystem\Dataset\minMaxOutput.csv', minMaxValues)
+
+    # save normalized labels
+    #saveCSV(r'C:\Users\arsic\Desktop\master\Rad\output.csv', common_labels)
+    saveCSV(r'D:\Diplomski\DriverMonitoringSystem\Dataset\output.csv', newLabels)
