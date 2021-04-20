@@ -25,9 +25,9 @@ eyeWindowName = "eye tracking"
 vSource = 0
 
 # path to .csv files with minimal and maximal values used for denormalization
-minMaxCSVpath = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
-minMaxPhase02 = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase02_csv\\trainingSet_phase02_normalized_min_max.csv"
-minMaxPhase03 = "D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase03_csv\\trainingSet_phase03_normalized_min_max.csv"
+minMaxCSVpath = r'C:\Users\arsic\Desktop\master\Rad\CNN-Driver-Monitoring-System\Dataset\trainingSet_phase01_csv\trainingSet_phase01_normalized_min_max.csv'
+minMaxPhase02 = r'C:\Users\arsic\Desktop\master\Rad\CNN-Driver-Monitoring-System\Dataset\trainingSet_phase02_csv\trainingSet_phase02_normalized_min_max.csv'
+minMaxPhase03 = r'C:\Users\arsic\Desktop\master\Rad\CNN-Driver-Monitoring-System\Dataset\trainingSet_phase03_csv\trainingSet_phase03_normalized_min_max.csv'
 
 # path to .csv files with minimal and maximal values used for denormalization
 #minMaxCSVpath = "C:\\Users\\arsic\\Desktop\\Diplomski\\DriverMonitoringSystem\Dataset\\trainingSet_phase01_csv\\trainingSet_phase01_normalized_min_max.csv"
@@ -348,7 +348,7 @@ def cropEyes(faceImg, faceElementsPrediction):
 def eyeCropPoints(x, y, faceImg):
     # calculate coordinates to crop from
     height, width = faceImg.shape
-    
+
     tlEyeX = x - int(cEyeWidthPerc / 2 * width)
     tlEyeY = y - int(cEyeHeightPerc / 2 * height)
     brEyeX = x + int(cEyeWidthPerc / 2 * width)
@@ -503,13 +503,10 @@ def predictFace(vsource = 1):
     # attention logic 
     checkAttention()
 
-    #while(cap.isOpened()):
-    while(True):
+    while(cap.isOpened()):
         s_time = time()
 
-        #ret, frame = cap.read()
-        ret = True
-        frame = cv2.imread('D:\\Diplomski\\DriverMonitoringSystem\\Dataset\\trainingSet_phase01\\capture_2020_04_17_11_39_49_7263.jpg')
+        ret, frame = cap.read()
         if(ret == True):
             frame = cv2.resize(frame, (640, 480), 0, 0, interpolation = cv2.INTER_CUBIC); 
 
@@ -714,10 +711,6 @@ def drawPredictionOnImage(facePrediction, faceElementsPrediction, image, faceImg
     faceElementsPredDenorm = []
     leftEyePredDenorm = []
     rightEyePredDenorm = []
-
-    facePrediction = [[0,0.53787878787878785,0.74789915966386555,0.49920760697305866,0.75544794188861986,0.59649122807017541,0.78446115288220553,0,0,0,0,0.23735408560311283]]
-    faceElementsPrediction = [[0,0,0.30263157894736842,0.68452380952380953,0.64,0.64942528735632188,0.5,0.59139784946236562,0.48677248677248675,0.56875,0.46666666666666667,0.57516339869281041,0,0,0,0]]
-    eyesPrediction = [[0,0.55128205128205132,0.28125,0.581081081081081,0.35294117647058826,0.46575342465753422,0.53246753246753242,0.23684210526315788,0.38961038961038963,0.75,0.41666666666666669,0,0,0,0,100],[0,0.52564102564102566,0.36458333333333331,0.5,0.43529411764705883,0.42465753424657532,0.55844155844155841,0.19736842105263158,0.41558441558441561,0.6785714285714286,0.5,0,0,0,0,100]]
 
     # denormalize face predictions
     [faceXDenom, faceYDenom, faceWDenom] = denormalizeFacePrediction(facePrediction)
