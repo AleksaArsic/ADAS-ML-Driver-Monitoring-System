@@ -529,12 +529,16 @@ if __name__ == "__main__":
     # normalize output labels
     # TO-DO: check validity of normalized values 
     minMaxValues = []
-    newLabels, minMaxValues = normalizeOutputLabels(newLabels)
+    newLabelsNormalized, minMaxValues = normalizeOutputLabels(newLabels)
 
     # construct and save .csv used for denormalization
     saveMinMaxCSV(r'C:\Users\arsic\Desktop\master\Rad\minMaxOutput.csv', minMaxValues)
     #saveMinMaxCSV(r'D:\Diplomski\DriverMonitoringSystem\Dataset\minMaxOutput.csv', minMaxValues)
 
-    # save normalized labels
+    # save labels
     saveCSV(r'C:\Users\arsic\Desktop\master\Rad\output.csv', newLabels)
     #saveCSV(r'D:\Diplomski\DriverMonitoringSystem\Dataset\output.csv', newLabels)
+
+    # save normalized labels
+    saveCSV(r'C:\Users\arsic\Desktop\master\Rad\output_normalized.csv', newLabelsNormalized)
+    #saveCSV(r'D:\Diplomski\DriverMonitoringSystem\Dataset\output_normalized.csv', newLabels)
