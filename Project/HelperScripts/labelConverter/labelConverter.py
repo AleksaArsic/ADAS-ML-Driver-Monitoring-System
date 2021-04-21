@@ -114,23 +114,47 @@ def findCommonLabels(labels1, labels2, labels3):
     print("[*] Finding common label names ...")
 
     result = []
+    tempPh02 = []
 
-    for i in range(0, len(labels1)):
+    for i in range(len(labels1)):
         l = []
-        l.append(labels1[i])
-        for j in range(0, len(labels2)):
-            if (labels1[i][0] in labels2[j][0]):
+        for j in range(len(labels2)):
+            if labels1[i][0] == labels2[j][0]:
+                l.append(labels1[i])
                 l.append(labels2[j])
-                for k in range(0, len(labels3)):
-                    if(labels2[j][0] in labels3[k][0]):
-                        l.append(labels3[k])
-                        
-        #if only one eye found append second one as ones
-        if(len(l) == 3):
-            temp = [1] * len(l[2])
-            l.append(temp)
-        if (len(l) > 2):
+                tempPh02.append(labels2[j])
+
+        if(len(l)):
             result.append(l)
+
+    res2 = []
+    for i in range(len(tempPh02)):
+        l = [] 
+        for j in range(len(labels3)):
+            label3Name =  labels3[j][0].rsplit("_", 1)[0]
+
+            if tempPh02[i][0] in labels3[j][0]:
+                l.append(tempPh02[i])
+                l.append(labels3[j])
+        if(len(l)):
+            res2.append(l)
+
+    #for i in range(0, len(labels1)):
+    #    l = []
+    #    l.append(labels1[i])
+    #    for j in range(0, len(labels2)):
+    #        if (labels1[i][0] in labels2[j][0]):
+    #            l.append(labels2[j])
+    #            for k in range(0, len(labels3)):
+    #                if(labels2[j][0] in labels3[k][0]):
+    #                    l.append(labels3[k])
+            
+        #if only one eye found append second one as ones
+    #    if(len(l) == 3):
+    #        temp = [1] * len(l[2])
+    #        l.append(temp)
+    #    if (len(l) > 2):
+    #        result.append(l)
 
     return result
 
