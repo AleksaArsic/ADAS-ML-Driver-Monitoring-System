@@ -7,6 +7,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img
 from tensorflow.keras.callbacks import TensorBoard
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from sklearn.model_selection import train_test_split
+from Utilities import trainTestDatasetSplit, writeTestToCsv, compareResults, denormalizePredictions
 
 import matplotlib.pyplot as plt
 import random
@@ -33,12 +34,13 @@ outputNo = 25
 phase = 1
 
 imgsDir = r"C:\Users\arsic\Desktop\master\Rad\output\\"
-normalizedDataPath = r"C:\Users\arsic\Desktop\master\Rad\output.csv"
+normalizedDataPath = r"C:\Users\arsic\Desktop\master\Rad\output_normalized.csv"
 minMaxCSVpath = r"C:\Users\arsic\Desktop\master\Rad\minMaxOutput.csv"
 
 images=[]
 categories = []
-minMaxValues = []
+testImages = [] 
+testLabels = [] 
 
 def plotTrainingResults(val_acc, val_loss, train_acc, train_loss):
 
@@ -68,7 +70,9 @@ if __name__ == "__main__":
     minMaxValues = Utilities.readMinMaxFromCSV(minMaxCSVpath)
     [images, categories, filenames] = Utilities.loadImagesAndCategories(images, imgsDir, categories, normalizedDataPath, phase = 1, inputWidth = inputWidth, inputHeight = inputHeight)
 
-    model_name = "model_phase01.h5"
+    [testImages, testLabels] = trainTestDatasetSplit(images, categories)
+
+    model_name = "model_paperCNN.h5"
 
     model = cnn.create_model(inputWidth, inputHeight, 1, outputNo)
 
@@ -83,7 +87,7 @@ if __name__ == "__main__":
 
     model_name = "model_paperCNN.h5"
     callbacks = [
-        EarlyStopping(monitor='val_accuracy', mode = 'max', patience=35, verbose=1),
+        EarlyStopping(monitor='val_accuracy', mode = 'max', patience=50, verbose=1),
         keras.callbacks.ReduceLROnPlateau(monitor='val_accuracy', mode = 'max', factor=0.5, patience=15, min_lr=0.000001, verbose=1),
         ModelCheckpoint(model_name, monitor='val_accuracy', mode = 'max', verbose=1, save_best_only=True, save_weights_only=False),
         tensorboard
@@ -91,24 +95,42 @@ if __name__ == "__main__":
 
 
     #network training
-    model_history = model.fit(df_im, df_cat, # df_im - input ; df_cat - output
-                    batch_size=2,
-                    #batch_size=64,
-                    epochs=350,
-                    validation_data=(val_im, val_cat),
-                    callbacks=callbacks,
-                    verbose=1)
+    #model_history = model.fit(df_im, df_cat, # df_im - input ; df_cat - output
+    #                batch_size=1,
+    #                #batch_size=64,
+    #                epochs=350,
+    #                validation_data=(val_im, val_cat),
+    #                callbacks=callbacks,
+    #                verbose=0)
 
     #Visualizing accuracy and loss of training the model
-    history_dict=model_history.history
-    print(history_dict.keys())
-    val_acc = history_dict['val_accuracy']
-    val_loss = history_dict['val_loss']
-    train_acc = history_dict['accuracy']
-    train_loss = history_dict['loss']
+    #history_dict=model_history.history
+    #print(history_dict.keys())
+    #val_acc = history_dict['val_accuracy']
+    #val_loss = history_dict['val_loss']
+    #train_acc = history_dict['accuracy']
+    #train_loss = history_dict['loss']
 
     #plot accuracy and loss
-    plotTrainingResults(val_acc, val_loss, train_acc, train_loss)
+    #plotTrainingResults(val_acc, val_loss, train_acc, train_loss)
+
+    # predict on test dataset
+    df_im = np.asarray(testImages)
+    df_im = df_im.reshape(df_im.shape[0], inputWidth, inputHeight, 1)
+
+    model = tf.keras.models.load_model(model_name)
+    predictions = model.predict(df_im, verbose = 1)
+
+    # compare results between labeled test set and predictions
+    testLabels = np.asarray(testLabels)
+    predictionsAcc = compareResults(testLabels, predictions)
+
+    # denormalize test labels and predictions
+    denormalizePredictions(minMaxValues, testLabels)
+    denormalizePredictions(minMaxValues, predictions)
+
+    # write test results in .csv file
+    writeTestToCsv(testLabels, predictions, predictionsAcc)
 
     script_end = datetime.datetime.now()
     print (script_end-script_start)

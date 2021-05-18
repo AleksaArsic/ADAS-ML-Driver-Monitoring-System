@@ -1,5 +1,7 @@
 import numpy as np
 import cv2
+import time
+import random
 import os
 import glob
 import math
@@ -10,12 +12,119 @@ inputHeight = 100
 inputWidth = 100
 
 start = 0
-max = 8000
+maxVal = 8000
 r = 1
 
 timeConsumptionLabels = ['Frame preprocessing', 'Face prediction', 'Face preprocessing', \
                         'Face elements prediction', 'Face elements preprocessing', \
                         'Eyes prediction', 'Visual notification']
+
+SAMPLE_DIFF_THRESHOLD = 0.1
+
+def denormalizePredictions(minMaxValues, predictions):
+    
+    for i in range(len(predictions)):
+        for j in range(len(minMaxValues[0])):
+            minVal = minMaxValues[0][j]
+            maxVal = minMaxValues[1][j]
+
+            predictions[i][j] = predictions[i][j] * (maxVal - minVal) + minVal
+        
+    return 0
+
+def compareResults(testLabels, predictions):
+
+    sampleDifferenceAcc = []
+    predictionsAcc = [] 
+
+    # transpose arrays for easier math
+    testLabels = np.transpose(testLabels)
+    predictions = np.transpose(predictions)
+
+    for i in range(len(predictions)):
+        # calculate difference accuracy between samples
+        maxRefValue = max(testLabels[i])
+    
+        if maxRefValue == 0:
+            maxRefValue += 0.00001
+        
+        diff = abs(predictions[i] - testLabels[i]) / maxRefValue
+    
+        sampleDifferenceAcc = []
+        
+        for j in range(len(diff)):
+            if(diff[j] <= SAMPLE_DIFF_THRESHOLD):
+                sampleDifferenceAcc.append(True)
+            else:
+                sampleDifferenceAcc.append(False)
+
+        validSamples = 0
+        invalidSamples = 0
+
+        for j in range(len(sampleDifferenceAcc)):
+            if(sampleDifferenceAcc[j] == True):
+                validSamples += 1
+            else:
+                invalidSamples += 1
+
+        predictionsAcc.append(validSamples / len(predictions[i]))
+
+    # transpose to normal
+    testLabels = np.transpose(testLabels)
+    predictions = np.transpose(predictions)
+
+    return predictionsAcc
+
+def writeTestToCsv(testLabels, predictions, predictionsAcc):
+    s = ''
+    i = 0 
+    for item in testLabels:
+        for field in item:
+            s += str(field) 
+            s += ','
+
+        s += ','
+
+        l = predictions[i]
+
+        for field in l:
+            s += str(field)
+            s += ','
+
+        s += '\n'
+        i += 1
+
+    s += '\n'
+
+    for item in predictionsAcc:
+        s += str(item) + ','
+
+    s += '\n'
+
+    with open('test_predictions_results.csv', 'w') as f:
+        f.write(s)
+
+def trainTestDatasetSplit(images, labels):
+    testImages = []
+    testLabels = []
+
+    datasetLength = len(images)
+
+    testLength = int(datasetLength * 0.1)
+    
+    for i in range(testLength):
+        random.seed(time.time())
+        n = random.randint(0, datasetLength)
+
+        testImages.append(images[n])
+        testLabels.append(labels[n])
+
+        images.pop(n)
+        labels.pop(n)
+
+        datasetLength -= 1
+
+    return [testImages, testLabels]
 
 def grayConversion(image):
     grayValue = 0.07 * image[:,:,2] + 0.72 * image[:,:,1] + 0.21 * image[:,:,0]

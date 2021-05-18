@@ -23,6 +23,32 @@ def readCSV(filepath):
             result.append(s)
     return result
 
+def parseCSV(filepath):
+    lines = readCSV(filepath)
+    cnt = 0
+    result = []
+
+    for line in lines:
+        if len(lines) > 0:
+            p1 = line.find(',')
+            p1 = p1 + 1
+            cat = line[p1:]
+
+            cat = cat.rstrip(',\n')
+            cat = cat.split(',')
+
+            cntCat = 0
+
+            for item in cat:
+                    cat[cntCat] = float(item)
+                    cntCat = cntCat + 1
+
+            cat = np.asarray(cat)
+
+            result.append(cat)
+
+    return result
+
 def loadImages(imgsDir, images):
 
     os.chdir(imgsDir)
@@ -34,20 +60,39 @@ def loadImages(imgsDir, images):
     
     return images
 
-def drawOnImage(image):
-    pass
+def drawOnImage(image, predictions):
+    # draw face bounding rectangle on original frame
+    # calculate points for face bounding rectangle to be drawn
+    topLeftX = int(predictions[0]) - int((predictions[2] / 2) + 0.5)
+    topLeftY = int(predictions[1]) - int(((predictions[2] / 2) * 1.5) + 0.5)
+
+    bottomRightX = int(predictions[0]) + int((predictions[2] / 2) + 0.5)
+    bottomRightY = int(predictions[1]) + int(((predictions[2] / 2) * 1.5) + 0.5)
+
+    color = (0, 255, 0)
+    cv2.rectangle(image, (int(topLeftX),int(topLeftY)), (int(bottomRightX),int(bottomRightY)), color, 2)
+
+    # draw circular points from predicted eyes points of interest on original image
+    for i in range(4, 15, 2):
+        cv2.circle(image, (int(predictions[i]), int(predictions[i + 1])), 1, color, 2)
+
+    for i in range(15, len(predictions), 2):
+        cv2.circle(image, (int(predictions[i]), int(predictions[i + 1])), 1, color, 2)
 
 if __name__ == "__main__":
 
     images = []
     datasetCSV = []
 
-    datasetCSV = readCSV(datasetCSVPath)
+    datasetCSV = parseCSV(datasetCSVPath)
 
     images = loadImages(datasetImagePath, images)
 
-    for image in images:
-        cv2.imshow('dataset', image)
+    for i in range(len(images)):
+        drawOnImage(images[i], datasetCSV[i])
 
-        if(cv2.waitKey(42) & 0xFF == ord('q')):
+        cv2.imshow('dataset', images[i])
+
+        #if(cv2.waitKey(42) & 0xFF == ord('q')):
+        if(cv2.waitKey(80) & 0xFF == ord('q')):
             break
