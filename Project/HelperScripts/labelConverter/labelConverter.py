@@ -224,6 +224,7 @@ def saveCSV(filepath, labels):
 
     dat_file = open(filepath, "w+")
     
+
     for line in labels:
         l = ''
         for i in range(len(line)):
@@ -469,15 +470,30 @@ def normalizeOutputLabels(commonLabels):
     ret = []
 
     for i in range(len(result)):
-        facePrediction = result[i][:5]
-        faceElementsPrediction = result[i][5:17]
-        eyesPredictionLeft = result[i][17:28]
-        eyesPredictionRight = result[i][28:39]
+        facePrediction = result[i][:4]
+        faceElementsPrediction = result[i][4:16]
+        eyesPredictionLeft = result[i][16:27]
+        eyesPredictionRight = result[i][27:38]
 
         ret.append([facePrediction, faceElementsPrediction, eyesPredictionLeft, eyesPredictionRight])
 
 
     minMaxValues = []
+
+    tempMin = []
+    tempMin2 = []
+    tempMax = []
+    tempMax2 = []
+
+    tempMin = minimum[0:3]
+    tempMin2 = minimum[15:]
+
+    tempMax = maximum[0:3]
+    tempMax2 = maximum[15:]
+
+    minimum = tempMin + tempMin2
+    maximum = tempMax + tempMax2
+
     minMaxValues.append(minimum)
     minMaxValues.append(maximum)
 
@@ -527,7 +543,6 @@ if __name__ == "__main__":
     newLabels = filterPhaseThreeLabels(newLabels)
 
     # normalize output labels
-    # TO-DO: check validity of normalized values 
     minMaxValues = []
     newLabelsNormalized, minMaxValues = normalizeOutputLabels(newLabels)
 

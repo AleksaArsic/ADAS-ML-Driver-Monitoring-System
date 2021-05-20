@@ -112,8 +112,10 @@ def trainTestDatasetSplit(images, labels):
 
     testLength = int(datasetLength * 0.1)
     
+    indexes = []
+
     for i in range(testLength):
-        random.seed(time.time())
+        #random.seed(time.time())
         n = random.randint(0, datasetLength)
 
         testImages.append(images[n])
@@ -121,9 +123,13 @@ def trainTestDatasetSplit(images, labels):
 
         images.pop(n)
         labels.pop(n)
+        
+        #debug
+        indexes.append(n)
 
         datasetLength -= 1
 
+    print(indexes)
     return [testImages, testLabels]
 
 def grayConversion(image):
@@ -131,7 +137,7 @@ def grayConversion(image):
     gray_img = grayValue.astype(np.uint8)
     return gray_img
 
-def readCSV(filepath):
+def readCSV(filepath, mode = 0):
     result = []
     dat_file = open(filepath,'r')
     lines=dat_file.readlines()
@@ -293,9 +299,10 @@ def readMinMaxFromCSV(filepath):
 	
 	for line in lines:
 		if(len(line) > 0):
-			p1 = line.find(',')
-			p1 = p1+1
-			cat=line[p1:]
+			#p1 = line.find(',')
+			#p1 = p1+1
+			#cat=line[p1:]
+			cat=line[:]
 
 			cat = cat.rstrip(',\n')
 			cat = cat.split(',')
