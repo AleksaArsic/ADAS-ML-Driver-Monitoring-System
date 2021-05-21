@@ -86,6 +86,7 @@ if __name__ == "__main__":
     tensorboard = TensorBoard(log_dir=imgsDir + "logs_img1" + "\{}".format(time()))
 
     model_name = "model_paperCNN.h5"
+
     callbacks = [
         EarlyStopping(monitor='val_accuracy', mode = 'max', patience=50, verbose=1),
         keras.callbacks.ReduceLROnPlateau(monitor='val_accuracy', mode = 'max', factor=0.5, patience=15, min_lr=0.000001, verbose=1),
@@ -95,24 +96,24 @@ if __name__ == "__main__":
 
 
     #network training
-    #model_history = model.fit(df_im, df_cat, # df_im - input ; df_cat - output
-    #                batch_size=1,
-    #                #batch_size=64,
-    #                epochs=350,
-    #                validation_data=(val_im, val_cat),
-    #                callbacks=callbacks,
-    #                verbose=0)
+    model_history = model.fit(df_im, df_cat, # df_im - input ; df_cat - output
+                    batch_size=1,
+                    #batch_size=64,
+                    epochs=350,
+                    validation_data=(val_im, val_cat),
+                    callbacks=callbacks,
+                    verbose=0)
 
     #Visualizing accuracy and loss of training the model
-    #history_dict=model_history.history
-    #print(history_dict.keys())
-    #val_acc = history_dict['val_accuracy']
-    #val_loss = history_dict['val_loss']
-    #train_acc = history_dict['accuracy']
-    #train_loss = history_dict['loss']
+    history_dict=model_history.history
+    print(history_dict.keys())
+    val_acc = history_dict['val_accuracy']
+    val_loss = history_dict['val_loss']
+    train_acc = history_dict['accuracy']
+    train_loss = history_dict['loss']
 
     #plot accuracy and loss
-    #plotTrainingResults(val_acc, val_loss, train_acc, train_loss)
+    plotTrainingResults(val_acc, val_loss, train_acc, train_loss)
 
     # predict on test dataset
     df_im = np.asarray(testImages)
@@ -121,13 +122,13 @@ if __name__ == "__main__":
     model = tf.keras.models.load_model(model_name)
     predictions = model.predict(df_im, verbose = 1)
 
-    # compare results between labeled test set and predictions
-    testLabels = np.asarray(testLabels)
-    predictionsAcc = compareResults(testLabels, predictions)
-
     # denormalize test labels and predictions
     denormalizePredictions(minMaxValues, testLabels)
     denormalizePredictions(minMaxValues, predictions)
+
+    # compare results between labeled test set and predictions
+    testLabels = np.asarray(testLabels)
+    predictionsAcc = compareResults(testLabels, predictions)
 
     # write test results in .csv file
     writeTestToCsv(testLabels, predictions, predictionsAcc)

@@ -112,8 +112,6 @@ def trainTestDatasetSplit(images, labels):
 
     testLength = int(datasetLength * 0.1)
     
-    indexes = []
-
     for i in range(testLength):
         #random.seed(time.time())
         n = random.randint(0, datasetLength)
@@ -123,13 +121,9 @@ def trainTestDatasetSplit(images, labels):
 
         images.pop(n)
         labels.pop(n)
-        
-        #debug
-        indexes.append(n)
 
         datasetLength -= 1
 
-    print(indexes)
     return [testImages, testLabels]
 
 def grayConversion(image):
@@ -137,7 +131,7 @@ def grayConversion(image):
     gray_img = grayValue.astype(np.uint8)
     return gray_img
 
-def readCSV(filepath, mode = 0):
+def readCSV(filepath):
     result = []
     dat_file = open(filepath,'r')
     lines=dat_file.readlines()
