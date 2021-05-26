@@ -47,8 +47,11 @@ def compareResults(testLabels, predictions):
     
         if maxRefValue == 0:
             maxRefValue += 0.00001
-        
-        diff = abs(predictions[i] - testLabels[i]) / maxRefValue
+
+        if(np.any(testLabels[i] == 0)):
+            testLabels[i] += 0.00001
+
+        diff = abs(predictions[i] - testLabels[i]) / testLabels[i]
     
         sampleDifferenceAcc = []
         
@@ -111,7 +114,10 @@ def trainTestDatasetSplit(images, labels):
     datasetLength = len(images)
 
     testLength = int(datasetLength * 0.1)
-    
+
+    # debug
+    indexes = []
+
     for i in range(testLength):
         #random.seed(time.time())
         n = random.randint(0, datasetLength)
@@ -123,6 +129,10 @@ def trainTestDatasetSplit(images, labels):
         labels.pop(n)
 
         datasetLength -= 1
+
+        indexes.append(n)
+
+    print(indexes)
 
     return [testImages, testLabels]
 
