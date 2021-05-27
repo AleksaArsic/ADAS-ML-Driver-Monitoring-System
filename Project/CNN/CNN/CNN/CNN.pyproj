@@ -24,6 +24,9 @@
     <Compile Include="CNNmodel.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="CNNpredict.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="CNNpredict_ph01.py" />
     <Compile Include="CNNpredict_ph02.py" />
     <Compile Include="CNNpredict_ph03.py" />
