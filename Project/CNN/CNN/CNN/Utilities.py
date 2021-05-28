@@ -1,5 +1,7 @@
 import numpy as np
 import cv2
+import time
+import random
 import os
 import glob
 import math
@@ -10,12 +12,129 @@ inputHeight = 100
 inputWidth = 100
 
 start = 0
-max = 8000
+maxVal = 8000
 r = 1
 
 timeConsumptionLabels = ['Frame preprocessing', 'Face prediction', 'Face preprocessing', \
                         'Face elements prediction', 'Face elements preprocessing', \
                         'Eyes prediction', 'Visual notification']
+
+SAMPLE_DIFF_THRESHOLD = 0.1
+
+def denormalizePredictions(minMaxValues, predictions):
+    
+    for i in range(len(predictions)):
+        for j in range(len(minMaxValues[0])):
+            minVal = minMaxValues[0][j]
+            maxVal = minMaxValues[1][j]
+
+            predictions[i][j] = predictions[i][j] * (maxVal - minVal) + minVal
+        
+    return 0
+
+def compareResults(testLabels, predictions):
+
+    sampleDifferenceAcc = []
+    predictionsAcc = [] 
+
+    # transpose arrays for easier math
+    testLabels = np.transpose(testLabels)
+    predictions = np.transpose(predictions)
+
+    for i in range(len(predictions)):
+        # calculate difference accuracy between samples
+        maxRefValue = max(testLabels[i])
+    
+        if maxRefValue == 0:
+            maxRefValue += 0.00001
+
+        if(np.any(testLabels[i] == 0)):
+            testLabels[i] += 0.00001
+
+        diff = abs(predictions[i] - testLabels[i]) / testLabels[i]
+    
+        sampleDifferenceAcc = []
+        
+        for j in range(len(diff)):
+            if(diff[j] <= SAMPLE_DIFF_THRESHOLD):
+                sampleDifferenceAcc.append(True)
+            else:
+                sampleDifferenceAcc.append(False)
+
+        validSamples = 0
+        invalidSamples = 0
+
+        for j in range(len(sampleDifferenceAcc)):
+            if(sampleDifferenceAcc[j] == True):
+                validSamples += 1
+            else:
+                invalidSamples += 1
+
+        predictionsAcc.append(validSamples / len(predictions[i]))
+
+    # transpose to normal
+    testLabels = np.transpose(testLabels)
+    predictions = np.transpose(predictions)
+
+    return predictionsAcc
+
+def writeTestToCsv(testLabels, predictions, predictionsAcc):
+    s = ''
+    i = 0 
+    for item in testLabels:
+        for field in item:
+            s += str(field) 
+            s += ','
+
+        s += ','
+
+        l = predictions[i]
+
+        for field in l:
+            s += str(field)
+            s += ','
+
+        s += '\n'
+        i += 1
+
+    s += '\n'
+
+    for item in predictionsAcc:
+        s += str(item) + ','
+
+    s += '\n'
+
+    with open('test_predictions_results.csv', 'w') as f:
+        f.write(s)
+
+def trainTestDatasetSplit(images, labels):
+    testImages = []
+    testLabels = []
+
+    datasetLength = len(images)
+
+    testLength = int(datasetLength * 0.1)
+
+    # debug
+    indexes = []
+
+    for i in range(testLength):
+        #random.seed(time.time())
+        n = random.randint(0, datasetLength)
+
+        testImages.append(images[n])
+        testLabels.append(labels[n])
+
+        images.pop(n)
+        labels.pop(n)
+
+        datasetLength -= 1
+
+        indexes.append(n)
+
+    print(indexes)
+
+    return [testImages, testLabels]
 
 def grayConversion(image):
     grayValue = 0.07 * image[:,:,2] + 0.72 * image[:,:,1] + 0.21 * image[:,:,0]
@@ -24,7 +143,7 @@ def grayConversion(image):
 
 def readCSV(filepath):
     result = []
-    dat_file = open(filepath,'r')
+    dat_file = open(filepath,'r', encoding="utf-8-sig")
     lines=dat_file.readlines()
     for line in lines:
         if len(line)>0:
@@ -87,11 +206,6 @@ def loadImagesAndCategories(images, imgsDir, categories, catPath, phase = 1, inp
     lines = readCSV(catPath)
     cnt = 0
     for line in lines:
-        #if len(line)>0:
-
-        if cnt < 2:
-           cnt = cnt + 1
-           continue
 
         faceX = 0
         faceY = 0
@@ -109,15 +223,15 @@ def loadImagesAndCategories(images, imgsDir, categories, catPath, phase = 1, inp
             cat = cat.rstrip(',\n')
             cat = cat.split(',')
 
-            if(phase == 2):
-                cat.pop(16)
+            #if(phase == 2):
+            #    cat.pop(16)
 
-            if(phase == 3):
-                cat.pop(11)
-                cat.pop(11)
-                cat.pop(11)
-                cat.pop(11)
-                cat.pop(11)
+            #if(phase == 3):
+            #    cat.pop(11)
+            #    cat.pop(11)
+            #    cat.pop(11)
+            #    cat.pop(11)
+            #    cat.pop(11)
 
             cnt_cat = 0
             for item in cat:
@@ -129,7 +243,7 @@ def loadImagesAndCategories(images, imgsDir, categories, catPath, phase = 1, inp
             #phase 1 specific
             faceX = cat[1]
             faceY = cat[2]
-            faceW = cat[7]
+            faceW = cat[3]
 
             categories.append(cat)
 
@@ -188,16 +302,11 @@ def readMinMaxFromCSV(filepath):
 	result = []
 	
 	for line in lines:
-		
-		if(cnt < 2):
-			cnt = cnt + 1
-			continue
-			
-			
 		if(len(line) > 0):
-			p1 = line.find(',')
-			p1 = p1+1
-			cat=line[p1:]
+			#p1 = line.find(',')
+			#p1 = p1+1
+			#cat=line[p1:]
+			cat=line[:]
 
 			cat = cat.rstrip(',\n')
 			cat = cat.split(',')

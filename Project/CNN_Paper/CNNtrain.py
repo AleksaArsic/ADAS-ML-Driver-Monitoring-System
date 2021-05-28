@@ -64,6 +64,53 @@ def plotTrainingResults(val_acc, val_loss, train_acc, train_loss):
     plt.legend()
     plt.savefig('model_phase01_loss.png')
 
+def determineLogicalFromPrediction(predictions):
+
+    for i in range(len(predictions)):
+        if(predictions[i] >= 0.5):
+            predictions[i] = 1
+        else:
+            predictions[i] = 0
+
+    return predictions
+
+def calculateAccuracy(testLabels, predictions):
+    accuracy = 0
+
+    validSamples = 0
+    invalidSamples = 0
+
+    for i in range(len(testLabels)):
+        if(testLabels[i] == predictions[i]):
+            validSamples += 1
+        else:
+            invalidSamples += 1
+
+    accuracy = validSamples / len(predictions)
+
+    return accuracy
+
+def compareEyeClosed(testLabels, predictions, predictionsAcc):
+
+    # transpose elements
+    testLabels = np.transpose(testLabels)
+    predictions = np.transpose(predictions)
+
+    testLabels[3] = determineLogicalFromPrediction(testLabels[3])
+    testLabels[14] = determineLogicalFromPrediction(testLabels[14])
+
+    predictions[3] = determineLogicalFromPrediction(predictions[3])
+    predictions[14] = determineLogicalFromPrediction(predictions[14])
+
+    predictionsAcc[3] = calculateAccuracy(testLabels[3], predictions[3])
+    predictionsAcc[14] = calculateAccuracy(testLabels[14], predictions[14])
+
+    # transpose to normal
+    testLabels = np.transpose(testLabels)
+    predictions = np.transpose(predictions)
+
+    return predictionsAcc
+
 if __name__ == "__main__":
     script_start = datetime.datetime.now()
 
@@ -123,12 +170,14 @@ if __name__ == "__main__":
     predictions = model.predict(df_im, verbose = 1)
 
     # denormalize test labels and predictions
-    denormalizePredictions(minMaxValues, testLabels)
-    denormalizePredictions(minMaxValues, predictions)
+    #denormalizePredictions(minMaxValues, testLabels)
+    #denormalizePredictions(minMaxValues, predictions)
 
     # compare results between labeled test set and predictions
     testLabels = np.asarray(testLabels)
     predictionsAcc = compareResults(testLabels, predictions)
+
+    compareEyeClosed(testLabels, predictions, predictionsAcc)
 
     # write test results in .csv file
     writeTestToCsv(testLabels, predictions, predictionsAcc)
