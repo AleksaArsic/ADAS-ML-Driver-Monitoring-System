@@ -20,7 +20,7 @@ timeConsumptionLabels = ['Frame preprocessing', 'Face prediction', 'Face preproc
                         'Eyes prediction', 'Visual notification']
 
 #SAMPLE_DIFF_THRESHOLD = 0.1
-SAMPLE_DIFF_THRESHOLD = 0.05
+SAMPLE_DIFF_THRESHOLD = 0.1
 
 def denormalizePredictions(minMaxValues, predictions):
     

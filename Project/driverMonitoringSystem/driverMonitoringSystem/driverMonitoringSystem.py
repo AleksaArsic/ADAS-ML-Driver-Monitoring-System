@@ -778,9 +778,9 @@ if __name__ == "__main__":
     tf.config.set_visible_devices([], 'GPU')
 
     # Load models
-    face_model_name = "model_phase01.h5"
-    face_elements_model_name = "model_phase02.h5"
-    attention_model_name = "model_phase03.h5"
+    face_model_name = r"c:\Users\arsic\Desktop\master\Rad\CNN-Driver-Monitoring-System\Project\driverMonitoringSystem\driverMonitoringSystem\model_phase01.h5"
+    face_elements_model_name = r"c:\Users\arsic\Desktop\master\Rad\CNN-Driver-Monitoring-System\Project\driverMonitoringSystem\driverMonitoringSystem\model_phase02.h5"
+    attention_model_name = r"c:\Users\arsic\Desktop\master\Rad\CNN-Driver-Monitoring-System\Project\driverMonitoringSystem\driverMonitoringSystem\model_phase03.h5"
 
     face_model = tf.keras.models.load_model(face_model_name)
     face_elements_model = tf.keras.models.load_model(face_elements_model_name)

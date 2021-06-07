@@ -177,7 +177,7 @@ if __name__ == "__main__":
     testLabels = np.asarray(testLabels)
     predictionsAcc = compareResults(testLabels, predictions)
 
-    compareEyeClosed(testLabels, predictions, predictionsAcc)
+    #compareEyeClosed(testLabels, predictions, predictionsAcc)
 
     # write test results in .csv file
     writeTestToCsv(testLabels, predictions, predictionsAcc)
