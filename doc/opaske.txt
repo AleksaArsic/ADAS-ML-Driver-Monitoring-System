@@ -1,3 +1,0 @@
-tacnost modela nad test setom u procentima se racuna:
-	za zasebne predikcije: abs((new_val - old_val)/old_val)
-	sveukupno: countif(AH:AH, "0.15")/count(AH:AH)
